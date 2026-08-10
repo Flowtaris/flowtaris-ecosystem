@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@flowtaris/ui/*": ["packages/ui/src/*"],
+      "@flowtaris/cms-client/*": ["packages/cms-client/src/*"],
+      "@flowtaris/supabase-client/*": ["packages/supabase-client/src/*"],
+      "@flowtaris/seo/*": ["packages/seo/src/*"],
+      "@flowtaris/analytics/*": ["packages/analytics/src/*"],
+      "@flowtaris/assessment-engine/*": ["packages/assessment-engine/src/*"],
+      "@flowtaris/roi-engine/*": ["packages/roi-engine/src/*"],
+      "@flowtaris/inaction-engine/*": ["packages/inaction-engine/src/*"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx"
+  ],
+  "exclude": ["node_modules", "**/dist/**", "**/.next/**", "**/build/**", "apps/**"]
+}
