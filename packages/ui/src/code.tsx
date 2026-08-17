@@ -1,6 +1,8 @@
 // @flowtaris/ui - Code Component
 // Syntax-highlighted code display with copy functionality
 
+'use client'
+
 import { forwardRef, type HTMLAttributes, type ReactNode, useState, useCallback } from 'react'
 import { cn } from './utils'
 

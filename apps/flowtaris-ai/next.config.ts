@@ -1,7 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ['@repo/ui', '@flowtaris/cms-client', '@flowtaris/supabase-client', '@flowtaris/analytics', '@flowtaris/seo'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

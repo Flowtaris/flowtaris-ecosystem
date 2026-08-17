@@ -3,17 +3,133 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": "./src/index.ts",
-    "./tokens": "./src/tokens/index.ts",
-    "./tokens/*": "./src/tokens/*.ts",
-    "./button": "./src/button.tsx",
-    "./card": "./src/card.tsx",
-    "./code": "./src/code.tsx"
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./tokens": {
+      "types": "./src/tokens/index.ts",
+      "import": "./src/tokens/index.ts",
+      "default": "./src/tokens/index.ts"
+    },
+    "./tokens/*": {
+      "types": "./src/tokens/*.ts",
+      "import": "./src/tokens/*.ts",
+      "default": "./src/tokens/*.ts"
+    },
+    "./tokens/css": {
+      "style": "./src/tokens/css/index.css",
+      "import": "./src/tokens/css/index.css",
+      "default": "./src/tokens/css/index.css"
+    },
+    "./tokens/css/colors.css": {
+      "style": "./src/tokens/css/colors.css",
+      "import": "./src/tokens/css/colors.css",
+      "default": "./src/tokens/css/colors.css"
+    },
+    "./tokens/css/spacing.css": {
+      "style": "./src/tokens/css/spacing.css",
+      "import": "./src/tokens/css/spacing.css",
+      "default": "./src/tokens/css/spacing.css"
+    },
+    "./tokens/css/typography.css": {
+      "style": "./src/tokens/css/typography.css",
+      "import": "./src/tokens/css/typography.css",
+      "default": "./src/tokens/css/typography.css"
+    },
+    "./tokens/css/motion.css": {
+      "style": "./src/tokens/css/motion.css",
+      "import": "./src/tokens/css/motion.css",
+      "default": "./src/tokens/css/motion.css"
+    },
+    "./tokens/css/shadows.css": {
+      "style": "./src/tokens/css/shadows.css",
+      "import": "./src/tokens/css/shadows.css",
+      "default": "./src/tokens/css/shadows.css"
+    },
+    "./tokens/css/z-index.css": {
+      "style": "./src/tokens/css/z-index.css",
+      "import": "./src/tokens/css/z-index.css",
+      "default": "./src/tokens/css/z-index.css"
+    },
+    "./tokens/css/breakpoints.css": {
+      "style": "./src/tokens/css/breakpoints.css",
+      "import": "./src/tokens/css/breakpoints.css",
+      "default": "./src/tokens/css/breakpoints.css"
+    },
+    "./button": {
+      "types": "./src/button.tsx",
+      "import": "./src/button.tsx",
+      "default": "./src/button.tsx"
+    },
+    "./card": {
+      "types": "./src/card.tsx",
+      "import": "./src/card.tsx",
+      "default": "./src/card.tsx"
+    },
+    "./code": {
+      "types": "./src/code.tsx",
+      "import": "./src/code.tsx",
+      "default": "./src/code.tsx"
+    },
+    "./utils": {
+      "types": "./src/utils.ts",
+      "import": "./src/utils.ts",
+      "default": "./src/utils.ts"
+    },
+    "./parallax-layers": {
+      "types": "./src/parallax-layers.tsx",
+      "import": "./src/parallax-layers.tsx",
+      "default": "./src/parallax-layers.tsx"
+    },
+    "./split-text": {
+      "types": "./src/split-text.tsx",
+      "import": "./src/split-text.tsx",
+      "default": "./src/split-text.tsx"
+    },
+    "./scroll-timeline": {
+      "types": "./src/scroll-timeline.tsx",
+      "import": "./src/scroll-timeline.tsx",
+      "default": "./src/scroll-timeline.tsx"
+    },
+    "./floating-product": {
+      "types": "./src/floating-product.tsx",
+      "import": "./src/floating-product.tsx",
+      "default": "./src/floating-product.tsx"
+    },
+    "./clip-path-reveal": {
+      "types": "./src/clip-path-reveal.tsx",
+      "import": "./src/clip-path-reveal.tsx",
+      "default": "./src/clip-path-reveal.tsx"
+    },
+    "./iris-window": {
+      "types": "./src/iris-window.tsx",
+      "import": "./src/iris-window.tsx",
+      "default": "./src/iris-window.tsx"
+    },
+    "./cascading-card-stack": {
+      "types": "./src/cascading-card-stack.tsx",
+      "import": "./src/cascading-card-stack.tsx",
+      "default": "./src/cascading-card-stack.tsx"
+    },
+    "./patterns": {
+      "types": "./src/patterns/index.ts",
+      "import": "./src/patterns/index.ts",
+      "default": "./src/patterns/index.ts"
+    },
+    "./patterns/*": {
+      "types": "./src/patterns/*.tsx",
+      "import": "./src/patterns/*.tsx",
+      "default": "./src/patterns/*.tsx"
+    }
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -22,12 +138,25 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "eslint": "^9.39.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "storybook": "^10.5.7",
+    "@storybook/react-vite": "^10.5.7",
+    "@chromatic-com/storybook": "latest",
+    "@storybook/addon-vitest": "^10.5.7",
+    "@storybook/addon-a11y": "^10.5.7",
+    "@storybook/addon-docs": "^10.5.7",
+    "@storybook/addon-mcp": "latest",
+    "eslint-plugin-storybook": "^10.5.7",
+    "vitest": "latest",
+    "playwright": "latest",
+    "@vitest/browser-playwright": "latest",
+    "@vitest/coverage-v8": "latest"
   },
   "dependencies": {
     "clsx": "^2.1.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "recharts": "^2.12.7",
     "tailwind-merge": "^3.6.0"
   }
 }

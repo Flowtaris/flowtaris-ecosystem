@@ -36,7 +36,7 @@ export const queries = {
   }`,
 
   // AI Capabilities
-  allCapabilities: groq`*[_type == "aiCapability"] | order(order asc) {
+  allCapabilities: groq`*[_type == "aiCapability"] | order(title asc) {
     _id,
     title,
     slug,
@@ -44,12 +44,12 @@ export const queries = {
     platforms,
     maturity,
     shortDescription,
-    longDescription,
+    description,
     metrics[],
     technicalDetails,
     demoVideo,
+    documentationUrl,
     icon,
-    order,
     seo,
     geoSignals
   }`,
@@ -62,19 +62,19 @@ export const queries = {
     platforms,
     maturity,
     shortDescription,
-    longDescription,
+    description,
     metrics[],
     technicalDetails,
     demoVideo,
+    documentationUrl,
     icon,
-    order,
     seo,
     geoSignals,
     relatedCaseStudies[]->{_id, title, slug, client, results[]}
   }`,
 
   // Case Studies
-  allCaseStudies: groq`*[_type == "caseStudy"] | order(order asc) {
+  allCaseStudies: groq`*[_type == "caseStudy"] | order(title asc) {
     _id,
     title,
     slug,
@@ -87,8 +87,6 @@ export const queries = {
     timeline,
     testimonial,
     heroImage,
-    metricHighlights[],
-    order,
     seo,
     geoSignals
   }`,
@@ -106,14 +104,12 @@ export const queries = {
     timeline,
     testimonial,
     heroImage,
-    metricHighlights[],
-    order,
     seo,
     geoSignals,
     relatedCapabilities[]->{_id, title, slug, category}
   }`,
 
-  caseStudiesByPlatform: groq`*[_type == "caseStudy" && $platform in platforms] | order(order asc) {
+  caseStudiesByPlatform: groq`*[_type == "caseStudy" && $platform in platforms] | order(title asc) {
     _id,
     title,
     slug,
@@ -126,8 +122,6 @@ export const queries = {
     timeline,
     testimonial,
     heroImage,
-    metricHighlights[],
-    order,
     seo,
     geoSignals
   }`,

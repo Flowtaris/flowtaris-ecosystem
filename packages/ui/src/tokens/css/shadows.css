@@ -1,0 +1,85 @@
+/* @flowtaris/ui - Shadows as CSS Custom Properties */
+
+:root {
+  /* ===== BASE SHADOW LAYERS ===== */
+  --shadow-layer-1: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-layer-2: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-layer-3: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --shadow-layer-4: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  --shadow-layer-5: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  --shadow-layer-6: 0 35px 60px -15px rgba(0, 0, 0, 0.5);
+
+  /* ===== SEMANTIC SHADOWS ===== */
+  --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.25);
+  --shadow-card-active: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-dropdown: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  --shadow-modal-backdrop: 0 0 0 9999px rgba(10, 10, 18, 0.8);
+  --shadow-tooltip: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --shadow-focus: 0 0 0 3px rgba(0, 184, 219, 0.4);
+  --shadow-focus-error: 0 0 0 3px rgba(239, 68, 68, 0.4);
+  --shadow-focus-success: 0 0 0 3px rgba(34, 197, 94, 0.4);
+
+  /* ===== GLOW SHADOWS ===== */
+  /* Cyan */
+  --shadow-glow-cyan-sm: 0 0 8px rgba(0, 184, 219, 0.3), 0 0 16px rgba(0, 184, 219, 0.15);
+  --shadow-glow-cyan-md: 0 0 16px rgba(0, 184, 219, 0.4), 0 0 32px rgba(0, 184, 219, 0.2);
+  --shadow-glow-cyan-lg: 0 0 24px rgba(0, 184, 219, 0.5), 0 0 48px rgba(0, 184, 219, 0.25);
+  --shadow-glow-cyan-xl: 0 0 32px rgba(0, 184, 219, 0.6), 0 0 64px rgba(0, 184, 219, 0.3);
+  --shadow-glow-cyan-pulse: 0 0 16px rgba(0, 184, 219, 0.6), 0 0 32px rgba(0, 184, 219, 0.3);
+
+  /* Amber */
+  --shadow-glow-amber-sm: 0 0 8px rgba(245, 158, 11, 0.3), 0 0 16px rgba(245, 158, 11, 0.15);
+  --shadow-glow-amber-md: 0 0 16px rgba(245, 158, 11, 0.4), 0 0 32px rgba(245, 158, 11, 0.2);
+  --shadow-glow-amber-lg: 0 0 24px rgba(245, 158, 11, 0.5), 0 0 48px rgba(245, 158, 11, 0.25);
+  --shadow-glow-amber-xl: 0 0 32px rgba(245, 158, 11, 0.6), 0 0 64px rgba(245, 158, 11, 0.3);
+
+  /* Green */
+  --shadow-glow-green-sm: 0 0 8px rgba(34, 197, 94, 0.3);
+  --shadow-glow-green-md: 0 0 16px rgba(34, 197, 94, 0.4);
+  --shadow-glow-green-lg: 0 0 24px rgba(34, 197, 94, 0.5);
+  --shadow-glow-green-xl: 0 0 32px rgba(34, 197, 94, 0.6), 0 0 64px rgba(34, 197, 94, 0.3);
+
+  /* Red */
+  --shadow-glow-red-sm: 0 0 8px rgba(239, 68, 68, 0.3);
+  --shadow-glow-red-md: 0 0 16px rgba(239, 68, 68, 0.4);
+  --shadow-glow-red-lg: 0 0 24px rgba(239, 68, 68, 0.5);
+  --shadow-glow-red-xl: 0 0 32px rgba(239, 68, 68, 0.6), 0 0 64px rgba(239, 68, 68, 0.3);
+
+  /* Purple */
+  --shadow-glow-purple-sm: 0 0 8px rgba(168, 85, 247, 0.3);
+  --shadow-glow-purple-md: 0 0 16px rgba(168, 85, 247, 0.4);
+  --shadow-glow-purple-lg: 0 0 24px rgba(168, 85, 247, 0.5);
+  --shadow-glow-purple-xl: 0 0 32px rgba(168, 85, 247, 0.6), 0 0 64px rgba(168, 85, 247, 0.3);
+
+  /* ===== INNER SHADOWS ===== */
+  --shadow-inner-sm: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  --shadow-inner-md: inset 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+  --shadow-inner-lg: inset 0 8px 16px 0 rgba(0, 0, 0, 0.3);
+  --shadow-inner-input: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --shadow-inner-pressed: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+
+  /* ===== TEXT SHADOWS ===== */
+  --shadow-text-subtle: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-text-md: 0 2px 4px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-text-lg: 0 4px 8px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-text-glow-cyan: 0 0 8px rgba(0, 184, 219, 0.6), 0 0 16px rgba(0, 184, 219, 0.4);
+  --shadow-text-glow-amber: 0 0 8px rgba(245, 158, 11, 0.6), 0 0 16px rgba(245, 158, 11, 0.4);
+
+  /* ===== LAYERED SHADOWS ===== */
+  --shadow-floating-cyan: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2), 0 0 24px rgba(0, 184, 219, 0.15);
+  --shadow-floating-amber: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2), 0 0 24px rgba(245, 158, 11, 0.15);
+  --shadow-panel: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+  --shadow-hero: 0 0 100px -20px rgba(0, 184, 219, 0.15), 0 50px 100px -30px rgba(0, 0, 0, 0.5);
+
+  /* ===== OUTLINE SHADOWS ===== */
+  --shadow-outline-focus: 0 0 0 2px #1a1a2e, 0 0 0 4px rgba(0, 184, 219, 0.5);
+  --shadow-outline-focus-error: 0 0 0 2px #1a1a2e, 0 0 0 4px rgba(239, 68, 68, 0.5);
+  --shadow-outline-focus-success: 0 0 0 2px #1a1a2e, 0 0 0 4px rgba(34, 197, 94, 0.5);
+  --shadow-outline-selected: 0 0 0 2px rgba(0, 184, 219, 0.8);
+
+  /* ===== NONE ===== */
+  --shadow-none: none;
+}

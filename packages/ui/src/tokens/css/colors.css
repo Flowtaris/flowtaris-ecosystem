@@ -1,0 +1,128 @@
+/* @flowtaris/ui - Colors as CSS Custom Properties */
+
+:root {
+  /* ===== BRAND COLORS ===== */
+  --brand-navy-50: #f0f2f8;
+  --brand-navy-100: #e0e4ef;
+  --brand-navy-200: #c1c9df;
+  --brand-navy-300: #9aa0ca;
+  --brand-navy-400: #727bb5;
+  --brand-navy-500: #535b9f;
+  --brand-navy-600: #434785;
+  --brand-navy-700: #37386b;
+  --brand-navy-800: #2f2f56;
+  --brand-navy-900: #292947;
+  --brand-navy-950: #1a1a2e;
+
+  --brand-cyan-50: #e8fcff;
+  --brand-cyan-100: #d1f8fe;
+  --brand-cyan-200: #a3f0fc;
+  --brand-cyan-300: #62e4fa;
+  --brand-cyan-400: #1ad2f6;
+  --brand-cyan-500: #00b8db;
+  --brand-cyan-600: #0094b3;
+  --brand-cyan-700: #00738c;
+  --brand-cyan-800: #005a70;
+  --brand-cyan-900: #074d5e;
+  --brand-cyan-950: #08323e;
+
+  --brand-amber-50: #fffbeb;
+  --brand-amber-100: #fef3c7;
+  --brand-amber-200: #fde68a;
+  --brand-amber-300: #fcd34d;
+  --brand-amber-400: #fbbf24;
+  --brand-amber-500: #f59e0b;
+  --brand-amber-600: #d97706;
+  --brand-amber-700: #b45309;
+  --brand-amber-800: #92400e;
+  --brand-amber-900: #78350f;
+  --brand-amber-950: #451a03;
+
+  /* ===== SEMANTIC COLORS ===== */
+  --semantic-success-light: #22c55e;
+  --semantic-success: #16a34a;
+  --semantic-success-dark: #15803d;
+  --semantic-success-foreground: #ffffff;
+
+  --semantic-warning-light: #fbbf24;
+  --semantic-warning: #f59e0b;
+  --semantic-warning-dark: #d97706;
+  --semantic-warning-foreground: #1a1a2e;
+
+  --semantic-error-light: #fb7185;
+  --semantic-error: #ef4444;
+  --semantic-error-dark: #dc2626;
+  --semantic-error-foreground: #ffffff;
+
+  --semantic-info-light: #22d3ee;
+  --semantic-info: #06b6d4;
+  --semantic-info-dark: #0891b2;
+  --semantic-info-foreground: #ffffff;
+
+  /* ===== NEUTRAL COLORS ===== */
+  --neutral-white: #ffffff;
+  --neutral-50: #fafafa;
+  --neutral-100: #f4f4f5;
+  --neutral-200: #e4e4e7;
+  --neutral-300: #d4d4d8;
+  --neutral-400: #a1a1aa;
+  --neutral-500: #71717a;
+  --neutral-600: #52525b;
+  --neutral-700: #3f3f46;
+  --neutral-800: #27272a;
+  --neutral-900: #18181b;
+  --neutral-950: #09090b;
+
+  /* ===== SURFACE COLORS (6-layer depth) ===== */
+  --surface-layer1: #05050a;
+  --surface-layer2: #0a0a12;
+  --surface-layer3: #12121f;
+  --surface-layer4: #1a1a2e;
+  --surface-layer5: #22223a;
+  --surface-layer6: #2a2a4a;
+  --surface-overlay: rgba(10, 10, 18, 0.8);
+  --surface-glass: rgba(26, 26, 46, 0.7);
+  --surface-glass-hover: rgba(26, 26, 46, 0.85);
+  --surface-glass-border: rgba(255, 255, 255, 0.08);
+
+  /* ===== TEXT COLORS ===== */
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --text-inverted: #09090b;
+  --text-link: #00b8db;
+  --text-link-hover: #62e4fa;
+
+  /* ===== BORDER COLORS ===== */
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-focus: #00b8db;
+  --border-error: #ef4444;
+
+  /* ===== GRADIENTS ===== */
+  --gradient-brand: linear-gradient(135deg, #00b8db 0%, #535b9f 100%);
+  --gradient-brand-reverse: linear-gradient(135deg, #535b9f 0%, #00b8db 100%);
+  --gradient-layer-1: linear-gradient(180deg, #05050a 0%, #0a0a12 100%);
+  --gradient-layer-2: linear-gradient(180deg, #0a0a12 0%, #12121f 100%);
+  --gradient-layer-3: linear-gradient(180deg, #12121f 0%, #1a1a2e 100%);
+  --gradient-layer-4: linear-gradient(180deg, #1a1a2e 0%, #22223a 100%);
+  --gradient-layer-5: linear-gradient(180deg, #22223a 0%, #2a2a4a 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+  --gradient-glass-radial: radial-gradient(ellipse at center, rgba(0,184,219,0.15) 0%, transparent 70%);
+  --gradient-cyan-glow: radial-gradient(ellipse at center, rgba(0,184,219,0.3) 0%, transparent 70%);
+  --gradient-amber-glow: radial-gradient(ellipse at center, rgba(245,158,11,0.25) 0%, transparent 70%);
+  --gradient-hero-mesh: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,184,219,0.2) 0%, transparent 50%), radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245,158,11,0.15) 0%, transparent 50%), radial-gradient(ellipse 100% 60% at 10% 80%, rgba(168,85,247,0.1) 0%, transparent 50%);
+
+  /* ===== DATA VISUALIZATION ===== */
+  --dataviz-categorical-0: #00b8db;
+  --dataviz-categorical-1: #f59e0b;
+  --dataviz-categorical-2: #22c55e;
+  --dataviz-categorical-3: #ef4444;
+  --dataviz-categorical-4: #a855f7;
+  --dataviz-categorical-5: #ec4899;
+  --dataviz-categorical-6: #14b8a6;
+  --dataviz-categorical-7: #f97316;
+  --dataviz-categorical-8: #84cc16;
+  --dataviz-categorical-9: #6366f1;
+}

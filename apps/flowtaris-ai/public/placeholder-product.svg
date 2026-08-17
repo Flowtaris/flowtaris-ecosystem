@@ -1,0 +1,100 @@
+<svg width="480" height="480" viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1426"/>
+      <stop offset="100%" stop-color="#142850"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00B8DB"/>
+      <stop offset="100%" stop-color="#007B9E"/>
+    </linearGradient>
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB800"/>
+      <stop offset="100%" stop-color="#E6A800"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#00B8DB" flood-opacity="0.6" result="glowColor"/>
+      <feComposite in="glowColor" in2="blur" operator="in" result="glow"/>
+      <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="480" height="480" rx="24" fill="url(#bgGrad)"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.1">
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00B8DB" stroke-width="0.5"/>
+    </pattern>
+    <rect width="480" height="480" rx="24" fill="url(#grid)"/>
+  </g>
+
+  <!-- Main product shape - stylized device/monitor -->
+  <g transform="translate(240, 240)">
+    <!-- Outer frame -->
+    <rect x="-160" y="-100" width="320" height="200" rx="16" fill="none" stroke="url(#accentGrad)" stroke-width="2" filter="url(#glow)"/>
+
+    <!-- Inner screen -->
+    <rect x="-145" y="-85" width="290" height="170" rx="10" fill="#061020"/>
+
+    <!-- Screen content - abstract UI -->
+    <g clip-path="inset(0 0 0 0 round 10px)">
+      <!-- Header bar -->
+      <rect x="-145" y="-85" width="290" height="40" rx="10" fill="#0A1A30"/>
+      <circle cx="-120" cy="-65" r="6" fill="#FF5F57"/>
+      <circle cx="-100" cy="-65" r="6" fill="#FEBC2E"/>
+      <circle cx="-80" cy="-65" r="6" fill="#28CA42"/>
+
+      <!-- Data visualization bars -->
+      <g fill="url(#accentGrad)">
+        <rect x="-120" y="-30" width="35" height="80" rx="4" opacity="0.8"/>
+        <rect x="-70" y="-10" width="35" height="60" rx="4" opacity="0.6"/>
+        <rect x="-20" y="-45" width="35" height="95" rx="4" opacity="0.9"/>
+        <rect x="30" y="-5" width="35" height="55" rx="4" opacity="0.5"/>
+        <rect x="80" y="-60" width="35" height="110" rx="4" opacity="0.7"/>
+      </g>
+
+      <!-- Accent line -->
+      <path d="M-145 20 Q0 -10 145 20" stroke="url(#amberGrad)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/>
+
+      <!-- Dots -->
+      <circle cx="-145" cy="20" r="4" fill="url(#amberGrad)"/>
+      <circle cx="0" cy="-10" r="4" fill="url(#amberGrad)"/>
+      <circle cx="145" cy="20" r="4" fill="url(#amberGrad)"/>
+    </g>
+
+    <!-- Stand -->
+    <path d="M-30 100 L-30 130 L30 130 L30 100" fill="url(#accentGrad)" opacity="0.8"/>
+    <ellipse cx="0" cy="135" rx="50" ry="4" fill="url(#accentGrad)" opacity="0.4"/>
+  </g>
+
+  <!-- Floating particles -->
+  <g opacity="0.6">
+    <circle cx="80" cy="80" r="3" fill="#00B8DB">
+      <animate attributeName="cy" values="80;60;80" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="120" r="2" fill="#FFB800">
+      <animate attributeName="cy" values="120;100;120" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="60" cy="400" r="2.5" fill="#00B8DB">
+      <animate attributeName="cx" values="60;80;60" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="420" cy="380" r="3" fill="#FFB800">
+      <animate attributeName="cx" values="420;400;420" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Corner accents -->
+  <g stroke="url(#accentGrad)" stroke-width="1.5" fill="none" opacity="0.5">
+    <path d="M40 40 L40 100 M40 40 L100 40"/>
+    <path d="M440 40 L440 100 M440 40 L380 40"/>
+    <path d="M40 440 L40 380 M40 440 L100 440"/>
+    <path d="M440 440 L440 380 M440 440 L380 440"/>
+  </g>
+</svg>

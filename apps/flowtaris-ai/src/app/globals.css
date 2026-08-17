@@ -1,26 +1,403 @@
 @import "tailwindcss";
+@import "@repo/ui/tokens/css/colors.css";
+@import "@repo/ui/tokens/css/spacing.css";
+@import "@repo/ui/tokens/css/typography.css";
+@import "@repo/ui/tokens/css/motion.css";
+@import "@repo/ui/tokens/css/shadows.css";
+@import "@repo/ui/tokens/css/z-index.css";
+@import "@repo/ui/tokens/css/breakpoints.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ===== THEME CONFIGURATION (Tailwind v4) ===== */
+@theme {
+  /* Font families */
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Spacing from design tokens (these work with @apply) */
+  /* The spacing is imported via CSS custom properties but we also need them as theme values */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ===== BASE STYLES ===== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    background-color: var(--surface-layer4);
+    background: var(--gradient-layer-1);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  /* Selection styles */
+  ::selection {
+    background-color: color-mix(in srgb, var(--brand-cyan-500) 30%, transparent);
+    color: var(--text-primary);
+  }
+
+  ::-moz-selection {
+    background-color: color-mix(in srgb, var(--brand-cyan-500) 30%, transparent);
+    color: var(--text-primary);
+  }
+
+  /* Focus visible */
+  :focus-visible {
+    outline: none;
+    ring: 2px solid var(--brand-cyan-500);
+    ring-offset: 2px;
+    ring-offset-color: var(--surface-layer4);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ===== TYPOGRAPHY UTILITIES ===== */
+@layer utilities {
+  /* Text balance for headlines */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Gradient text */
+  .text-gradient-brand {
+    background: linear-gradient(135deg, var(--brand-cyan-500) 0%, var(--brand-navy-400) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-cyan {
+    background: linear-gradient(135deg, var(--brand-cyan-400) 0%, var(--brand-cyan-600) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-amber {
+    background: linear-gradient(135deg, var(--brand-amber-400) 0%, var(--brand-amber-600) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Tabular numbers for data */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Display sizes using fluid typography */
+  .text-display-xxs { font-size: clamp(1.5rem, 3vw, 2.5rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+  .text-display-xs { font-size: clamp(2rem, 4vw, 3.5rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+  .text-display-sm { font-size: clamp(2.5rem, 5vw, 4.5rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+  .text-display-md { font-size: clamp(3rem, 6vw, 5.5rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; }
+  .text-display-lg { font-size: clamp(3.5rem, 8vw, 7rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; }
+  .text-display-xl { font-size: clamp(4rem, 10vw, 8.5rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+  .text-display-2xl { font-size: clamp(5rem, 12vw, 10rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+  .text-display-3xl { font-size: clamp(6rem, 15vw, 12rem); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+
+  .text-headline-xs { font-size: clamp(1.125rem, 2vw, 1.5rem); font-family: var(--font-display); font-weight: 600; letter-spacing: -0.025em; line-height: 1.375; }
+  .text-headline-sm { font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-family: var(--font-display); font-weight: 600; letter-spacing: -0.025em; line-height: 1.375; }
+  .text-headline-md { font-size: clamp(1.5rem, 3vw, 2.25rem); font-family: var(--font-display); font-weight: 600; letter-spacing: -0.025em; line-height: 1.375; }
+  .text-headline-lg { font-size: clamp(1.75rem, 3.5vw, 2.5rem); font-family: var(--font-display); font-weight: 600; letter-spacing: -0.025em; line-height: 1.375; }
+  .text-headline-xl { font-size: clamp(2rem, 4vw, 3rem); font-family: var(--font-display); font-weight: 600; letter-spacing: -0.025em; line-height: 1.375; }
+  .text-headline-2xl { font-size: clamp(2.5rem, 5vw, 3.5rem); font-family: var(--font-display); font-weight: 600; letter-spacing: -0.025em; line-height: 1.375; }
+
+  .text-body-xs { font-size: clamp(0.75rem, 1vw, 0.875rem); font-family: var(--font-body); line-height: 1.625; }
+  .text-body-sm { font-size: clamp(0.875rem, 1.25vw, 1rem); font-family: var(--font-body); line-height: 1.625; }
+  .text-body-md { font-size: clamp(1rem, 1.5vw, 1.125rem); font-family: var(--font-body); line-height: 1.625; }
+  .text-body-lg { font-size: clamp(1.125rem, 1.75vw, 1.25rem); font-family: var(--font-body); line-height: 1.625; }
+  .text-body-xl { font-size: clamp(1.25rem, 2vw, 1.375rem); font-family: var(--font-body); line-height: 1.625; }
+
+  .text-caption { font-size: 0.75rem; font-family: var(--font-body); line-height: 1.5; }
+  .text-overline { font-size: 0.75rem; font-family: var(--font-display); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1; }
+
+  .text-number-lg { font-size: clamp(2rem, 4vw, 3.5rem); font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .text-number-xl { font-size: clamp(3rem, 6vw, 5rem); font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.05; }
+  .text-number-2xl { font-size: clamp(4rem, 8vw, 7rem); font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+
+  /* Code/Monospace */
+  .text-code-xs { font-size: 0.75rem; font-family: var(--font-mono); line-height: 1.5; }
+  .text-code-sm { font-size: 0.875rem; font-family: var(--font-mono); line-height: 1.5; }
+  .text-code-md { font-size: 1rem; font-family: var(--font-mono); line-height: 1.5; }
+  .text-code-lg { font-size: 1.125rem; font-family: var(--font-mono); line-height: 1.5; }
+}
+
+/* ===== ANIMATION UTILITIES ===== */
+@layer utilities {
+  /* Motion presets using CSS custom properties for durations */
+  .motion-instant { transition: all 0ms ease-out; }
+  .motion-fastest { transition: all 50ms ease-out; }
+  .motion-faster { transition: all 100ms ease-out; }
+  .motion-fast { transition: all 150ms ease-out; }
+  .motion-normal { transition: all 200ms ease-out; }
+  .motion-slow { transition: all 300ms ease-out; }
+  .motion-slower { transition: all 400ms ease-out; }
+  .motion-slowest { transition: all 500ms ease-out; }
+  .motion-cinematic { transition: all 800ms cubic-bezier(0.25, 0.1, 0.25, 1); }
+  .motion-epic { transition: all 1200ms cubic-bezier(0.05, 0.7, 0.1, 1); }
+  .motion-monumental { transition: all 2000ms cubic-bezier(0.05, 0.7, 0.1, 1); }
+
+  /* Easing */
+  .ease-cinematic { transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1); }
+  .ease-epic { transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1); }
+  .ease-smooth { transition-timing-function: cubic-bezier(0.33, 0, 0.67, 1); }
+  .ease-sharp { transition-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+  .ease-bounce { transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .ease-elastic { transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .ease-expo-in { transition-timing-function: cubic-bezier(0.95, 0.05, 0.795, 0.035); }
+  .ease-expo-out { transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1); }
+  .ease-expo-in-out { transition-timing-function: cubic-bezier(1, 0, 0, 1); }
+
+  /* Stagger delays */
+  .stagger-1 { transition-delay: 50ms; }
+  .stagger-2 { transition-delay: 100ms; }
+  .stagger-3 { transition-delay: 150ms; }
+  .stagger-4 { transition-delay: 200ms; }
+  .stagger-5 { transition-delay: 250ms; }
+  .stagger-6 { transition-delay: 300ms; }
+  .stagger-7 { transition-delay: 350ms; }
+  .stagger-8 { transition-delay: 400ms; }
+
+  /* Parallax transforms */
+  .parallax-layer-1 { transform: translate3d(0, var(--parallax-layer1, 0), 0); }
+  .parallax-layer-2 { transform: translate3d(0, var(--parallax-layer2, 0), 0); }
+  .parallax-layer-3 { transform: translate3d(0, var(--parallax-layer3, 0), 0); }
+  .parallax-layer-4 { transform: translate3d(0, var(--parallax-layer4, 0), 0); }
+  .parallax-layer-5 { transform: translate3d(0, var(--parallax-layer5, 0), 0); }
+  .parallax-layer-6 { transform: translate3d(0, var(--parallax-layer6, 0), 0); }
+}
+
+/* ===== COMPONENT UTILITIES ===== */
+@layer components {
+  /* Glass morphism */
+  .glass {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--surface-glass-border);
+  }
+
+  .glass-strong {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-card {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--surface-glass-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+
+  /* Gradient borders */
+  .border-gradient-brand {
+    border: 1px solid transparent;
+    background: linear-gradient(var(--gradient-brand)) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .border-gradient-cyan {
+    border: 1px solid transparent;
+    background: linear-gradient(var(--gradient-cyan-glow)) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Interactive states */
+  .interactive {
+    transition: all 150ms ease-out;
+    cursor: pointer;
+  }
+
+  .interactive:hover {
+    transition: all 100ms ease-out;
+  }
+
+  .interactive:active {
+    transition: all 0ms ease-out;
+    transform: scale(0.98);
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--brand-cyan-500);
+    outline-offset: 2px;
+  }
+
+  /* Text truncation */
+  .truncate-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .truncate-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--neutral-700) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-700);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: var(--neutral-600);
+  }
+}
+
+/* ===== KEYFRAME ANIMATIONS ===== */
+@layer utilities {
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-left {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes slide-right {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes scale-out {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 184, 219, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 184, 219, 0.6), 0 0 60px rgba(0, 184, 219, 0.4); }
+  }
+
+  .animate-fade-in { animation: fade-in 0.3s ease-out; }
+  .animate-fade-out { animation: fade-out 0.3s ease-in; }
+  .animate-slide-up { animation: slide-up 0.4s ease-out; }
+  .animate-slide-down { animation: slide-down 0.4s ease-out; }
+  .animate-slide-left { animation: slide-left 0.4s ease-out; }
+  .animate-slide-right { animation: slide-right 0.4s ease-out; }
+  .animate-scale-in { animation: scale-in 0.3s ease-out; }
+  .animate-scale-out { animation: scale-out 0.3s ease-in; }
+  .animate-spin-slow { animation: spin-slow 3s linear infinite; }
+  .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+  .animate-shimmer { animation: shimmer 2s linear infinite; background-size: 200% 100%; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+}
+
+/* ===== PARALLAX CONTAINER ===== */
+.parallax-container {
+  perspective: 1000px;
+  overflow-x: hidden;
+}
+
+.parallax-layer {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+
+  @page {
+    margin: 1rem;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    min-height: auto;
+  }
+
+  .glass, .glass-strong, .glass-card {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+  }
 }

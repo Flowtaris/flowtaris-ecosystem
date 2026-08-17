@@ -1,0 +1,144 @@
+/* @flowtaris/ui - Z-Index as CSS Custom Properties */
+
+:root {
+  /* ===== BASE LAYERS (matching parallax depth) ===== */
+  --z-layer1: -10;
+  --z-layer2: -8;
+  --z-layer3: -5;
+  --z-layer4: 0;
+  --z-layer5: 10;
+  --z-layer6: 50;
+
+  /* ===== SEMANTIC Z-INDEX ===== */
+  --z-background: -20;
+  --z-content: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-mobile-nav: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-tooltip: 600;
+  --z-toast: 700;
+  --z-cursor: 800;
+  --z-loading: 900;
+  --z-alert: 1000;
+
+  /* ===== COMPONENT Z-INDEX ===== */
+  /* Header/Navigation */
+  --z-header: 100;
+  --z-header-mobile: 300;
+  --z-nav-link: 101;
+  --z-nav-dropdown: 200;
+  --z-mobile-menu: 300;
+  --z-mobile-menu-backdrop: 250;
+
+  /* Sidebar */
+  --z-sidebar: 50;
+  --z-sidebar-backdrop: 40;
+  --z-sidebar-mobile: 350;
+  --z-sidebar-mobile-backdrop: 340;
+
+  /* Cards */
+  --z-card: 10;
+  --z-card-hover: 20;
+  --z-card-expanded: 60;
+
+  /* Buttons */
+  --z-button: 1;
+  --z-button-loading: 5;
+  --z-button-tooltip: 600;
+
+  /* Form elements */
+  --z-input: 1;
+  --z-select: 1;
+  --z-select-options: 300;
+  --z-date-picker: 300;
+  --z-autocomplete: 300;
+
+  /* Modals */
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-modal-close: 510;
+  --z-modal-content: 505;
+
+  /* Drawers/Sheets */
+  --z-drawer-backdrop: 400;
+  --z-drawer: 500;
+  --z-drawer-handle: 510;
+
+  /* Popovers/Tooltips */
+  --z-popper: 600;
+  --z-popper-arrow: 601;
+  --z-tooltip: 600;
+  --z-tooltip-arrow: 601;
+
+  /* Toasts */
+  --z-toast: 700;
+  --z-toast-content: 701;
+
+  /* Tables */
+  --z-table-header: 20;
+  --z-table-sticky-column: 30;
+  --z-table-row-hover: 15;
+
+  /* Tabs */
+  --z-tab-list: 10;
+  --z-tab-panel: 5;
+  --z-tab-indicator: 11;
+
+  /* Accordions */
+  --z-accordion: 10;
+  --z-accordion-content: 5;
+
+  /* Carousel */
+  --z-carousel: 10;
+  --z-carousel-slide: 5;
+  --z-carousel-controls: 20;
+  --z-carousel-dots: 20;
+
+  /* Video Player */
+  --z-video-player: 10;
+  --z-video-controls: 20;
+  --z-video-fullscreen: 900;
+
+  /* Image Zoom/Lightbox */
+  --z-lightbox-backdrop: 800;
+  --z-lightbox: 900;
+  --z-lightbox-content: 910;
+  --z-lightbox-close: 920;
+
+  /* Command Palette */
+  --z-command-palette-backdrop: 850;
+  --z-command-palette: 900;
+  --z-command-palette-results: 901;
+
+  /* Onboarding/Tour */
+  --z-tour-backdrop: 750;
+  --z-tour-step: 800;
+  --z-tour-spotlight: 790;
+
+  /* Cursor followers */
+  --z-cursor-follower: 800;
+  --z-cursor-trail: 790;
+
+  /* Scroll progress */
+  --z-scroll-progress: 950;
+
+  /* ===== PARALLAX SPECIFIC ===== */
+  --z-parallax-decorative: -15;
+  --z-parallax-far: -10;
+  --z-parallax-mid: -5;
+  --z-parallax-content: 0;
+  --z-parallax-floating: 50;
+  --z-parallax-hotspot: 60;
+  --z-parallax-cursor: 800;
+
+  /* ===== UTILITIES ===== */
+  --z-hide: -9999;
+  --z-bottom: -1000;
+  --z-top: 9999;
+  --z-auto: auto;
+  --z-initial: 0;
+  --z-inherit: inherit;
+}

@@ -1,0 +1,136 @@
+/* @flowtaris/ui - Breakpoints as CSS Custom Properties */
+
+:root {
+  /* ===== BREAKPOINT VALUES (px) ===== */
+  --bp-xs: 320px;
+  --bp-sm: 480px;
+  --bp-md: 640px;
+  --bp-lg: 768px;
+  --bp-xl: 1024px;
+  --bp-2xl: 1280px;
+  --bp-3xl: 1440px;
+  --bp-4xl: 1920px;
+  --bp-5xl: 2560px;
+
+  /* ===== FLUID TYPE BREAKPOINTS ===== */
+  --fluid-min: 320px;
+  --fluid-max: 1920px;
+
+  /* ===== CONTAINER MAX WIDTHS ===== */
+  --container-xs: 100%;
+  --container-sm: 440px;
+  --container-md: 600px;
+  --container-lg: 728px;
+  --container-xl: 984px;
+  --container-2xl: 1240px;
+  --container-3xl: 1380px;
+  --container-4xl: 1600px;
+  --container-5xl: 2000px;
+
+  /* ===== GRID COLUMNS ===== */
+  --grid-xs: 1;
+  --grid-sm: 2;
+  --grid-md: 2;
+  --grid-lg: 3;
+  --grid-xl: 4;
+  --grid-2xl: 4;
+  --grid-3xl: 5;
+  --grid-4xl: 6;
+  --grid-5xl: 6;
+
+  /* ===== SECTION SPACING ===== */
+  --section-xs: 3rem;
+  --section-sm: 4rem;
+  --section-md: 5rem;
+  --section-lg: 6rem;
+  --section-xl: 7rem;
+  --section-2xl: 8rem;
+  --section-3xl: 9rem;
+  --section-4xl: 10rem;
+
+  /* ===== ICON SIZES ===== */
+  --icon-xs: 1.25rem;
+  --icon-sm: 1.5rem;
+  --icon-md: 1.75rem;
+  --icon-lg: 2rem;
+  --icon-xl: 2.25rem;
+  --icon-2xl: 2.5rem;
+
+  /* ===== TOUCH TARGETS ===== */
+  --touch-minimum: 44px;
+  --touch-comfortable: 48px;
+  --touch-generous: 56px;
+}
+
+/* ===== MEDIA QUERIES (for use in CSS) ===== */
+/* These are standard @media queries - use them directly instead of @custom-media */
+
+/* Min-width (mobile-first) */
+@media (min-width: 320px) { }
+@media (min-width: 480px) { }
+@media (min-width: 640px) { }
+@media (min-width: 768px) { }
+@media (min-width: 1024px) { }
+@media (min-width: 1280px) { }
+@media (min-width: 1440px) { }
+@media (min-width: 1920px) { }
+@media (min-width: 2560px) { }
+
+/* Max-width (desktop-first) */
+@media (max-width: 319px) { }
+@media (max-width: 479px) { }
+@media (max-width: 639px) { }
+@media (max-width: 767px) { }
+@media (max-width: 1023px) { }
+@media (max-width: 1279px) { }
+@media (max-width: 1439px) { }
+@media (max-width: 1919px) { }
+
+/* Range queries */
+@media (min-width: 480px) and (max-width: 639px) { }
+@media (min-width: 640px) and (max-width: 767px) { }
+@media (min-width: 768px) and (max-width: 1023px) { }
+@media (min-width: 1024px) and (max-width: 1279px) { }
+@media (min-width: 1280px) and (max-width: 1439px) { }
+@media (min-width: 1440px) and (max-width: 1919px) { }
+@media (min-width: 1920px) and (max-width: 2559px) { }
+
+/* Common combinations */
+@media (max-width: 767px) { }
+@media (min-width: 768px) and (max-width: 1023px) { }
+@media (min-width: 1024px) { }
+@media (min-width: 1440px) { }
+@media (min-width: 1920px) { }
+
+/* Touch/pointer capabilities */
+@media (hover: hover) and (pointer: fine) { }
+@media (hover: none) and (pointer: coarse) { }
+@media (pointer: coarse) { }
+@media (pointer: fine) { }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) { }
+@media (prefers-reduced-motion: no-preference) { }
+
+/* Color scheme */
+@media (prefers-color-scheme: dark) { }
+@media (prefers-color-scheme: light) { }
+
+/* High contrast */
+@media (prefers-contrast: more) { }
+@media (forced-colors: active) { }
+
+/* Orientation */
+@media (orientation: portrait) { }
+@media (orientation: landscape) { }
+
+/* Print */
+@media print { }
+
+/* Container queries */
+@container (min-width: 320px) { }
+@container (min-width: 480px) { }
+@container (min-width: 640px) { }
+@container (min-width: 768px) { }
+@container (min-width: 1024px) { }
+@container (min-width: 1280px) { }

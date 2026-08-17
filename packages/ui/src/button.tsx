@@ -1,7 +1,7 @@
 // @flowtaris/ui - Button Component
 // Primary interactive element with multiple variants and sizes
 
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode, type AnchorHTMLAttributes } from 'react'
 import { cn } from './utils'
 
 // ===== VARIANTS =====
@@ -12,6 +12,8 @@ export type ButtonVariant =
   | 'destructive'  // Danger actions - red
   | 'glass'        // Glass morphism
   | 'minimal'      // Bare minimum
+  | 'ghost'        // Ghost/transparent
+  | 'outline'      // Outlined button
 
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon'
 
@@ -22,6 +24,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   leftIcon?: ReactNode
   rightIcon?: ReactNode
   fullWidth?: boolean
+  asChild?: boolean
+  href?: string
 }
 
 // ===== VARIANT STYLES =====
@@ -76,6 +80,23 @@ const variantStyles: Record<ButtonVariant, string> = {
     active:text-text-secondary
     transition-colors duration-150 ease-out
   `,
+  ghost: `
+    bg-transparent
+    text-text-secondary
+    hover:bg-surface-layer5
+    hover:text-text-primary
+    active:bg-surface-layer3
+    transition-all duration-150 ease-out
+  `,
+  outline: `
+    border border-border-DEFAULT
+    bg-transparent
+    text-text-primary
+    hover:bg-surface-layer5
+    hover:border-border-strong
+    active:bg-surface-layer3
+    transition-all duration-150 ease-out
+  `,
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -90,81 +111,109 @@ const sizeStyles: Record<ButtonSize, string> = {
 const loadingStyles = 'relative overflow-hidden'
 
 // ===== COMPONENT =====
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      children,
-      className,
-      variant = 'primary',
-      size = 'md',
-      isLoading = false,
-      leftIcon,
-      rightIcon,
-      fullWidth = false,
-      disabled,
-      ...props
-    },
-    ref
-  ) => {
-    const isDisabled = disabled || isLoading
+function ButtonInner(
+  {
+    children,
+    className,
+    variant = 'primary',
+    size = 'md',
+    isLoading = false,
+    leftIcon,
+    rightIcon,
+    fullWidth = false,
+    disabled,
+    asChild = false,
+    href,
+    ...props
+  }: ButtonProps,
+  ref: React.ForwardedRef<HTMLButtonElement | HTMLAnchorElement>
+) {
+  const isDisabled = disabled || isLoading
+  const isAnchor = asChild && href
+
+  const baseClassName = cn(
+    'inline-flex items-center justify-center font-medium rounded-radius-lg',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-layer4',
+    'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+    'active:scale-[0.98] transition-transform duration-75 ease-out',
+    'select-none',
+    variantStyles[variant],
+    sizeStyles[size],
+    fullWidth && 'w-full',
+    isLoading && loadingStyles,
+    className
+  )
+
+  const loadingContent = (
+    <>
+      <svg
+        className="animate-spin h-4 w-4"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+      </svg>
+      <span className="sr-only">Loading...</span>
+    </>
+  )
+
+  const labelContent = (
+    <>
+      {leftIcon && <span className="flex-shrink-0" aria-hidden="true">{leftIcon}</span>}
+      {children}
+      {rightIcon && <span className="flex-shrink-0" aria-hidden="true">{rightIcon}</span>}
+    </>
+  )
+
+  if (isAnchor) {
+    // Filter out button-specific props for anchor
+    const {
+      type,
+      form,
+      formAction,
+      formEncType,
+      formMethod,
+      formNoValidate,
+      formTarget,
+      name,
+      value,
+      ...anchorProps
+    } = props as Record<string, unknown>
 
     return (
-      <button
-        ref={ref}
-        className={cn(
-          'inline-flex items-center justify-center font-medium rounded-radius-lg',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-layer4',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
-          'active:scale-[0.98] transition-transform duration-75 ease-out',
-          'select-none',
-          variantStyles[variant],
-          sizeStyles[size],
-          fullWidth && 'w-full',
-          isLoading && loadingStyles,
-          className
-        )}
-        disabled={isDisabled}
+      <a
+        ref={ref as React.ForwardedRef<HTMLAnchorElement>}
+        className={baseClassName}
+        href={href}
         aria-busy={isLoading}
         aria-disabled={isDisabled}
-        {...props}
+        {...anchorProps}
       >
-        {isLoading ? (
-          <>
-            <svg
-              className="animate-spin h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            <span className="sr-only">Loading...</span>
-          </>
-        ) : (
-          <>
-            {leftIcon && <span className="flex-shrink-0" aria-hidden="true">{leftIcon}</span>}
-            {children}
-            {rightIcon && <span className="flex-shrink-0" aria-hidden="true">{rightIcon}</span>}
-          </>
-        )}
-      </button>
+        {isLoading ? loadingContent : labelContent}
+      </a>
     )
   }
-)
 
+  // Default button element
+  return (
+    <button
+      ref={ref as React.ForwardedRef<HTMLButtonElement>}
+      className={baseClassName}
+      disabled={isDisabled}
+      aria-busy={isLoading}
+      aria-disabled={isDisabled}
+      type="button"
+      {...props}
+    >
+      {isLoading ? loadingContent : labelContent}
+    </button>
+  )
+}
+
+export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(ButtonInner)
 Button.displayName = 'Button'
 
 // ===== VARIANT EXPORTS (for external customization) =====
