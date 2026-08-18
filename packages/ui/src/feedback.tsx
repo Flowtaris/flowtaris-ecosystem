@@ -5,6 +5,7 @@
 
 import React, { forwardRef, useEffect, useRef, useState, useId, createContext, useContext, useCallback } from 'react'
 import {cn} from './utils'
+import { useFocusTrap } from './overlay'
 
 // ============================================
 // Alert
@@ -617,6 +618,9 @@ const _Modal = forwardRef<HTMLDivElement, ModalProps>(
     const modalRef = useRef<HTMLDivElement>(null)
     const titleId = useId()
     const descriptionId = useId()
+
+    // Focus trap for accessibility
+    useFocusTrap(modalRef, open)
 
     // Focus management
     const previousActiveElement = useRef<HTMLElement | null>(null)

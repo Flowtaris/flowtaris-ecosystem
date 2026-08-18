@@ -3,25 +3,35 @@
 import { createClient } from 'next-sanity'
 import {groq} from 'next-sanity'
 
-export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2024-01-01',
-  useCdn: process.env.NODE_ENV === 'production',
-  perspective: 'published',
-})
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
+
+function createSanityClient(preview = false) {
+  if (!projectId) {
+    // Return a mock client that returns null/empty for all queries during build
+    return {
+      fetch: async () => null,
+    } as any
+  }
+  return createClient({
+    projectId,
+    dataset,
+    apiVersion: '2024-01-01',
+    useCdn: process.env.NODE_ENV === 'production' && !preview,
+    perspective: preview ? 'previewDrafts' : 'published',
+  })
+}
 
 // Preview client for draft mode
-export const previewClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2024-01-01',
-  useCdn: false,
-  perspective: 'previewDrafts',
-})
+export const previewClient = createSanityClient(true)
+export const client = createSanityClient(false)
 
 export function getClient(preview = false) {
   return preview ? previewClient : client
+}
+
+export function hasSanityConfig(): boolean {
+  return !!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
 }
 
 // GROQ Queries
@@ -139,6 +149,17 @@ export const queries = {
     formulas,
     benchmarks,
     platformMultipliers
+  }`,
+
+  // Inaction Config
+  inactionConfig: groq`*[_type == "inactionConfig"][0]{
+    riskModels[],
+    formulas,
+    industryMultipliers,
+    sizeMultipliers,
+    maturityMultipliers,
+    regulatoryPressure,
+    competitiveIntensity
   }`,
 
   // Insights

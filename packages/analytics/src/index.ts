@@ -7,6 +7,7 @@ export const Events = {
   ASSESSMENT_STEP_COMPLETE: 'assessment_step_complete',
   ASSESSMENT_COMPLETE: 'assessment_complete',
   ASSESSMENT_EMAIL_CAPTURE: 'assessment_email_capture',
+  ASSESSMENT_CTA_CLICK: 'assessment_cta_click',
 
   // ROI funnel
   ROI_CALCULATOR_OPEN: 'roi_calculator_open',
@@ -17,6 +18,7 @@ export const Events = {
   // Inaction funnel
   INACTION_OPEN: 'inaction_open',
   INACTION_CALCULATE: 'inaction_calculate',
+  INACTION_EMAIL_CAPTURE: 'inaction_email_capture',
   INACTION_CTA_CLICK: 'inaction_cta_click',
 
   // Content
@@ -93,6 +95,12 @@ export type InactionCTAClickParams = {
   ctaType: 'demo' | 'assessment' | 'roi'
 }
 
+export type InactionEmailCaptureParams = {
+  email: string
+  monthlyLeakage: number
+  annualRisk: number
+}
+
 export type CaseStudyViewParams = {
   clientSlug: string
   metricViewed?: string
@@ -140,6 +148,7 @@ export const analytics = {
     stepComplete: (params: AssessmentStepCompleteParams) => trackEvent(Events.ASSESSMENT_STEP_COMPLETE, params),
     complete: (params: AssessmentCompleteParams) => trackEvent(Events.ASSESSMENT_COMPLETE, params),
     emailCapture: (params: AssessmentEmailCaptureParams) => trackEvent(Events.ASSESSMENT_EMAIL_CAPTURE, params),
+    ctaClick: (params: { ctaType: 'roi_calculator' | 'cost_of_inaction' | 'demo' | 'innovation_lab_deep_link'; capability?: string }) => trackEvent(Events.ASSESSMENT_CTA_CLICK, params),
   },
   roi: {
     open: (params: ROICalculatorOpenParams) => trackEvent(Events.ROI_CALCULATOR_OPEN, params),
@@ -150,6 +159,7 @@ export const analytics = {
   inaction: {
     open: (params: InactionOpenParams) => trackEvent(Events.INACTION_OPEN, params),
     calculate: (params: InactionCalculateParams) => trackEvent(Events.INACTION_CALCULATE, params),
+    emailCapture: (params: InactionEmailCaptureParams) => trackEvent(Events.INACTION_EMAIL_CAPTURE, params),
     ctaClick: (params: InactionCTAClickParams) => trackEvent(Events.INACTION_CTA_CLICK, params),
   },
   content: {

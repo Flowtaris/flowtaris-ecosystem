@@ -127,6 +127,12 @@ export const FloatingProduct = forwardRef<FloatingProductRef, FloatingProductPro
     const [error, setError] = useState<Error | null>(null)
     const [currentFrame, setCurrentFrame] = useState(0)
 
+    // Reduced motion support - must be declared before use in callbacks
+    const prefersReducedMotion = useMemo(() => {
+      if (typeof window === 'undefined') return false
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    }, [])
+
     // Keep autoRotate ref in sync
     useEffect(() => {
       autoRotateRef.current = autoRotate
@@ -134,7 +140,7 @@ export const FloatingProduct = forwardRef<FloatingProductRef, FloatingProductPro
 
     // Mouse move handler for parallax
     const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-      if (!mouseParallax || isDraggingRef.current) return
+      if (!mouseParallax || isDraggingRef.current || prefersReducedMotion) return
 
       const rect = containerRef.current?.getBoundingClientRect()
       if (!rect) return
@@ -149,7 +155,7 @@ export const FloatingProduct = forwardRef<FloatingProductRef, FloatingProductPro
         x: -deltaY * 30 * parallaxStrength,
         y: deltaX * 30 * parallaxStrength,
       }
-    }, [mouseParallax, parallaxStrength])
+    }, [mouseParallax, parallaxStrength, prefersReducedMotion])
 
     // Mouse leave - reset to center or continue auto-rotate
     const handleMouseLeave = useCallback(() => {
@@ -265,15 +271,17 @@ export const FloatingProduct = forwardRef<FloatingProductRef, FloatingProductPro
       }
     }, [startAnimationLoop])
 
-    // Start animation loop
+    // Start animation loop (disabled for reduced motion)
     useEffect(() => {
+      if (prefersReducedMotion) return
+
       startAnimationLoop()
       return () => {
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current)
         }
       }
-    }, [startAnimationLoop])
+    }, [startAnimationLoop, prefersReducedMotion])
 
     // Image load handlers
     const handleLoad = useCallback(() => {
@@ -317,9 +325,9 @@ export const FloatingProduct = forwardRef<FloatingProductRef, FloatingProductPro
       background,
       overflow: 'hidden',
       position: 'relative',
-      cursor: draggable ? 'grab' : 'default',
+      cursor: draggable && !prefersReducedMotion ? 'grab' : 'default',
       ...style,
-    }), [width, height, borderRadius, background, draggable, style])
+    }), [width, height, borderRadius, background, draggable, prefersReducedMotion, style])
 
     const imageStyle = useMemo<React.CSSProperties>(() => ({
       width: '100%',

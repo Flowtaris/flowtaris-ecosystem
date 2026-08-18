@@ -2,23 +2,34 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+// Mock client for build time when env vars are not available
+function createMockClient(): SupabaseClient {
+  return {
+    from: () => ({
+      insert: () => ({ select: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
+      select: () => ({ eq: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
+    }),
+  } as unknown as SupabaseClient
+}
+
+export const supabase: SupabaseClient = (supabaseUrl && supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMockClient()
 
 // Server-side client with service role (for admin operations)
 export function createServerClient() {
-  return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  )
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return createMockClient()
+  return createClient(url, key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
 }
 
 // Type definitions matching Supabase schema
@@ -28,6 +39,19 @@ export interface AssessmentLead {
   recommendations: string[]
   lead_score: number
   routed_to: string | null
+  email: string | null
+  created_at: string
+}
+
+export interface AssessmentLeadInsert extends Omit<AssessmentLead, 'id' | 'created_at' | 'email'> {
+  email?: string | null
+}
+
+export interface InnovationWaitlist {
+  id: string
+  email: string
+  capability_slug: string | null
+  source: string
   created_at: string
 }
 
@@ -50,7 +74,7 @@ export interface InactionCalculation {
 }
 
 // Insert helpers
-export async function insertAssessmentLead(data: Omit<AssessmentLead, 'id' | 'created_at'>) {
+export async function insertAssessmentLead(data: AssessmentLeadInsert) {
   return supabase.from('assessment_leads').insert(data).select().single()
 }
 
@@ -60,6 +84,10 @@ export async function insertROICalculation(data: Omit<ROICalculation, 'id' | 'cr
 
 export async function insertInactionCalculation(data: Omit<InactionCalculation, 'id' | 'created_at'>) {
   return supabase.from('inaction_calculations').insert(data).select().single()
+}
+
+export async function insertInnovationWaitlist(data: Omit<InnovationWaitlist, 'id' | 'created_at'>) {
+  return supabase.from('innovation_waitlist').insert(data).select().single()
 }
 
 // Read helpers (authenticated)

@@ -5,6 +5,7 @@ import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardConte
 import { Button } from '@repo/ui'
 import { ArrowRight, ChevronRight, CheckCircle, Zap, DollarSign, BookOpen } from 'lucide-react'
 import { getClient, queries } from '@flowtaris/cms-client'
+import { serviceSchema } from '@flowtaris/seo'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -99,6 +100,16 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       description: data.seo?.metaDescription || data.shortDescription,
       type: 'website',
       images: data.seo?.ogImage ? [{ url: data.seo.ogImage }] : [],
+    },
+    other: {
+      'script:ld+json': JSON.stringify(
+        serviceSchema({
+          name: data.title,
+          description: data.shortDescription,
+          category: data.category,
+          platforms: data.platforms,
+        })
+      ),
     },
   }
 }

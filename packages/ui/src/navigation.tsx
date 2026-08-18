@@ -14,6 +14,33 @@ import {
 } from 'lucide-react'
 
 // ============================================
+// SkipLink - Skip to main content for accessibility
+// ============================================
+
+/**
+ * SkipLink - Allows keyboard users to skip navigation and jump to main content
+ * Place at the very top of your app/layout
+ */
+export const SkipLink: React.FC<{ target?: string }> = ({ target = 'main-content' }) => (
+  <a
+    href={`#${target}`}
+    className={cn(
+      'sr-only focus:not-sr-only',
+      'fixed top-4 left-4 z-50',
+      'px-4 py-2',
+      'bg-brand-cyan-600 text-white',
+      'rounded-lg shadow-lg',
+      'font-medium text-sm',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan-500 focus-visible:ring-offset-2',
+      'transition-all duration-150',
+      'transform -translate-y-full focus:translate-y-0'
+    )}
+  >
+    Skip to main content
+  </a>
+)
+
+// ============================================
 // Navbar
 // ============================================
 

@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input } from '@repo/ui'
 import { ArrowRight, ChevronRight, Users, Target, Lightbulb, Shield, Zap, Globe, Heart, Brain, Award, BookOpen, Building2, Rocket, Leaf, Infinity } from 'lucide-react'
+import { organizationSchema } from '@flowtaris/seo'
 
 export const metadata: Metadata = {
   title: 'About Flowtaris AI | Enterprise AI Automation for Finance',
@@ -10,6 +11,16 @@ export const metadata: Metadata = {
     title: 'About Flowtaris AI | Enterprise AI Automation for Finance',
     description: 'Enterprise AI automation for finance teams. GenAI, Autonomous Workflows, Predictive Analytics.',
     type: 'website',
+  },
+  other: {
+    'script:ld+json': JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'AboutPage',
+      name: 'About Flowtaris AI',
+      description: 'Flowtaris AI builds enterprise-grade AI automation for finance teams.',
+      mainEntity: organizationSchema,
+      publisher: organizationSchema,
+    }),
   },
 }
 

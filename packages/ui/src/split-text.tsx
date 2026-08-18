@@ -233,6 +233,11 @@ SplitText.displayName = 'SplitText'
  * Hook for creating staggered animations with SplitText
  */
 export function useSplitTextAnimation(ref: React.RefObject<SplitTextRef | null>) {
+  // Check prefers-reduced-motion
+  const prefersReducedMotion = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false
+
   const animateIn = useCallback(async (options?: {
     type?: 'chars' | 'words' | 'lines'
     stagger?: number
@@ -240,9 +245,19 @@ export function useSplitTextAnimation(ref: React.RefObject<SplitTextRef | null>)
     easing?: string
     from?: Record<string, string | number>
     to?: Record<string, string | number>
+    respectReducedMotion?: boolean
   }) => {
     const splitRef = ref.current
     if (!splitRef) return
+
+    // Instant animation for reduced motion
+    if (prefersReducedMotion && options?.respectReducedMotion !== false) {
+      const elements = splitRef[options?.type || 'chars']()
+      elements.forEach(el => {
+        Object.assign(el.style, { opacity: 1, transform: 'none' })
+      })
+      return
+    }
 
     const elements = splitRef[options?.type || 'chars']()
     const stagger = options?.stagger ?? 50

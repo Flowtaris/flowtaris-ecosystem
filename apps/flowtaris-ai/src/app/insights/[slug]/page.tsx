@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@repo/ui'
 import { ArrowRight, ChevronRight, Clock, User, BookOpen, FileText, Lightbulb, Brain, Search, ExternalLink, Calendar, Share2, Twitter, Linkedin } from 'lucide-react'
+import { caseStudySchema } from '@flowtaris/seo'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -216,7 +217,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       'article:published_time': data.publishDate,
       'article:author': data.author,
       'article:section': data.category,
-      'article:tag': ['AI Automation', 'Finance', data.category, ...['GenAI', 'NetSuite', 'Automation']].join(','),
+      'article:tag': ['AI Automation', 'Finance', data.category, ...data.entityAssociations].join(','),
+      'script:ld+json': JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: data.title,
+        description: data.excerpt,
+        author: {
+          '@type': 'Person',
+          name: data.author,
+          jobTitle: data.authorRole,
+        },
+        datePublished: data.publishDate,
+        dateModified: data.publishDate,
+        about: data.entityAssociations,
+        articleSection: data.category,
+        keywords: data.tags?.join(', ') || ['AI Automation', 'Finance', data.category].join(', '),
+        publisher: {
+          '@type': 'Organization',
+          name: 'Flowtaris',
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `https://flowtaris.ai/insights/${slug}`,
+        },
+        citation: data.citations?.map((c: any) => ({
+          '@type': 'CreativeWork',
+          name: c.title,
+          url: c.url,
+          datePublished: c.date,
+        })) || [],
+      }),
     },
   }
 }

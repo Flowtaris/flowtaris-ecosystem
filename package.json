@@ -1,6 +1,7 @@
 {
   "name": "flowtaris-ecosystem",
   "private": true,
+  "packageManager": "npm@11.16.0",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -23,12 +24,6 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "devEngines": {
-    "packageManager": {
-      "name": "npm",
-      "version": "11.16.0"
-    }
   },
   "workspaces": [
     "apps/*",

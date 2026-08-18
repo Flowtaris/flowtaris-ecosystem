@@ -13,7 +13,7 @@ export { Code, InlineCode } from './code'
 export { Container, Stack, Inline, Grid, Section, Divider, Spacer } from './layout'
 
 // Navigation Components
-export { Navbar, Tabs, TabPanel, Breadcrumbs, Pagination } from './navigation'
+export { Navbar, Tabs, TabPanel, Breadcrumbs, Pagination, SkipLink } from './navigation'
 
 // Form Components
 export { Label, Input, Textarea } from './forms'
@@ -25,10 +25,10 @@ export { Slider, RangeSlider } from './slider'
 export { Alert, Progress, Spinner, Skeleton, ToastProvider, useToast, Modal, Tooltip, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './feedback'
 
 // Overlay Components
-export { Portal, Dialog, Drawer, Popover, DropdownMenu } from './overlay'
+export { Portal, Dialog, Drawer, Popover, DropdownMenu, LiveRegion, useAnnouncer, useFocusTrap } from './overlay'
 
 // Data Display Components
-export { Badge, Tag, Avatar, AvatarGroup, Stat, Table, DataList } from './data-display'
+export { Badge, Tag, Avatar, AvatarGroup, Stat, BeforeAfterBar, StatTile, Table, DataList } from './data-display'
 
 // Epic Core Components
 export { ParallaxLayers, ParallaxLayer, useParallaxScroll } from './parallax-layers'
@@ -83,8 +83,8 @@ export type { LabelProps, InputProps, TextareaProps, SelectOption, CheckboxProps
 export type { SelectProps, SelectTriggerProps, SelectValueProps, SelectContentProps, SelectItemProps, SelectGroupProps } from './select'
 export type { SliderProps, RangeSliderProps } from './slider'
 export type { AlertProps, ProgressProps, SpinnerProps, SkeletonProps, Toast, ToastProviderProps, ModalProps, TooltipProps, AccordionProps, AccordionItemProps, AccordionTriggerProps, AccordionContentProps } from './feedback'
-export type { PortalProps, DialogProps, DrawerProps, PopoverProps, DropdownMenuItem, DropdownMenuProps } from './overlay'
-export type { BadgeProps, TagProps, AvatarProps, AvatarGroupProps, StatProps, Column, TableProps, DataListItem, DataListProps, SortConfig, FilterConfig, PaginationConfig, VirtualizationConfig } from './data-display'
+export type { PortalProps, DialogProps, DrawerProps, PopoverProps, DropdownMenuItem, DropdownMenuProps, LiveRegionProps } from './overlay'
+export type { BadgeProps, TagProps, AvatarProps, AvatarGroupProps, StatProps, BeforeAfterBarProps, StatTileProps, Column, TableProps, DataListItem, DataListProps, SortConfig, FilterConfig, PaginationConfig, VirtualizationConfig } from './data-display'
 export type { ParallaxLayerProps, ParallaxLayersProps } from './parallax-layers'
 export type { SplitTextProps, SplitTextRef } from './split-text'
 export type { ScrollTimelineProps, ScrollTimelineRef, TimelineTrackProps, TimelineTriggerProps } from './scroll-timeline'

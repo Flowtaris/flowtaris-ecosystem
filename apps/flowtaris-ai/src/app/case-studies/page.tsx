@@ -2,16 +2,7 @@ import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Grid, Card, CardContent, Badge, Button } from '@repo/ui'
 import { ChevronRight, Filter, BarChart3, DollarSign, Clock, Users, Shield, Zap, ArrowRight } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'Case Studies | Flowtaris AI',
-  description: 'Real results from enterprise AI automation. 8 case studies across NetSuite, Coupa, SAP, and Workday with measurable ROI metrics.',
-  openGraph: {
-    title: 'Case Studies | Flowtaris AI',
-    description: 'Real results from enterprise AI automation with measurable ROI metrics.',
-    type: 'website',
-  },
-}
+import { caseStudySchema } from '@flowtaris/seo'
 
 const platforms = ['All', 'NetSuite', 'Coupa', 'SAP', 'Workday', 'Multi-Platform']
 const caseStudies = [
@@ -64,6 +55,40 @@ const caseStudies = [
     teamSize: 10,
   },
 ]
+
+export const metadata: Metadata = {
+  title: 'Case Studies | Flowtaris AI',
+  description: 'Real results from enterprise AI automation. 8 case studies across NetSuite, Coupa, SAP, and Workday with measurable ROI metrics.',
+  openGraph: {
+    title: 'Case Studies | Flowtaris AI',
+    description: 'Real results from enterprise AI automation with measurable ROI metrics.',
+    type: 'website',
+  },
+  other: {
+    'script:ld+json': JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Flowtaris AI Case Studies',
+      description: 'Real results from enterprise AI automation implementations across NetSuite, Coupa, SAP, and Workday',
+      itemListElement: caseStudies.map((study, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: caseStudySchema({
+          name: `${study.client} - ${study.solution}`,
+          description: study.challenge,
+          client: study.client,
+          industry: study.industry,
+          platforms: study.platforms,
+          metrics: study.metrics.map(m => ({
+            name: m.label,
+            value: m.after || m.value || '',
+            change: m.before ? `Improved from ${m.before} (${m.improvement}%)` : m.value || '',
+          })),
+        }),
+      })),
+    }),
+  },
+}
 
 export default function CaseStudiesPage() {
   return (

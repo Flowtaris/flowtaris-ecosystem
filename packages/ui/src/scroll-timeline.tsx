@@ -19,6 +19,8 @@ export interface ScrollTimelineProps {
   axis?: 'x' | 'y'
   /** Whether timeline is horizontal */
   horizontal?: boolean
+  /** Disable timeline (e.g., for reduced motion) */
+  disabled?: boolean
   /** Additional CSS class */
   className?: string
   /** Inline style */
@@ -103,6 +105,7 @@ export const ScrollTimeline = forwardRef<ScrollTimelineRef, ScrollTimelineProps>
       end = 'bottom top',
       _axis = 'y',
       horizontal = false,
+      disabled = false,
       className,
       style,
       onProgress,
@@ -119,6 +122,14 @@ export const ScrollTimeline = forwardRef<ScrollTimelineRef, ScrollTimelineProps>
     const prevProgressRef = useRef(0)
     const tracksRef = useRef<Array<{ start: number; end: number; ease?: string | ((t: number) => number) }>>([])
     const animationFrameRef = useRef<number | undefined>(undefined)
+
+    // Reduced motion support
+    const prefersReducedMotion = useMemo(() => {
+      if (typeof window === 'undefined') return false
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    }, [])
+
+    const effectiveDisabled = disabled || prefersReducedMotion
 
     // Parse offset string (e.g., "top bottom", "100px", "50%")
     const parseOffset = useCallback((offset: string | number, containerHeight: number, _elementHeight: number): number => {
@@ -232,6 +243,8 @@ export const ScrollTimeline = forwardRef<ScrollTimelineRef, ScrollTimelineProps>
 
     // Scroll handler
     useEffect(() => {
+      if (effectiveDisabled) return
+
       const targetContainer = container ?? (typeof window !== 'undefined' ? window : null)
       if (!targetContainer) return
 
@@ -255,7 +268,7 @@ export const ScrollTimeline = forwardRef<ScrollTimelineRef, ScrollTimelineProps>
           cancelAnimationFrame(animationFrameRef.current)
         }
       }
-    }, [container, calculateProgress])
+    }, [container, calculateProgress, effectiveDisabled])
 
     // Refresh method
     const refresh = useCallback(() => {
@@ -288,6 +301,7 @@ export const ScrollTimeline = forwardRef<ScrollTimelineRef, ScrollTimelineProps>
           data-progress={progress.toFixed(3)}
           data-in-view={isInView}
           data-direction={direction}
+          data-reduced-motion={prefersReducedMotion}
         >
           {children}
         </div>

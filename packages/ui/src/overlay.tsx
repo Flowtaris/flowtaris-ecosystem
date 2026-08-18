@@ -16,6 +16,128 @@ import { cn } from './utils'
 import { X } from 'lucide-react'
 
 // ============================================
+// Live Region - Screen reader announcements
+// ============================================
+
+/**
+ * LiveRegion - Accessible live region for screen reader announcements
+ * Use for dynamic content updates that need to be announced
+ */
+export interface LiveRegionProps {
+  /** Announcement message */
+  message: string
+  /** Politeness level */
+  politeness?: 'polite' | 'assertive' | 'off'
+  /** ARIA atomic */
+  atomic?: boolean
+  /** Clear message after announcement (ms) */
+  clearAfter?: number
+}
+
+let liveRegionId = 0
+
+export const LiveRegion: React.FC<LiveRegionProps> = ({
+  message,
+  politeness = 'polite',
+  atomic = true,
+  clearAfter = 1000,
+}) => {
+  const idRef = useRef(`live-region-${liveRegionId++}`)
+  const [announce, setAnnounce] = useState('')
+
+  useEffect(() => {
+    if (!message) return
+
+    setAnnounce(message)
+    const timer = setTimeout(() => {
+      setAnnounce('')
+    }, clearAfter)
+
+    return () => clearTimeout(timer)
+  }, [message, clearAfter])
+
+  if (!announce) return null
+
+  return (
+    <div
+      id={idRef.current}
+      role="status"
+      aria-live={politeness}
+      aria-atomic={atomic}
+      className="sr-only"
+      aria-hidden="false"
+    >
+      {announce}
+    </div>
+  )
+}
+
+/**
+ * Hook for announcing messages to screen readers
+ */
+export function useAnnouncer() {
+  const [message, setMessage] = useState('')
+  const politenessRef = useRef<'polite' | 'assertive'>('polite')
+
+  const announce = useCallback((msg: string, polite: 'polite' | 'assertive' = 'polite') => {
+    politenessRef.current = polite
+    setMessage('')
+    // Force re-render by clearing then setting
+    setTimeout(() => setMessage(msg), 0)
+  }, [])
+
+  return (
+    <>
+      <LiveRegion message={message} politeness={politenessRef.current} />
+      {announce as (msg: string, polite?: 'polite' | 'assertive') => void}
+    </>
+  )
+}
+
+// ============================================
+// Focus Trap Hook
+// ============================================
+
+/**
+ * Focus trap hook for accessible modals/drawers
+ */
+export function useFocusTrap(ref: React.RefObject<HTMLElement | null>, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled || !ref.current) return
+
+    const element = ref.current
+    const focusableElements = element.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    const firstElement = focusableElements[0]
+    const lastElement = focusableElements[focusableElements.length - 1]
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement?.focus()
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement?.focus()
+        }
+      }
+    }
+
+    element.addEventListener('keydown', handleKeyDown)
+    firstElement?.focus()
+
+    return () => {
+      element.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [ref, enabled])
+}
+
+// ============================================
 // Portal
 // ============================================
 
@@ -117,6 +239,9 @@ export const Dialog = forwardRef<HTMLDivElement, DialogProps>(
     const titleId = useId()
     const descriptionId = useId()
     const previousActiveElement = useRef<HTMLElement | null>(null)
+
+    // Focus trap for accessibility
+    useFocusTrap(dialogRef, open)
 
     useEffect(() => {
       if (open) {
@@ -273,6 +398,9 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
     const titleId = useId()
     const descriptionId = useId()
     const previousActiveElement = useRef<HTMLElement | null>(null)
+
+    // Focus trap for accessibility
+    useFocusTrap(drawerRef, open)
 
     useEffect(() => {
       if (open) {

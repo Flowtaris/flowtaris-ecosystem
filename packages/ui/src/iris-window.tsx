@@ -267,6 +267,14 @@ export const IrisWindow = forwardRef<IrisWindowRef, IrisWindowProps>(
     const autoRotateRef = useRef(autoRotate)
     const rotationSpeedRef = useRef(rotationSpeed)
 
+    // Reduced motion support
+    const prefersReducedMotion = useMemo(() => {
+      if (typeof window === 'undefined') return false
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    }, [])
+
+    const effectiveDisabled = prefersReducedMotion
+
     // Keep refs in sync with props
     useEffect(() => {
       autoRotateRef.current = autoRotate
@@ -361,25 +369,31 @@ export const IrisWindow = forwardRef<IrisWindowRef, IrisWindowProps>(
     // Update when props change
     useEffect(() => {
       targetApertureRef.current = aperture
-      if (animated) {
+      if (effectiveDisabled) {
+        setCurrentAperture(aperture)
+        onApertureChange?.(aperture)
+      } else if (animated) {
         animateAperture()
       } else {
         setCurrentAperture(aperture)
       }
-    }, [aperture, animated, animateAperture])
+    }, [aperture, animated, animateAperture, effectiveDisabled])
 
     useEffect(() => {
       targetRotationRef.current = rotation
-      if (animated && !autoRotateRef.current) {
+      if (effectiveDisabled) {
+        setCurrentRotation(rotation)
+        onRotationChange?.(rotation)
+      } else if (animated && !autoRotateRef.current) {
         animateRotation()
       } else if (!animated) {
         setCurrentRotation(rotation)
       }
-    }, [rotation, animated, animateRotation])
+    }, [rotation, animated, animateRotation, effectiveDisabled])
 
     // Auto-rotate effect
     useEffect(() => {
-      if (!autoRotateRef.current) return
+      if (!autoRotateRef.current || effectiveDisabled) return
 
       let lastTime = performance.now()
 
@@ -401,7 +415,7 @@ export const IrisWindow = forwardRef<IrisWindowRef, IrisWindowProps>(
           cancelAnimationFrame(rotationAnimationRef.current)
         }
       }
-    }, [onRotationChange])
+    }, [onRotationChange, effectiveDisabled])
 
     // Generate iris SVG
     const irisSVG = useMemo(() => {
@@ -479,26 +493,29 @@ export const IrisWindow = forwardRef<IrisWindowRef, IrisWindowProps>(
       },
       open: () => {
         targetApertureRef.current = 1
-        if (animated) animateAperture()
+        if (effectiveDisabled) setCurrentAperture(1)
+        else if (animated) animateAperture()
         else setCurrentAperture(1)
       },
       close: () => {
         targetApertureRef.current = 0
-        if (animated) animateAperture()
+        if (effectiveDisabled) setCurrentAperture(0)
+        else if (animated) animateAperture()
         else setCurrentAperture(0)
       },
       toggle: () => {
         targetApertureRef.current = currentAperture > 0.5 ? 0 : 1
-        if (animated) animateAperture()
+        if (effectiveDisabled) setCurrentAperture(targetApertureRef.current)
+        else if (animated) animateAperture()
         else setCurrentAperture(targetApertureRef.current)
       },
       startRotation: () => {
-        autoRotateRef.current = true
+        if (!effectiveDisabled) autoRotateRef.current = true
       },
       stopRotation: () => {
         autoRotateRef.current = false
       },
-    }), [currentAperture, currentRotation, animated, animateAperture, animateRotation])
+    }), [currentAperture, currentRotation, animated, animateAperture, animateRotation, effectiveDisabled])
 
     return (
       <div
@@ -509,6 +526,7 @@ export const IrisWindow = forwardRef<IrisWindowRef, IrisWindowProps>(
         aria-label={ariaLabel || 'Iris window reveal'}
         data-aperture={currentAperture.toFixed(2)}
         data-rotation={currentRotation.toFixed(1)}
+        data-reduced-motion={prefersReducedMotion}
       >
         {/* Background layer */}
         {background && (

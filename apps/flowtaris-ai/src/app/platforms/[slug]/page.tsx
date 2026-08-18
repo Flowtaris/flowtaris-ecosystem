@@ -2,7 +2,17 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@repo/ui'
+import Script from 'next/script'
 import { ArrowRight, ChevronRight, CheckCircle, XCircle, Clock, DollarSign, Users, Shield, Zap, BarChart3, Lock, Cloud, Cpu, Database, Globe, Shield as ShieldIcon, BookOpen, ExternalLink } from 'lucide-react'
+
+// Wikidata IDs for platforms
+const wikidataIds: Record<string, string> = {
+  netsuite: 'Q18639487',
+  coupa: 'Q5177733',
+  sap: 'Q157790',
+  workday: 'Q799828',
+  'multi-platform': 'Q11660',
+}
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -222,6 +232,44 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Platform Not Found' }
   }
 
+  const wikidataId = wikidataIds[slug]
+  const entitySchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: `${data.name} AI Automation | Flowtaris AI`,
+    description: data.shortDescription,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Flowtaris',
+    },
+    about: {
+      '@type': 'SoftwareApplication',
+      name: data.name,
+      sameAs: wikidataId ? `https://www.wikidata.org/wiki/${wikidataId}` : undefined,
+      description: data.description,
+    },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: data.capabilities.map((cap: any, index: number) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Service',
+          name: cap.name,
+          provider: { '@type': 'Organization', name: 'Flowtaris' },
+          knowsAbout: data.integrations.map((int: any) => int.name),
+        },
+      })),
+    },
+    knowAbout: data.capabilities.map((c: any) => c.name),
+    keyClaims: data.capabilities.filter((c: any) => c.status === 'production').map((c: any) =>
+      `${c.name}: ${c.metrics.join(', ')}`
+    ),
+    citations: [
+      { '@type': 'WebPage', url: `https://flowtaris.ai/platforms/${slug}`, name: `${data.name} Integration Documentation` },
+    ],
+  }
+
   return {
     title: `${data.name} Integration | Flowtaris AI`,
     description: data.shortDescription,
@@ -229,6 +277,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${data.name} Integration | Flowtaris AI`,
       description: data.shortDescription,
       type: 'website',
+    },
+    other: {
+      'script:ld+json': JSON.stringify(entitySchema),
     },
   }
 }

@@ -1,6 +1,52 @@
-import { HeroPattern } from '@repo/ui'
+import { Metadata } from 'next'
+import { HeroPattern, Badge } from '@repo/ui'
+import Script from 'next/script'
+import { softwareApplicationSchema, speakableSchema } from '@flowtaris/seo'
 
-// Trust signals data
+export const metadata: Metadata = {
+  title: 'Flowtaris AI | Enterprise AI Automation for Finance',
+  description: 'Flowtaris AI builds enterprise-grade AI automation for finance teams. GenAI Document Intelligence, Autonomous Workflows, Predictive Analytics, and Conversational ERP for NetSuite, Coupa, SAP, and Workday.',
+  openGraph: {
+    title: 'Flowtaris AI | Enterprise AI Automation for Finance',
+    description: 'Enterprise AI automation for finance teams. GenAI Document Intelligence, Autonomous Workflows, Predictive Analytics.',
+    type: 'website',
+  },
+  other: {
+    'script:ld+json': JSON.stringify([
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'Flowtaris AI - Enterprise AI Automation for Finance',
+        description: 'Flowtaris AI builds enterprise-grade AI automation for finance teams.',
+        publisher: {
+          '@type': 'Organization',
+          name: 'Flowtaris',
+        },
+        mainEntity: {
+          '@type': 'ItemList',
+          itemListElement: [
+            'GenAI Document Intelligence',
+            'Autonomous Workflow Engine',
+            'Predictive Analytics',
+            'Conversational ERP Interface',
+            'Integration Health Monitoring',
+            'AI Governance & Compliance',
+          ].map((name, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            item: {
+              '@type': 'Service',
+              name,
+              provider: { '@type': 'Organization', name: 'Flowtaris' },
+            },
+          })),
+        },
+      },
+      speakableSchema(['#capabilities-heading']),
+    ]),
+  },
+}
+
 const trustSignals = [
   { label: 'SOC 2 Type II', value: 'Certified' },
   { label: 'GDPR', value: 'Compliant' },
@@ -10,36 +56,75 @@ const trustSignals = [
   { label: 'Fortune 500', value: 'Trusted By' },
 ]
 
+const capabilities = [
+  { name: 'GenAI Document Intelligence', category: 'Document Processing', platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'] },
+  { name: 'Autonomous Workflow Engine', category: 'Process Automation', platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'] },
+  { name: 'Predictive Analytics', category: 'Finance Intelligence', platforms: ['NetSuite', 'SAP', 'Workday'] },
+  { name: 'Conversational ERP Interface', category: 'Human-Computer Interaction', platforms: ['NetSuite', 'Workday'] },
+  { name: 'Integration Health Monitoring', category: 'Observability', platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'] },
+  { name: 'AI Governance & Compliance', category: 'Risk & Compliance', platforms: ['SAP', 'Coupa'] },
+]
+
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 w-full">
+      <Script
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Flowtaris AI - Enterprise AI Automation for Finance',
+          description: 'Flowtaris AI builds enterprise-grade AI automation for finance teams.',
+          publisher: {
+            '@type': 'Organization',
+            name: 'Flowtaris',
+          },
+          mainEntity: {
+            '@type': 'ItemList',
+            itemListElement: capabilities.map((cap, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              item: softwareApplicationSchema({
+                name: cap.name,
+                description: cap.category,
+                category: cap.category,
+                platforms: cap.platforms,
+              }),
+            })),
+          },
+        }) }}
+      />
       <HeroPattern
         headline={{
-          text: 'Design Intelligence<br />Reimagined',
+          text: 'AI Automation<br />for Enterprise Finance',
           animateOnMount: true,
+          split: ['words', 'lines'],
+          className: 'text-display-xl text-gradient-brand text-balance',
         }}
         subheadline={{
-          text: 'Where generative AI meets precision design—crafting interfaces that think, adapt, and evolve.',
+          text: 'GenAI Document Intelligence, Autonomous Workflows, Predictive Analytics, and Conversational ERP — native on NetSuite, Coupa, SAP, and Workday.',
           shape: 'wave',
+          className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
         }}
         ctas={[
-          { label: 'Get Started Free', variant: 'primary', href: '/assessment' },
-          { label: 'View Documentation', variant: 'secondary', href: '/docs' },
+          { label: 'Start Free Assessment', variant: 'primary', href: '/assessment' },
+          { label: 'Calculate Your ROI', variant: 'secondary', href: '/roi-calculator' },
         ]}
-        stats={[
-          { label: '99.9%', value: 'Uptime' },
-          { label: '50ms', value: 'Latency' },
-          { label: '10K+', value: 'Components' },
-          { label: '99', value: 'Lighthouse' },
-          { label: 'TypeScript', value: 'Native' },
-          { label: 'WCAG AAA', value: 'Accessible' },
-        ]}
+        stats={{
+          items: [
+            { label: '200+', value: 'Enterprise Customers' },
+            { label: '95%', value: 'Automation Rate' },
+            { label: '$50M+', value: 'Annual Savings' },
+            { label: '4', value: 'Platforms' },
+          ],
+        }}
         scrollIndicator={{ show: true }}
         vignette={{ show: true, intensity: 0.3 }}
         noise={{ show: true, opacity: 0.03 }}
       />
 
-      {/* Trust Signals Bar - Step 45 */}
+      {/* Trust Signals Bar */}
       <section
         className="border-t border-white/10 py-12 px-6"
         aria-labelledby="trust-heading"
@@ -64,34 +149,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Content sections would go here */}
+      {/* Content sections */}
       <main className="flex-1 w-full">
-        <section className="py-32 px-6" aria-labelledby="features-heading">
+        <section className="py-32 px-6" aria-labelledby="capabilities-heading">
           <div className="max-w-7xl mx-auto">
             <header className="text-center mb-24">
-              <h2 id="features-heading" className="text-display-md text-gradient-brand text-balance mb-6">
-                Built for Design Excellence
+              <h2 id="capabilities-heading" className="text-display-md text-gradient-brand text-balance mb-6">
+                Our AI Capabilities
               </h2>
               <p className="text-headline-md text-neutral-400 max-w-2xl mx-auto text-balance">
-                Every component crafted with precision, accessibility, and performance in mind.
+                Six production-grade capabilities covering the full finance automation lifecycle.
               </p>
             </header>
 
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                { title: 'Design Tokens', desc: 'Colors, spacing, typography, motion, shadows, z-index, and breakpoints as TypeScript + CSS dual format.', icon: '🎨' },
-                { title: '6 Epic Components', desc: 'ParallaxLayers, SplitText, ScrollTimeline, FloatingProduct, ClipPathReveal, IrisWindow — production-ready.', icon: '⚡' },
-                { title: 'TypeScript Strict', desc: 'Zero `any`, strict null checks, exhaustive switch, full inference. Compile-time safety guaranteed.', icon: '🔒' },
-                { title: 'Zero ESLint Warnings', desc: 'Clean codebase with consistent patterns, proper prop types, and modern React patterns throughout.', icon: '✨' },
-                { title: 'Tailwind v4 + @theme', desc: 'Native CSS custom properties, zero config utility generation, seamless design token integration.', icon: '🎯' },
-                { title: 'Accessibility First', desc: 'WCAG AAA compliant, reduced motion support, semantic HTML, ARIA attributes, focus management.', icon: '♿' },
-              ].map((feature, i) => (
-                <article key={i} className="glass-card group interactive relative overflow-hidden">
+              {capabilities.map((feature, i) => (
+                <article key={feature.name} className="glass-card group interactive relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative z-10">
-                    <span className="text-4xl mb-4 block animate-float" style={{ animationDelay: `${i * 100}ms` }}>{feature.icon}</span>
-                    <h3 className="text-headline-sm text-brand-navy-900 dark:text-brand-white mb-3">{feature.title}</h3>
-                    <p className="text-body-md text-neutral-500 dark:text-neutral-400">{feature.desc}</p>
+                  <div className="relative z-10 p-6">
+                    <h3 className="text-headline-sm text-white mb-3">{feature.name}</h3>
+                    <Badge variant="outline" className="text-body-xs mb-4">{feature.category}</Badge>
+                    <p className="text-body-sm text-neutral-400 mb-4">Platforms: {feature.platforms.join(', ')}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {feature.platforms.slice(0, 3).map((platform) => (
+                        <Badge key={platform} variant="ghost" className="text-body-xs px-2 py-1">{platform}</Badge>
+                      ))}
+                      {feature.platforms.length > 3 && (
+                        <Badge variant="ghost" className="text-body-xs px-2 py-1">+{feature.platforms.length - 3} more</Badge>
+                      )}
+                    </div>
                   </div>
                 </article>
               ))}
@@ -106,9 +192,9 @@ export default function Home() {
             Built with Flowtaris AI Design System
           </p>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Documentation</a>
-            <a href="#" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Components</a>
-            <a href="#" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">GitHub</a>
+            <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
+            <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
+            <a href="/roi-calculator" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">ROI Calculator</a>
           </div>
         </div>
       </footer>

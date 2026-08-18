@@ -4,16 +4,7 @@ import { Section, Container, Stack } from '@repo/ui'
 import { CascadingCardStack } from '@repo/ui'
 import { Button } from '@repo/ui'
 import { ArrowRight, Zap, Shield, BarChart3, Code2, Users } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'AI Capabilities | Flowtaris AI',
-  description: 'Explore 6 enterprise AI capabilities for NetSuite, Coupa, SAP, and Workday automation. From GenAI Document Intelligence to AI Governance.',
-  openGraph: {
-    title: 'AI Capabilities | Flowtaris AI',
-    description: 'Explore 6 enterprise AI capabilities for NetSuite, Coupa, SAP, and Workday automation.',
-    type: 'website',
-  },
-}
+import { serviceSchema } from '@flowtaris/seo'
 
 const capabilities = [
   {
@@ -77,6 +68,34 @@ const capabilities = [
     description: 'Audit trails, bias detection, and compliance reporting for every AI-driven decision.',
   },
 ]
+
+export const metadata: Metadata = {
+  title: 'AI Capabilities | Flowtaris AI',
+  description: 'Explore 6 enterprise AI capabilities for NetSuite, Coupa, SAP, and Workday automation. From GenAI Document Intelligence to AI Governance.',
+  openGraph: {
+    title: 'AI Capabilities | Flowtaris AI',
+    description: 'Explore 6 enterprise AI capabilities for NetSuite, Coupa, SAP, and Workday automation.',
+    type: 'website',
+  },
+  other: {
+    'script:ld+json': JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Flowtaris AI Capabilities',
+      description: 'Six enterprise AI capabilities for finance automation across NetSuite, Coupa, SAP, and Workday',
+      itemListElement: capabilities.map((cap, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: serviceSchema({
+          name: cap.title,
+          description: cap.description,
+          category: cap.category,
+          platforms: cap.platforms,
+        }),
+      })),
+    }),
+  },
+}
 
 export default function CapabilitiesPage() {
   return (

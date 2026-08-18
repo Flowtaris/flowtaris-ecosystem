@@ -155,6 +155,15 @@ export function entityPageSchema(platform: {
   }
 }
 
+// Speakable markup for voice search / AEO
+export function speakableSchema(cssSelectors: string[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SpeakableSpecification',
+    cssSelector: cssSelectors,
+  }
+}
+
 // Generate metadata for pages
 export function generatePageMetadata({
   title,

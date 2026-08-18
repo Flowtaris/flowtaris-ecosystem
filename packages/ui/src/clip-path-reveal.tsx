@@ -285,6 +285,14 @@ export const ClipPathReveal = forwardRef<ClipPathRevealRef, ClipPathRevealProps>
     const [isAnimating, setIsAnimating] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
 
+    // Reduced motion support
+    const prefersReducedMotion = useMemo(() => {
+      if (typeof window === 'undefined') return false
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    }, [])
+
+    const effectiveDisabled = disabled || prefersReducedMotion
+
     // Get clip path for current progress
     const getClipPath = useMemo(() => {
       return (progress: number) => {
@@ -333,7 +341,7 @@ export const ClipPathReveal = forwardRef<ClipPathRevealRef, ClipPathRevealProps>
 
     // Scroll trigger logic
     useEffect(() => {
-      if (!scrollTrigger) return
+      if (!scrollTrigger || effectiveDisabled) return
 
       const container = scrollContainer ?? (typeof window !== 'undefined' ? window : null)
       const element = containerRef.current
@@ -409,17 +417,17 @@ export const ClipPathReveal = forwardRef<ClipPathRevealRef, ClipPathRevealProps>
         container.removeEventListener('scroll', handleScroll)
         window.removeEventListener('resize', handleScroll)
       }
-    }, [scrollTrigger, scrollContainer, triggerStart, triggerEnd, reverse, hasStarted, startAnimation, onProgress])
+    }, [scrollTrigger, scrollContainer, triggerStart, triggerEnd, reverse, hasStarted, startAnimation, onProgress, effectiveDisabled])
 
     // Auto-start on mount
     useEffect(() => {
-      if (animateOnMount && !scrollTrigger && !hasStarted) {
+      if (animateOnMount && !scrollTrigger && !hasStarted && !effectiveDisabled) {
         const timer = setTimeout(() => {
           startAnimation()
         }, delay)
         return () => clearTimeout(timer)
       }
-    }, [animateOnMount, scrollTrigger, hasStarted, delay, startAnimation])
+    }, [animateOnMount, scrollTrigger, hasStarted, delay, startAnimation, effectiveDisabled])
 
     // Cleanup on unmount
     useEffect(() => {
@@ -430,15 +438,15 @@ export const ClipPathReveal = forwardRef<ClipPathRevealRef, ClipPathRevealProps>
       }
     }, [])
 
-    // Handle disabled - skip animation and show full content
-    const effectiveProgress = disabled ? 1 : (controlledProgress ?? internalProgress)
+    // Handle disabled or reduced motion - skip animation and show full content
+    const effectiveProgress = effectiveDisabled ? 1 : (controlledProgress ?? internalProgress)
 
     // Expose ref methods using useImperativeHandle
     useImperativeHandle(ref, () => ({
       get progress() { return controlledProgress ?? internalProgress },
-      get isAnimating() { return isAnimating && !disabled },
+      get isAnimating() { return isAnimating && !effectiveDisabled },
       start: () => {
-        if (!animateOnMount && !hasStarted && !disabled) {
+        if (!animateOnMount && !hasStarted && !effectiveDisabled) {
           startAnimation()
         }
       },
@@ -461,7 +469,7 @@ export const ClipPathReveal = forwardRef<ClipPathRevealRef, ClipPathRevealProps>
       setProgress: (p: number) => {
         setInternalProgress(Math.max(0, Math.min(1, p)))
       },
-    }), [controlledProgress, internalProgress, isAnimating, animateOnMount, hasStarted, startAnimation, disabled])
+    }), [controlledProgress, internalProgress, isAnimating, animateOnMount, hasStarted, startAnimation, effectiveDisabled])
 
     // Compute clip path
     const currentProgress = effectiveProgress
@@ -482,6 +490,7 @@ export const ClipPathReveal = forwardRef<ClipPathRevealRef, ClipPathRevealProps>
         data-progress={currentProgress.toFixed(3)}
         data-shape={shape}
         data-animating={isAnimating}
+        data-reduced-motion={prefersReducedMotion}
       >
         {children}
       </div>

@@ -2,16 +2,7 @@ import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
 import { Container, Stack, Card, CardContent, Badge, Button, Input } from '@repo/ui'
 import { ChevronRight, Filter, Lightbulb, ArrowRight, BookOpen, Clock } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'Insights & Research | Flowtaris AI',
-  description: 'Original research, benchmarks, and thought leadership on AI automation in enterprise finance. GEO-optimized for AI search visibility.',
-  openGraph: {
-    title: 'Insights & Research | Flowtaris AI',
-    description: 'Original research and benchmarks on AI automation in enterprise finance.',
-    type: 'website',
-  },
-}
+import { caseStudySchema } from '@flowtaris/seo'
 
 const categories = ['All', 'Research', 'Benchmarks', 'Guides', 'Case Studies', 'Announcements']
 const insights = [
@@ -172,6 +163,47 @@ const insights = [
   },
 ]
 
+export const metadata: Metadata = {
+  title: 'Insights & Research | Flowtaris AI',
+  description: 'Original research, benchmarks, and thought leadership on AI automation in enterprise finance. GEO-optimized for AI search visibility.',
+  openGraph: {
+    title: 'Insights & Research | Flowtaris AI',
+    description: 'Original research and benchmarks on AI automation in enterprise finance.',
+    type: 'website',
+  },
+  other: {
+    'script:ld+json': JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Flowtaris AI Insights & Research',
+      description: 'Original research, benchmarks, and thought leadership on AI automation in enterprise finance',
+      itemListElement: insights.map((insight, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Article',
+          headline: insight.title,
+          description: insight.excerpt,
+          author: {
+            '@type': 'Person',
+            name: insight.author,
+            jobTitle: insight.authorRole,
+          },
+          datePublished: insight.publishDate,
+          dateModified: insight.publishDate,
+          about: insight.entityAssociations,
+          articleSection: insight.category,
+          keywords: insight.tags.join(', '),
+          publisher: {
+            '@type': 'Organization',
+            name: 'Flowtaris',
+          },
+        },
+      })),
+    }),
+  },
+}
+
 export default function InsightsPage() {
   return (
     <div className="flex flex-col flex-1 w-full">
@@ -292,7 +324,7 @@ export default function InsightsPage() {
                       className="glass-card group interactive relative overflow-hidden"
                       style={{ animationDelay: `${(i + 2) * 100}ms` }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute inset-0 bg-gradient_to-br from-brand-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <div className="relative z-10 p-6">
                         <div className="flex items-center gap-2 mb-3">
                           <Badge variant="outline" className="text-body-xs">{insight.category}</Badge>

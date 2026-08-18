@@ -514,6 +514,310 @@ _Stat.displayName = 'Stat'
 export const Stat = _Stat
 
 // ============================================
+// BeforeAfterBar
+// ============================================
+
+export interface BeforeAfterBarProps {
+  /** Before value */
+  before: number
+  /** After value */
+  after: number
+  /** Label for before */
+  beforeLabel?: string
+  /** Label for after */
+  afterLabel?: string
+  /** Unit suffix (e.g., '$', 'hrs', '%') */
+  unit?: string
+  /** Unit position */
+  unitPosition?: 'prefix' | 'suffix'
+  /** Format numbers */
+  format?: (value: number) => string
+  /** Bar variant */
+  variant?: 'default' | 'savings' | 'reduction' | 'increase'
+  /** Size */
+  size?: 'sm' | 'md' | 'lg'
+  /** Show percentage change */
+  showChange?: boolean
+  /** CSS class */
+  className?: string
+}
+
+const BAR_VARIANTS = {
+  default: {
+    before: 'bg-neutral-300 dark:bg-neutral-700',
+    after: 'bg-brand-cyan-500',
+    change: 'text-brand-cyan-500',
+  },
+  savings: {
+    before: 'bg-brand-red-100 dark:bg-brand-red-900/30',
+    after: 'bg-brand-green-500',
+    change: 'text-brand-green-500',
+  },
+  reduction: {
+    before: 'bg-brand-amber-100 dark:bg-brand-amber-900/30',
+    after: 'bg-brand-amber-500',
+    change: 'text-brand-amber-500',
+  },
+  increase: {
+    before: 'bg-neutral-300 dark:bg-neutral-700',
+    after: 'bg-brand-cyan-500',
+    change: 'text-brand-cyan-500',
+  },
+} as const
+
+const BAR_SIZES = {
+  sm: { height: 'h-2', label: 'text-xs', value: 'text-sm', gap: 'gap-1' },
+  md: { height: 'h-3', label: 'text-sm', value: 'text-base', gap: 'gap-2' },
+  lg: { height: 'h-4', label: 'text-base', value: 'text-lg', gap: 'gap-3' },
+} as const
+
+/**
+ * BeforeAfterBar - Visual comparison of before/after values
+ */
+const _BeforeAfterBar = forwardRef<HTMLDivElement, BeforeAfterBarProps>(
+  (
+    {
+      before,
+      after,
+      beforeLabel = 'Before',
+      afterLabel = 'After',
+      unit = '',
+      unitPosition = 'suffix',
+      format = (v) => v.toLocaleString(),
+      variant = 'default',
+      size = 'md',
+      showChange = true,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const isReduction = after < before
+    const isSavings = isReduction
+    const changePercent = before !== 0 ? ((before - after) / before) * 100 : 0
+    const changeValue = before - after
+
+    const formatValue = (val: number) => {
+      const formatted = format(val)
+      return unitPosition === 'prefix' ? `${unit}${formatted}` : `${formatted}${unit}`
+    }
+
+    // Calculate bar widths (percentage of max)
+    const maxVal = Math.max(before, after)
+    const beforeWidth = maxVal > 0 ? (before / maxVal) * 100 : 0
+    const afterWidth = maxVal > 0 ? (after / maxVal) * 100 : 0
+
+    const variantStyles = BAR_VARIANTS[variant]
+    const sizeStyles = BAR_SIZES[size]
+
+    return (
+      <div
+        ref={ref}
+        className={cn('space-y-4', className)}
+        {...props}
+      >
+        {/* Before Bar */}
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span className={cn('font-medium', sizeStyles.label)}>{beforeLabel}</span>
+            <span className={cn('font-display font-bold tabular-nums', sizeStyles.value)}>
+              {formatValue(before)}
+            </span>
+          </div>
+          <div className="relative" style={{ height: sizeStyles.height }}>
+            <div
+              className={cn(
+                'absolute inset-0 rounded-full overflow-hidden',
+                variantStyles.before
+              )}
+              style={{ width: `${beforeWidth}%` }}
+            />
+          </div>
+        </div>
+
+        {/* After Bar */}
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span className={cn('font-medium', sizeStyles.label)}>{afterLabel}</span>
+            <span className={cn('font-display font-bold tabular-nums', sizeStyles.value)}>
+              {formatValue(after)}
+            </span>
+          </div>
+          <div className="relative" style={{ height: sizeStyles.height }}>
+            <div
+              className={cn(
+                'absolute inset-0 rounded-full overflow-hidden',
+                variantStyles.after
+              )}
+              style={{ width: `${afterWidth}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Change Indicator */}
+        {showChange && (
+          <div className={cn('flex items-center justify-between pt-2', sizeStyles.gap)}>
+            <span className={cn('font-medium', sizeStyles.label)}>
+              {isSavings ? 'Savings' : 'Change'}
+            </span>
+            <span className={cn(
+              'font-display font-bold tabular-nums',
+              sizeStyles.value,
+              variantStyles.change
+            )}>
+              {isSavings ? '−' : '+'} {formatValue(Math.abs(changeValue))}{' '}
+              <span className={cn('font-normal', sizeStyles.label)}>
+                ({Math.abs(changePercent).toFixed(1)}%)
+              </span>
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+)
+
+_BeforeAfterBar.displayName = 'BeforeAfterBar'
+
+export const BeforeAfterBar = _BeforeAfterBar
+
+// ============================================
+// StatTile
+// ============================================
+
+export interface StatTileProps {
+  /** Label */
+  label: string
+  /** Primary value */
+  value: string | number
+  /** Optional secondary value */
+  secondaryValue?: string | number
+  /** Secondary value label */
+  secondaryLabel?: string
+  /** Icon */
+  icon?: React.ReactNode
+  /** Icon background color */
+  iconBg?: string
+  /** Trend indicator */
+  trend?: {
+    value: number
+    label?: string
+    positive?: boolean
+  }
+  /** Variant */
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'gradient'
+  /** Size */
+  size?: 'sm' | 'md' | 'lg'
+  /** CSS class */
+  className?: string
+  /** On click */
+  onClick?: () => void
+}
+
+const TILE_VARIANTS = {
+  default: 'bg-white/5 dark:bg-neutral-950/50 border-white/10 dark:border-neutral-800',
+  primary: 'bg-brand-cyan-500/10 border-brand-cyan-500/20',
+  success: 'bg-brand-green-500/10 border-brand-green-500/20',
+  warning: 'bg-brand-amber-500/10 border-brand-amber-500/20',
+  error: 'bg-brand-red-500/10 border-brand-red-500/20',
+  gradient: 'bg-gradient-to-br from-brand-cyan-500/10 to-brand-purple-500/10 border-brand-cyan-500/20',
+} as const
+
+const TILE_SIZES = {
+  sm: { padding: 'p-4', icon: 'w-10 h-10', value: 'text-2xl', label: 'text-xs', secondary: 'text-xs' },
+  md: { padding: 'p-6', icon: 'w-12 h-12', value: 'text-3xl', label: 'text-sm', secondary: 'text-sm' },
+  lg: { padding: 'p-8', icon: 'w-16 h-16', value: 'text-4xl', label: 'text-base', secondary: 'text-base' },
+} as const
+
+/**
+ * StatTile - Enhanced metric display with icon, trend, and secondary value
+ */
+const _StatTile = forwardRef<HTMLDivElement, StatTileProps>(
+  (
+    {
+      label,
+      value,
+      secondaryValue,
+      secondaryLabel,
+      icon,
+      iconBg,
+      trend,
+      variant = 'default',
+      size = 'md',
+      className,
+      onClick,
+      ...props
+    },
+    ref
+  ) => {
+    const sizeStyles = TILE_SIZES[size]
+
+    return (
+      <div
+        ref={ref}
+        onClick={onClick}
+        className={cn(
+          'glass-strong rounded-2xl border',
+          TILE_VARIANTS[variant],
+          sizeStyles.padding,
+          onClick && 'cursor-pointer hover:border-brand-cyan-500/50 transition-colors duration-200',
+          className
+        )}
+        {...props}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <p className={cn('font-medium truncate', sizeStyles.label)}>
+              {label}
+            </p>
+            <p className={cn('font-display font-bold tabular-nums mt-1', sizeStyles.value)}>
+              {value}
+            </p>
+            {secondaryValue !== undefined && (
+              <p className={cn('mt-2', sizeStyles.secondary)}>
+                <span className="font-medium">{secondaryValue}</span>
+                {secondaryLabel && <span className="text-neutral-400 ml-1">{secondaryLabel}</span>}
+              </p>
+            )}
+            {trend && (
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className={cn(
+                  'text-xs font-medium',
+                  trend.positive !== false ? 'text-brand-green-500' : 'text-brand-red-500'
+                )}>
+                  {trend.positive !== false ? '↑' : '↓'} {Math.abs(trend.value)}%
+                </span>
+                {trend.label && (
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {trend.label}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          {icon && (
+            <div
+              className={cn(
+                'flex-shrink-0 rounded-xl flex items-center justify-center',
+                sizeStyles.icon,
+                iconBg || 'bg-brand-cyan-500/20'
+              )}
+              aria-hidden="true"
+            >
+              {icon}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+)
+
+_StatTile.displayName = 'StatTile'
+
+export const StatTile = _StatTile
+
+// ============================================
 // Table
 // ============================================
 
