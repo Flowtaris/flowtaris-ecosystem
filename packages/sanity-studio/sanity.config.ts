@@ -8,7 +8,7 @@ export default defineConfig({
   name: 'default',
   title: 'flowtarisai',
 
-  projectId: '5gbgq9zl',
+  projectId: 's5kwr3ae',
   dataset: 'production',
 
   plugins: [
