@@ -1,6 +1,6 @@
+'use client';
 import { useEffect, useState } from 'react'
-import { react }'
-import { Link } from 'next/link'
+import Link from 'next/link'
 import { getRoiConfigs } from '@/lib/supabase'
 
 // Simple UI components for admin panel (using Tailwind directly)

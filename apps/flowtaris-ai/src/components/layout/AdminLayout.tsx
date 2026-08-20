@@ -76,15 +76,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               ROI Calculator Config
             </NavLink>
           </nav>
-        </aside>
-        
-        {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-7xl mx-auto w-full">
-            {children}
-          </div>
-        </main>
-      </div>
-    )
-  }
+        </div>
+      </aside>
+      
+      {/* Main Content */}
+      <main className="flex-1 p-6 overflow-y-auto">
+        <div className="max-w-7xl mx-auto w-full">
+          {children}
+        </div>
+      </main>
+    </div>
+  )
 }

@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAICapabilities, getPlatformPages, createAICapability } from '@/lib/supabase'
