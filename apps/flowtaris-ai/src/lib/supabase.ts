@@ -375,25 +375,10 @@ export async function updateAssessmentConfig(data: Partial<AssessmentConfig>) {
   return updatedData
 }
 
-// Insights
-export async function getInsights() {
-  const client = createAdminClient()
-  const { data, error } = await client.from('insights').select('*').order('published_at', { ascending: false })
-  if (error) throw error
-  return data
-}
-
-export async function getInsightById(id: string) {
-  const client = createAdminClient()
-  const { data, error } = await client.from('insights').select('*').eq('id', id).single()
-  if (error) throw error
-  return data
-}
-
-export async function createInsight(data: Omit<Insight, 'id' | 'created_at' | 'updated_at'>) {
+export async function createAssessmentConfig(data: Omit<AssessmentConfig, 'id' | 'created_at' | 'updated_at'>) {
   const client = createAdminClient()
   const { data: newData, error } = await client
-    .from('insights')
+    .from('assessment_config')
     .insert(data)
     .select()
     .single()
@@ -401,22 +386,29 @@ export async function createInsight(data: Omit<Insight, 'id' | 'created_at' | 'u
   return newData
 }
 
-export async function updateInsight(id: string, data: Partial<Insight>) {
+export const getAssessmentConfigs = async () => {
   const client = createAdminClient()
-  const { data: updatedData, error } = await client
-    .from('insights')
-    .update(data)
-    .eq('id', id)
+  const { data, error } = await client.from('assessment_config').select('*')
+  if (error) throw error
+  return data
+}
+
+export const getRoiConfigs = async () => {
+  const client = createAdminClient()
+  const { data, error } = await client.from('roi_config').select('*')
+  if (error) throw error
+  return data
+}
+
+export async function createRoiConfig(data: Omit<ROICConfig, 'id' | 'created_at' | 'updated_at'>) {
+  const client = createAdminClient()
+  const { data: newData, error } = await client
+    .from('roi_config')
+    .insert(data)
     .select()
     .single()
   if (error) throw error
-  return updatedData
-}
-
-export async function deleteInsight(id: string) {
-  const client = createAdminClient()
-  const { error } = await client.from('insights').delete().eq('id', id)
-  if (error) throw error
+  return newData
 }
 
 // ROI config

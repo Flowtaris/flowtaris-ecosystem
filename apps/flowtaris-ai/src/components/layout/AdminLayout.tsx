@@ -1,4 +1,3 @@
-import { NavLink } from 'next/dist/client/components/link'
 import Link from 'next/link'
 import { Menu, Users, Layout, Settings, Activity, BarChart2, FileText, Award, ClipboardList, Folder, Calendar, Shield, MessageCircle } from 'lucide-react'
 
@@ -12,69 +11,69 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Flowtaris Admin
           </h1>
           <nav className="space-y-1">
-            <NavLink
+            <Link
               href="/admin/"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <Layout className="mr-3 h-4 w-4" />
               Dashboard
-            </NavLink>
+            </Link>
             
-            <NavLink
+            <Link
               href="/admin/site-config"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <Settings className="mr-3 h-4 w-4" />
               Site Configuration
-            </NavLink>
+            </Link>
             
-            <NavLink
+            <Link
               href="/admin/platforms"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <Calendar className="mr-3 h-4 w-4" />
               Platforms
-            </NavLink>
+            </Link>
             
-            <NavLink
+            <Link
               href="/admin/capabilities"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <Award className="mr-3 h-4 w-4" />
               AI Capabilities
-            </NavLink>
+            </Link>
             
-            <NavLink
+            <Link
               href="/admin/case-studies"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <Folder className="mr-3 h-4 w-4" />
               Case Studies
-            </NavLink>
+            </Link>
             
-            <NavLink
+            <Link
               href="/admin/insights"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <MessageCircle className="mr-3 h-4 w-4" />
               Insights & Blog
-            </NavLink>
+            </Link>
             
-            <NavLink
+            <Link
               href="/admin/assessment-config"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <ClipboardList className="mr-3 h-4 w-4" />
               Assessment Config
-            </NavLink>
+            </Link>
             
-            <NavLink
+            <Link
               href="/admin/roi-config"
               className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
             >
               <BarChart2 className="mr-3 h-4 w-4" />
               ROI Calculator Config
-            </NavLink>
+            </Link>
           </nav>
         </div>
       </aside>
