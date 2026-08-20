@@ -123,13 +123,13 @@ export function Hero() {
 
           {/* Floating Product Showcase */}
           <FloatingProduct
-            src="/placeholder-product.svg"
+            src="/images/dashboard_main.png"
             alt="Flowtaris AI Product"
             frames={[
-              '/placeholder-product.svg',
-              '/placeholder-product.svg',
-              '/placeholder-product.svg',
-              '/placeholder-product.svg',
+              '/images/dashboard_main.png',
+              '/images/dashboard_analytics.png',
+              '/images/dashboard_workflow.png',
+              '/images/dashboard_compliance.png',
             ]}
             mouseParallax={true}
             parallaxStrength={0.2}
