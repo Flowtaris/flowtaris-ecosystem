@@ -11,7 +11,7 @@ import { headers } from 'next/headers'
  * - Headers: Authorization: Bearer <SANITY_WEBHOOK_SECRET>
  */
 export async function POST(request: Request) {
-  const headersList = headers()
+  const headersList = await headers()
   const authHeader = headersList.get('authorization')
   const webhookSecret = process.env.SANITY_WEBHOOK_SECRET
 
