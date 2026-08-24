@@ -48,12 +48,12 @@ export const metadata: Metadata = {
 }
 
 const trustSignals = [
-  { label: 'SOC 2 Type II', value: 'Certified' },
-  { label: 'GDPR', value: 'Compliant' },
-  { label: 'ISO 27001', value: 'Certified' },
-  { label: '99.99%', value: 'Uptime SLA' },
-  { label: '50M+', value: 'API Calls/Day' },
-  { label: 'Fortune 500', value: 'Trusted By' },
+  { label: 'Certified', value: 'SOC 2' },
+  { label: 'Compliant', value: 'GDPR' },
+  { label: 'Certified', value: 'ISO 27001' },
+  { label: 'Uptime SLA', value: '99.99%' },
+  { label: 'API Calls/Day', value: '50M+' },
+  { label: 'Trusted By', value: 'Fortune 500' },
 ]
 
 const capabilities = [
@@ -97,7 +97,7 @@ export default function Home() {
       />
       <HeroPattern
         headline={{
-          text: 'AI Automation<br />for Enterprise Finance',
+          text: <>AI Automation<br />for Enterprise Finance</>,
           animateOnMount: true,
           split: ['words', 'lines'],
           className: 'text-display-xl text-gradient-brand text-balance',
