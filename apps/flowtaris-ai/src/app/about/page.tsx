@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
-import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input } from '@repo/ui'
+import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, FloatingProduct } from '@repo/ui'
 import { ArrowRight, ChevronRight, Users, Target, Lightbulb, Shield, Zap, Globe, Heart, Brain, Award, BookOpen, Building2, Rocket, Leaf, Infinity } from 'lucide-react'
 import { organizationSchema } from '@flowtaris/seo'
 
@@ -104,6 +104,25 @@ export default function AboutPage() {
                   We believe that time belongs to strategy, analysis, and decision-making — not processing.
                 </p>
               </header>
+
+              <div className="w-full flex justify-center py-6 relative">
+                 <div className="relative z-10 w-full max-w-[800px]">
+                    <FloatingProduct
+                      src="/images/about_research_lab.png"
+                      alt="Flowtaris AI Research Lab"
+                      frames={['/images/about_research_lab.png']}
+                      mouseParallax={true}
+                      parallaxStrength={0.1}
+                      autoRotate={true}
+                      rotationSpeed={20}
+                      width={800}
+                      height={450}
+                      borderRadius="24px"
+                      shadow={true}
+                      shadowIntensity={1.5}
+                    />
+                 </div>
+              </div>
 
               <div className="glass-strong rounded-2xl p-8 md:p-12 bg-gradient-to-br from-brand-cyan-500/5 to-transparent border border-brand-cyan-500/20">
                 <Lightbulb className="h-12 w-12 text-brand-cyan-400 mx-auto mb-6" />

@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
-import { Section, Container, Stack, Grid, Card, CardContent, Badge, Button } from '@repo/ui'
+import { Section, Container, Stack, Grid, Card, CardContent, Badge, Button, FloatingProduct } from '@repo/ui'
 import { ChevronRight, Filter, BarChart3, DollarSign, Clock, Users, Shield, Zap, ArrowRight } from 'lucide-react'
 import { caseStudySchema } from '@flowtaris/seo'
 
@@ -143,6 +143,24 @@ export default function CaseStudiesPage() {
                   </select>
                 </div>
               </header>
+
+              <div className="w-full flex justify-center py-6 relative mb-8">
+                 <div className="relative z-10 w-full max-w-[900px]">
+                    <FloatingProduct
+                      src="/images/case_studies_metrics.png"
+                      alt="Enterprise Performance Metrics"
+                      frames={['/images/case_studies_metrics.png']}
+                      mouseParallax={true}
+                      parallaxStrength={0.1}
+                      autoRotate={false}
+                      width={900}
+                      height={450}
+                      borderRadius="24px"
+                      shadow={true}
+                      shadowIntensity={1.5}
+                    />
+                 </div>
+              </div>
 
               <Grid cols={{ base: 1, lg: 2 }} gap="xl" className="w-full">
                 {caseStudies.map((study, i) => (

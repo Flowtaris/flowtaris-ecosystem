@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack } from '@repo/ui'
-import { CascadingCardStack } from '@repo/ui'
+import { CascadingCardStack, FloatingProduct } from '@repo/ui'
 import { Button } from '@repo/ui'
 import { ArrowRight, Zap, Shield, BarChart3, Code2, Users } from 'lucide-react'
 import { serviceSchema } from '@flowtaris/seo'
@@ -134,10 +134,28 @@ export default function CapabilitiesPage() {
                 <h2 id="capabilities-heading" className="text-display-md text-gradient-brand text-balance mb-6">
                   Production-Ready AI for Enterprise ERP
                 </h2>
-                <p className="text-headline-md text-neutral-400 text-balance">
+                <p className="text-headline-md text-neutral-400 text-balance mb-12">
                   Each capability is battle-tested, platform-certified, and designed for measurable business impact.
                 </p>
               </header>
+
+              <div className="w-full flex justify-center mb-16 relative">
+                 <div className="relative z-10 w-full max-w-[800px]">
+                    <FloatingProduct
+                      src="/images/capabilities_doc_intel.png"
+                      alt="GenAI Document Intelligence"
+                      frames={['/images/capabilities_doc_intel.png']}
+                      mouseParallax={true}
+                      parallaxStrength={0.1}
+                      autoRotate={false}
+                      width={800}
+                      height={500}
+                      borderRadius="16px"
+                      shadow={true}
+                      shadowIntensity={1.2}
+                    />
+                 </div>
+              </div>
 
               <CascadingCardStack
                 cards={capabilities.map((cap) => ({

@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
-import { Container, Stack, Card, CardContent, Badge, Button, Input } from '@repo/ui'
+import { Container, Stack, Card, CardContent, Badge, Button, Input, FloatingProduct } from '@repo/ui'
 import { ChevronRight, Filter, Lightbulb, ArrowRight, BookOpen, Clock } from 'lucide-react'
 import { caseStudySchema } from '@flowtaris/seo'
 
@@ -259,6 +259,24 @@ export default function InsightsPage() {
                   </select>
                 </div>
               </header>
+
+              <div className="w-full flex justify-center py-6 relative mb-8">
+                 <div className="relative z-10 w-full max-w-[900px]">
+                    <FloatingProduct
+                      src="/images/insights_data_analysis.png"
+                      alt="Data Analysis and Market Research Insights"
+                      frames={['/images/insights_data_analysis.png']}
+                      mouseParallax={true}
+                      parallaxStrength={0.15}
+                      autoRotate={false}
+                      width={900}
+                      height={450}
+                      borderRadius="24px"
+                      shadow={true}
+                      shadowIntensity={1.5}
+                    />
+                 </div>
+              </div>
 
               {/* Featured Insights */}
               <div className="grid gap-6 lg:grid-cols-2">

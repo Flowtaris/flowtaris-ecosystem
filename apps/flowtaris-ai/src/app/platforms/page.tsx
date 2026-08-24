@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { HeroPattern } from '@repo/ui'
-import { Container, Stack, Grid, Card, Badge, Button } from '@repo/ui'
+import { Container, Stack, Grid, Card, Badge, Button, FloatingProduct } from '@repo/ui'
 import { BarChart3, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -181,10 +181,28 @@ export default function PlatformsPage() {
                 <h2 id="platforms-heading" className="text-display-md text-gradient-brand text-balance mb-6">
                   Supported Platforms
                 </h2>
-                <p className="text-headline-md text-neutral-400 text-balance">
+                <p className="text-headline-md text-neutral-400 text-balance mb-12">
                   Native AI automation for every major ERP. One platform, unified control plane.
                 </p>
               </header>
+
+              <div className="w-full flex justify-center mb-16 relative">
+                 <div className="relative z-10 w-full max-w-[800px]">
+                    <FloatingProduct
+                      src="/images/platforms_integration_map.png"
+                      alt="Unified ERP Integration Map"
+                      frames={['/images/platforms_integration_map.png']}
+                      mouseParallax={true}
+                      parallaxStrength={0.15}
+                      autoRotate={false}
+                      width={800}
+                      height={400}
+                      borderRadius="16px"
+                      shadow={true}
+                      shadowIntensity={1.3}
+                    />
+                 </div>
+              </div>
 
               <Grid columns={{ base: 1, md: 2, lg: 3 }} gap={6} className="w-full">
                 {platforms.map((platform, i) => (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { HeroPattern } from '@repo/ui'
-import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input } from '@repo/ui'
+import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, FloatingProduct } from '@repo/ui'
 import { ArrowRight, ChevronRight, Brain, Zap, FlaskConical, BarChart3, BookOpen, Lightbulb, Rocket, Target, Eye, Github, Twitter, Linkedin, ExternalLink, Clock, Calendar, Users, Award, CheckCircle, Loader2, Mail } from 'lucide-react'
 
 const researchAreas = [
@@ -346,6 +346,25 @@ export default function InnovationLabClient() {
                   Six tracks pushing the boundary of what's possible in enterprise finance AI
                 </p>
               </header>
+
+              <div className="w-full flex justify-center py-6 relative mb-8">
+                 <div className="relative z-10 w-full max-w-[900px]">
+                    <FloatingProduct
+                      src="/images/innovation_lab_architecture.png"
+                      alt="Futuristic AI Model Architecture"
+                      frames={['/images/innovation_lab_architecture.png']}
+                      mouseParallax={true}
+                      parallaxStrength={0.2}
+                      autoRotate={true}
+                      rotationSpeed={20}
+                      width={900}
+                      height={450}
+                      borderRadius="24px"
+                      shadow={true}
+                      shadowIntensity={1.5}
+                    />
+                 </div>
+              </div>
 
               <Grid columns={{ base: 1, md: 2, lg: 3 }} gap={6} className="w-full">
                 {researchAreas.map((area, i) => (

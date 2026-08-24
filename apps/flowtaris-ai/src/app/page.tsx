@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { HeroPattern, Badge } from '@repo/ui'
+import { HeroPattern, Badge, FloatingProduct } from '@repo/ui'
 import Script from 'next/script'
 import { softwareApplicationSchema, speakableSchema } from '@flowtaris/seo'
 
@@ -151,6 +151,42 @@ export default function Home() {
 
       {/* Content sections */}
       <main className="flex-1 w-full">
+        {/* Featured AI Interface Showcase */}
+        <section className="py-24 px-6 overflow-hidden">
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2">
+              <h2 className="text-display-sm text-gradient-brand mb-6">
+                Intelligence you can see and interact with
+              </h2>
+              <p className="text-headline-sm text-neutral-400 mb-8 leading-relaxed">
+                Experience the power of our conversational ERP interface and predictive analytics engines. 
+                Our platform doesn't just process data—it visualizes it, predicts trends, and answers your questions in real-time.
+              </p>
+            </div>
+            <div className="lg:w-1/2 relative w-full flex justify-center items-center py-12">
+              <div className="relative z-10 w-full max-w-[600px]">
+                <FloatingProduct
+                  src="/images/home_conversational_erp.png"
+                  alt="Flowtaris Conversational ERP"
+                  frames={[
+                    '/images/home_conversational_erp.png',
+                    '/images/home_predictive_analytics.png'
+                  ]}
+                  mouseParallax={true}
+                  parallaxStrength={0.15}
+                  autoRotate={true}
+                  rotationSpeed={12}
+                  width={600}
+                  height={450}
+                  borderRadius="16px"
+                  shadow={true}
+                  shadowIntensity={1.5}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-32 px-6" aria-labelledby="capabilities-heading">
           <div className="max-w-7xl mx-auto">
             <header className="text-center mb-24">
