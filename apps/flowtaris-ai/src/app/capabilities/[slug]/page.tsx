@@ -68,23 +68,16 @@ const fallbackData: Record<string, CapabilityData> = {
   },
 }
 
-async function getCapability(slug: string, preview = false): Promise<CapabilityData | null> {
-  try {
-    const client = getClient(preview)
-    const data = await client.fetch(queries.capabilityBySlug, { slug })
-    return data || null
-  } catch (error) {
-    console.error(`Failed to fetch capability ${slug}:`, error)
-    return null
-  }
+async function getCapability(slug: string): Promise<CapabilityData | null> {
+  // Sanity removed — using fallback static data
+  // TODO: replace with Supabase fetch once admin panel is wired up
+  return fallbackData[slug] || null
 }
 
-export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const { preview } = await searchParams
-  const isPreview = preview === 'true'
 
-  const data = await getCapability(slug, isPreview) || fallbackData[slug]
+  const data = await getCapability(slug) || fallbackData[slug]
 
   if (!data) {
     return { title: 'Capability Not Found' }
@@ -99,28 +92,16 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       type: 'website',
       images: data.seo?.ogImage ? [{ url: data.seo.ogImage }] : [],
     },
-    other: {
-      'script:ld+json': JSON.stringify(
-        serviceSchema({
-          name: data.title,
-          description: data.shortDescription,
-          category: data.category,
-          platforms: data.platforms,
-        })
-      ),
-    },
   }
 }
 
 // ISR: Revalidate every 60 seconds, fallback to preview mode
 export const revalidate = 60
 
-export default async function CapabilityDetailPage({ params, searchParams }: Props) {
+export default async function CapabilityDetailPage({ params }: Props) {
   const { slug } = await params
-  const { preview } = await searchParams
-  const isPreview = preview === 'true'
 
-  const data = await getCapability(slug, isPreview) || fallbackData[slug]
+  const data = await getCapability(slug) || fallbackData[slug]
 
   if (!data) {
     notFound()
