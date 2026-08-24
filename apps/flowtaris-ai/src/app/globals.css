@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @source "../../../packages/ui/src";
-@config "../../tailwind.config.ts";
 @import "@repo/ui/tokens/css/colors.css";
 @import "@repo/ui/tokens/css/spacing.css";
 @import "@repo/ui/tokens/css/typography.css";
