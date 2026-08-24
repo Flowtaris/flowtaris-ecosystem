@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@source "../../../packages/ui/src";
+@source "../../../../packages/ui/src";
+@source "../../src";
 @import "@repo/ui/tokens/css/colors.css";
 @import "@repo/ui/tokens/css/spacing.css";
 @import "@repo/ui/tokens/css/typography.css";
@@ -67,6 +68,14 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  /* SplitText: ensure split elements are visible by default.
+     JS animation overrides opacity inline — this is the safe fallback. */
+  .split-char,
+  .split-word,
+  .split-line {
+    display: inline-block;
   }
 }
 

@@ -250,32 +250,39 @@ export function useSplitTextAnimation(ref: React.RefObject<SplitTextRef | null>)
     const splitRef = ref.current
     if (!splitRef) return
 
+    const elements = splitRef[options?.type || 'chars']()
+
+    // If no elements found (split hasn't happened yet), make container visible
+    if (elements.length === 0) return
+
     // Instant animation for reduced motion
     if (prefersReducedMotion && options?.respectReducedMotion !== false) {
-      const elements = splitRef[options?.type || 'chars']()
       elements.forEach(el => {
-        Object.assign(el.style, { opacity: 1, transform: 'none' })
+        Object.assign(el.style, { opacity: '1', transform: 'none' })
       })
       return
     }
 
-    const elements = splitRef[options?.type || 'chars']()
     const stagger = options?.stagger ?? 50
     const duration = options?.duration ?? 800
     const easing = options?.easing ?? 'cubic-bezier(0.25, 0.1, 0.25, 1)'
 
-    const from = options?.from || { opacity: 0, transform: 'translateY(20px) rotateX(90deg)' }
-    const to = options?.to || { opacity: 1, transform: 'translateY(0) rotateX(0)' }
+    const from = options?.from || { opacity: '0', transform: 'translateY(20px) rotateX(90deg)' }
+    const to = options?.to || { opacity: '1', transform: 'translateY(0) rotateX(0)' }
 
     await Promise.all(
       elements.map((el, index) => {
         return new Promise<void>(resolve => {
+          // Apply from state immediately
           Object.assign(el.style, from)
-          el.style.transition = `all ${duration}ms ${easing}`
-          el.style.transitionDelay = `${index * stagger}ms`
 
+          // Then transition to 'to' state on next frame
           requestAnimationFrame(() => {
-            Object.assign(el.style, to)
+            requestAnimationFrame(() => {
+              el.style.transition = `all ${duration}ms ${easing}`
+              el.style.transitionDelay = `${index * stagger}ms`
+              Object.assign(el.style, to)
+            })
           })
 
           const handleTransitionEnd = () => {
@@ -283,10 +290,13 @@ export function useSplitTextAnimation(ref: React.RefObject<SplitTextRef | null>)
             resolve()
           }
           el.addEventListener('transitionend', handleTransitionEnd)
+
+          // Fallback resolve in case transitionend never fires
+          setTimeout(() => resolve(), duration + index * stagger + 200)
         })
       })
     )
-  }, [ref])
+  }, [ref, prefersReducedMotion])
 
   const animateOut = useCallback(async (options?: {
     type?: 'chars' | 'words' | 'lines'

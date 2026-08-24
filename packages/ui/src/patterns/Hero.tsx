@@ -276,13 +276,13 @@ const _HeroPattern = forwardRef<HTMLElement, HeroPatternProps>(
     const splitTextRef = useRef<SplitTextRef | null>(null)
     const splitTextApi = useSplitTextAnimation(splitTextRef)
 
-    // Trigger text animations on mount
+    // Trigger text animations on mount — delay ensures SplitText DOM split is complete
     useEffect(() => {
       if (!headline) return
       const timer = setTimeout(() => {
-        splitTextApi.animateIn({ type: 'chars', stagger: 30, duration: 800 })
-        splitTextApi.animateIn({ type: 'words', stagger: 50, duration: 1000 })
-      }, 300)
+        splitTextApi.animateIn({ type: 'words', stagger: 60, duration: 900 })
+        splitTextApi.animateIn({ type: 'lines', stagger: 80, duration: 900 })
+      }, 600)
       return () => clearTimeout(timer)
     }, [splitTextApi, headline])
 
