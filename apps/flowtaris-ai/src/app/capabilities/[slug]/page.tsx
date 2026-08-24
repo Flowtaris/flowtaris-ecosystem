@@ -4,8 +4,6 @@ import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Badge } from '@repo/ui'
 import { Button } from '@repo/ui'
 import { ArrowRight, ChevronRight, CheckCircle, Zap, DollarSign, BookOpen } from 'lucide-react'
-import { getClient, queries } from '@flowtaris/cms-client'
-import { serviceSchema } from '@flowtaris/seo'
 
 interface Props {
   params: Promise<{ slug: string }>
