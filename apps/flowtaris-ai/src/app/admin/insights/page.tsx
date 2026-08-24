@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { getInsights } from '@/lib/supabase'
 
 // Simple UI components for admin panel (using Tailwind directly)
-const SimpleButton = ({ children, type = 'button', className = '' }: { children: React.ReactNode; type?: string; className?: string }) => (
-  <button type={type} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className}`}>
+const SimpleButton = ({ children, type = 'button', disabled = false, className = '' }: { children: React.ReactNode; type?: 'button' | 'submit' | 'reset'; disabled?: boolean; className?: string }) => (
+  <button type={type} disabled={disabled} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
     {children}
   </button>
 )

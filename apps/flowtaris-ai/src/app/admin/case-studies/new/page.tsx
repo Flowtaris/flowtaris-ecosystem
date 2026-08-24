@@ -119,7 +119,7 @@ export default function NewCaseStudyPage() {
   }, [])
 
   const handleChange = (field: keyof NewCaseStudyFormData, value: string) => {
-    setFormData(prev => prev ? ({ ...prev, [field]: value }) : null)
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

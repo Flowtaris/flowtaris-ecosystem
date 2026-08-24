@@ -114,7 +114,7 @@ export default function NewInsightPage() {
   }, [])
 
   const handleChange = (field: keyof NewInsightFormData, value: string | null) => {
-    setFormData(prev => prev ? ({ ...prev, [field]: value }) : null)
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
