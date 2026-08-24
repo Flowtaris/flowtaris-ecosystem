@@ -4,8 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { getCaseStudyById, updateCaseStudy } from '@/lib/supabase'
 
 // Simple UI components for admin panel (using Tailwind directly)
-const SimpleButton = ({ children, type = 'submit', className = '' }: { children: React.ReactNode; type?: string; className?: string }) => (
-  <button type={type} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className}`}>
+const SimpleButton = ({ children, type = 'submit', disabled = false, className = '' }: { children: React.ReactNode; type?: 'button' | 'submit' | 'reset'; disabled?: boolean; className?: string }) => (
+  <button type={type} disabled={disabled} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
     {children}
   </button>
 )
@@ -22,14 +22,15 @@ const SimpleInput = ({ label, value, onChange, className = '' }: { label: string
   </div>
 )
 
-const SimpleTextarea = ({ label, value, onChange, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void; className?: string }) => (
+const SimpleTextarea = ({ label, value, onChange, className = '', rows = 4, placeholder = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void; className?: string; rows?: number; placeholder?: string }) => (
   <div className="mb-4">
     <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
     <textarea
       value={value}
       onChange={e => onChange(e)}
       className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-      rows={4}
+      rows={rows}
+      placeholder={placeholder}
     />
   </div>
 )
@@ -133,7 +134,7 @@ export default function EditCaseStudyPage() {
 
   const handleChange = (field: keyof CaseStudyFormData, value: string) => {
     if (formData) {
-      setFormData(prev => ({ ...prev, [field]: value }))
+      setFormData(prev => prev ? ({ ...prev, [field]: value }) : null)
     }
   }
 
