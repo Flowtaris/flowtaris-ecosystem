@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
-import { HeroPattern, Badge, FloatingProduct } from '@repo/ui'
-import Script from 'next/script'
+import { Badge, FloatingProduct } from '@repo/ui'
+import { HomeHero } from './HomeHero'
 
 export const metadata: Metadata = {
   title: 'Flowtaris AI | Enterprise AI Automation for Finance',
@@ -33,53 +33,36 @@ const capabilities = [
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 w-full">
-      <HeroPattern
-        headline={{
-          text: 'AI Automation\nfor Enterprise Finance',
-          animateOnMount: true,
-          split: ['words', 'lines'],
-          className: 'text-display-xl text-gradient-brand text-balance',
-        }}
-        subheadline={{
-          text: 'GenAI Document Intelligence, Autonomous Workflows, Predictive Analytics, and Conversational ERP — native on NetSuite, Coupa, SAP, and Workday.',
-          shape: 'wave',
-          className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
-        }}
-        ctas={[
-          { label: 'Start Free Assessment', variant: 'primary', href: '/assessment' },
-          { label: 'Calculate Your ROI', variant: 'secondary', href: '/roi-calculator' },
-        ]}
-        stats={{
-          items: [
-            { label: '200+', value: 'Enterprise Customers' },
-            { label: '95%', value: 'Automation Rate' },
-            { label: '$50M+', value: 'Annual Savings' },
-            { label: '4', value: 'Platforms' },
-          ],
-        }}
-        scrollIndicator={{ show: true }}
-        vignette={{ show: true, intensity: 0.3 }}
-        noise={{ show: true, opacity: 0.03 }}
-      />
 
-      {/* Trust Signals Bar */}
+      {/* ── Animated Hero ── */}
+      <HomeHero />
+
+      {/* ── Trust Signals ── */}
       <section
-        className="border-t border-white/10 py-12 px-6"
-        aria-labelledby="trust-heading"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '56px 24px', background: 'rgba(0,0,0,0.2)' }}
+        aria-label="Compliance and reliability"
       >
-        <div className="max-w-7xl mx-auto">
-          <p className="text-center text-body-xs text-neutral-500 uppercase tracking-widest mb-8">Compliance & Reliability</p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <p style={{ textAlign: 'center', fontSize: 11, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase', marginBottom: 36, fontFamily: "'Inter', sans-serif" }}>
+            Trusted compliance &amp; reliability
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '14px 20px' }}>
             {trustSignals.map((signal, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center gap-1 text-center glass-card p-4 md:p-6 min-w-[120px] transition-all duration-300 hover:scale-105"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <span className="text-number-lg font-display text-gradient-cyan tabular-nums">
+              <div key={i} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                padding: '18px 24px', borderRadius: 16,
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                minWidth: 110, transition: 'transform 0.2s',
+              }}>
+                <span style={{
+                  fontSize: 20, fontWeight: 800,
+                  background: 'linear-gradient(135deg, #00b8db, #62e4fa)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                  fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em',
+                }}>
                   {signal.value}
                 </span>
-                <span className="text-body-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>
                   {signal.label}
                 </span>
               </div>
@@ -88,123 +71,116 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Content sections */}
-      <main className="flex-1 w-full">
-        {/* Featured AI Interface Showcase */}
-        <section className="py-24 px-6 overflow-hidden">
-          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
-            <div className="lg:w-1/2">
-              <p className="text-body-sm text-brand-cyan-400 uppercase tracking-widest font-semibold mb-4">Live AI Dashboard</p>
-              <h2 className="text-display-sm text-gradient-brand mb-6">
-                Intelligence you can see and interact with
-              </h2>
-              <p className="text-headline-sm text-neutral-400 mb-8 leading-relaxed">
-                Experience the power of our conversational ERP interface and predictive analytics engines.
-                Our platform doesn&apos;t just process data—it visualizes it, predicts trends, and answers your questions in real-time.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <a href="/assessment" className="inline-flex items-center gap-2 px-6 py-3 rounded-full glass-strong text-white font-semibold text-body-md hover:scale-105 transition-transform duration-200">
-                  See a Demo →
-                </a>
-                <a href="/capabilities" className="inline-flex items-center gap-2 px-6 py-3 rounded-full glass text-white/80 font-medium text-body-md border border-white/10 hover:scale-105 transition-transform duration-200">
-                  All Capabilities
-                </a>
-              </div>
-            </div>
-            <div className="lg:w-1/2 relative w-full flex justify-center items-center py-12">
-              <div className="relative z-10 w-full max-w-[600px]">
-                <FloatingProduct
-                  src="/images/home_conversational_erp.png"
-                  alt="Flowtaris AI Finance Dashboard"
-                  frames={[
-                    '/images/home_conversational_erp.png',
-                    '/images/home_predictive_analytics.png'
-                  ]}
-                  mouseParallax={true}
-                  parallaxStrength={0.15}
-                  autoRotate={true}
-                  rotationSpeed={12}
-                  width={600}
-                  height={450}
-                  borderRadius="16px"
-                  shadow={true}
-                  shadowIntensity={1.5}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Capabilities Grid */}
-        <section className="py-32 px-6" aria-labelledby="capabilities-heading">
-          <div className="max-w-7xl mx-auto">
-            <header className="text-center mb-24">
-              <p className="text-body-sm text-brand-cyan-400 uppercase tracking-widest font-semibold mb-4">Platform Capabilities</p>
-              <h2 id="capabilities-heading" className="text-display-md text-gradient-brand text-balance mb-6">
-                Six Production-Grade AI Capabilities
-              </h2>
-              <p className="text-headline-md text-neutral-400 max-w-2xl mx-auto text-balance">
-                Covering the full finance automation lifecycle — from document ingestion to governance.
-              </p>
-            </header>
-
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {capabilities.map((feature, i) => (
-                <article key={feature.name} className="glass-card group interactive relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative z-10 p-8">
-                    <div className="text-4xl mb-5">{feature.icon}</div>
-                    <p className="text-body-xs text-brand-cyan-400 uppercase tracking-widest font-semibold mb-2">{feature.category}</p>
-                    <h3 className="text-headline-sm text-white mb-3">{feature.name}</h3>
-                    <p className="text-body-sm text-neutral-400 mb-5 leading-relaxed">{feature.desc}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {feature.platforms.map((platform) => (
-                        <Badge key={platform} variant="ghost" className="text-body-xs px-2 py-1">{platform}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Banner */}
-        <section className="py-24 px-6">
-          <div className="max-w-4xl mx-auto glass-card p-16 text-center relative overflow-hidden">
-            <div aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-brand-cyan-500/10 blur-[80px] pointer-events-none" />
-            <h2 className="text-display-md text-gradient-brand text-balance mb-6 relative">
-              Ready to automate your finance operations?
+      {/* ── Product Showcase ── */}
+      <section style={{ padding: '96px 24px', overflow: 'hidden' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 64 }}>
+          <div style={{ textAlign: 'center', maxWidth: 700 }}>
+            <p style={{ fontSize: 11, color: '#00b8db', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700, marginBottom: 16 }}>Live AI Dashboard</p>
+            <h2 className="text-display-sm text-gradient-brand" style={{ marginBottom: 20 }}>
+              Intelligence you can see and interact with
             </h2>
-            <p className="text-headline-sm text-neutral-400 mb-10 max-w-xl mx-auto text-balance">
-              Get a free AI readiness assessment and personalized roadmap in 3 minutes.
+            <p className="text-headline-sm" style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
+              Experience the power of our conversational ERP interface and predictive analytics engines —
+              real-time, visual, and actionable.
             </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <a href="/assessment" className="inline-flex items-center gap-2 px-10 py-4 rounded-full glass-strong text-white font-bold text-body-lg hover:scale-105 transition-transform duration-200">
-                Start Free Assessment →
-              </a>
-              <a href="/roi-calculator" className="inline-flex items-center gap-2 px-10 py-4 rounded-full glass text-white/80 font-semibold text-body-lg border border-white/15 hover:scale-105 transition-transform duration-200">
-                Calculate ROI
-              </a>
-            </div>
           </div>
-        </section>
-      </main>
+          <div style={{ width: '100%', maxWidth: 860, position: 'relative' }}>
+            <FloatingProduct
+              src="/images/home_conversational_erp.png"
+              alt="Flowtaris AI Finance Dashboard"
+              frames={['/images/home_conversational_erp.png', '/images/home_predictive_analytics.png']}
+              mouseParallax={true}
+              parallaxStrength={0.12}
+              autoRotate={true}
+              rotationSpeed={10}
+              width={860}
+              height={540}
+              borderRadius="20px"
+              shadow={true}
+              shadowIntensity={1.4}
+            />
+          </div>
+        </div>
+      </section>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-          <p className="text-body-sm text-neutral-500">
+      {/* ── Capabilities Grid ── */}
+      <section style={{ padding: '96px 24px', background: 'rgba(255,255,255,0.01)' }} aria-labelledby="capabilities-heading">
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 72 }}>
+            <p style={{ fontSize: 11, color: '#00b8db', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700, marginBottom: 16, fontFamily: "'Inter', sans-serif" }}>Platform Capabilities</p>
+            <h2 id="capabilities-heading" className="text-display-md text-gradient-brand" style={{ marginBottom: 20 }}>
+              Six Production-Grade AI Capabilities
+            </h2>
+            <p className="text-headline-sm" style={{ color: 'rgba(255,255,255,0.45)', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
+              Covering the full finance automation lifecycle — from document ingestion to governance.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: 24 }}>
+            {capabilities.map((cap, i) => (
+              <article key={i} className="glass-card" style={{ padding: '32px 28px', borderRadius: 20, transition: 'transform 0.25s', cursor: 'default', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ fontSize: 36, marginBottom: 16 }}>{cap.icon}</div>
+                <p style={{ fontSize: 10, color: '#00b8db', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 8 }}>{cap.category}</p>
+                <h3 className="text-headline-sm" style={{ color: '#ffffff', marginBottom: 12 }}>{cap.name}</h3>
+                <p className="text-body-sm" style={{ color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, marginBottom: 20 }}>{cap.desc}</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {cap.platforms.map((p) => (
+                    <Badge key={p} variant="ghost" className="text-body-xs">{p}</Badge>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA Banner ── */}
+      <section style={{ padding: '96px 24px' }}>
+        <div className="glass-card" style={{ maxWidth: 820, margin: '0 auto', padding: '72px 48px', borderRadius: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', top: -80, left: '50%', transform: 'translateX(-50%)', width: 500, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,184,219,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <h2 className="text-display-sm text-gradient-brand" style={{ marginBottom: 16 }}>
+            Ready to automate your finance operations?
+          </h2>
+          <p className="text-headline-sm" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 40, maxWidth: 520, margin: '0 auto 40px', lineHeight: 1.6 }}>
+            Get a free AI readiness assessment and personalized roadmap in 3 minutes.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
+            <a href="/assessment" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '16px 36px', borderRadius: 99,
+              background: 'linear-gradient(135deg, #00b8db, #0096b3)',
+              color: '#05050a', fontWeight: 700, fontSize: 16, textDecoration: 'none',
+              boxShadow: '0 0 30px rgba(0,184,219,0.35)', fontFamily: "'Inter', sans-serif",
+            }}>
+              Start Free Assessment →
+            </a>
+            <a href="/roi-calculator" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '16px 36px', borderRadius: 99,
+              background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.8)',
+              fontWeight: 600, fontSize: 16, textDecoration: 'none',
+              border: '1px solid rgba(255,255,255,0.14)', fontFamily: "'Inter', sans-serif",
+            }}>
+              Calculate ROI
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '40px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px', justifyContent: 'center' }}>
+            {['Capabilities', 'Case Studies', 'Assessment', 'ROI Calculator', 'Insights', 'Platforms', 'About', 'Contact'].map((link) => (
+              <a key={link} href={`/${link.toLowerCase().replace(/ /g, '-')}`}
+                className="text-body-sm"
+                style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color 0.2s' }}>
+                {link}
+              </a>
+            ))}
+          </div>
+          <p className="text-body-sm" style={{ color: 'rgba(255,255,255,0.2)' }}>
             © 2024 Flowtaris AI. All rights reserved.
           </p>
-          <div className="flex items-center gap-6 flex-wrap justify-center">
-            <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
-            <a href="/case-studies" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Case Studies</a>
-            <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            <a href="/roi-calculator" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">ROI Calculator</a>
-            <a href="/insights" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Insights</a>
-            <a href="/about" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">About</a>
-            <a href="/contact" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Contact</a>
-          </div>
         </div>
       </footer>
     </div>
