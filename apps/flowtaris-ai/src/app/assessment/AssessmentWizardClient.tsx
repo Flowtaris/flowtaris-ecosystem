@@ -811,7 +811,7 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
               </header>
 
               {/* Progress Indicator */}
-              <div className="glass-strong rounded-2xl p-6">
+              <div id="tour-progress" className="glass-strong rounded-2xl p-6">
                 <div className="flex justify-between text-body-sm text-neutral-400 mb-2">
                   <span>Step {currentStep} of 6</span>
                   <span>{Math.round(progress)}% Complete</span>
@@ -820,14 +820,16 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
               </div>
 
               {/* Steps 1-6 */}
-              {currentStep <= 6 && renderStep(currentStep)}
+              <div id="tour-step">
+                {currentStep <= 6 && renderStep(currentStep)}
+              </div>
 
               {/* Results */}
               {currentStep === 7 && renderResults()}
 
               {/* Navigation */}
               {currentStep <= 6 && (
-                <div className="flex justify-between pt-4 border-t border-white/10">
+                <div id="tour-nav" className="flex justify-between pt-4 border-t border-white/10">
                   <Button
                     variant="secondary"
                     onClick={handleBack}

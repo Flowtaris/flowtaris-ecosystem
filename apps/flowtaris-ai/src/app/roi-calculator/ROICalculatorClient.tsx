@@ -375,7 +375,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Currency Selector */}
-                    <div className="pb-2 border-b border-white/10">
+                    <div id="tour-currency" className="pb-2 border-b border-white/10">
                       <Label className="flex items-center gap-2 text-body-sm text-brand-cyan-300 mb-2 font-semibold">
                         <Globe className="h-3.5 w-3.5" /> Currency
                       </Label>
@@ -490,7 +490,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                       </div>
                     </div>
 
-                    <Button onClick={handleCalculate} disabled={isCalculating} className="glass-strong w-full py-3 mt-4" size="lg">
+                    <Button id="tour-calculate" onClick={handleCalculate} disabled={isCalculating} className="glass-strong w-full py-3 mt-4" size="lg">
                       {isCalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calculator className="mr-2 h-4 w-4" />}
                       {hasInteracted ? 'Update ROI' : 'Calculate ROI'}
                     </Button>
@@ -533,7 +533,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                       </CardContent>
                     </Card>
 
-                    <div className="grid gap-4 md:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+                    <div id="tour-stats" className="grid gap-4 md:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
                       <StatTile label="Annual Savings" value={formatCurrency(derived.annualSavings)} variant="primary" icon={<DollarSign className="h-6 w-6" />} iconBg="bg-brand-cyan-500/20" />
                       <StatTile label="Payback Period" value={`${derived.payback.toFixed(1)} mo`} variant="success" icon={<TrendingUp className="h-6 w-6" />} iconBg="bg-brand-green-500/20" />
                       <StatTile label="FTE Freed" value={formatNumber(derived.fteFreed)} variant="gradient" icon={<Zap className="h-6 w-6" />} iconBg="bg-brand-purple-500/20" />
@@ -574,7 +574,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
             </div>
 
             {hasInteracted && (
-              <div className="mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div id="tour-report" className="mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <Card className="glass-strong border border-brand-cyan-500/30">
                   <CardContent className="p-8 md:p-12 text-center">
                     <h3 className="text-display-md text-gradient-brand mb-4 text-balance">Get Your Detailed ROI Report</h3>

@@ -1,212 +1,358 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { Button } from '@repo/ui'
-import { Zap, X, ArrowRight, Play, CheckCircle } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
+import { Zap, X, ArrowRight, ChevronLeft, Play } from 'lucide-react'
 
-// Tour narrative steps
-const TOUR_STEPS = [
-  {
-    title: "The Intelligence Engine",
-    message: "Welcome. I am Flowtaris, the intelligence engine behind your financial automation. Let me show you what we can achieve together.",
-    path: "/",
-    cta: "Start Tour",
-  },
-  {
-    title: "Calculate Your Impact",
-    message: "We don't do guesswork. Let's project your exact ROI, FTE freed, and compliance savings based on your specific ERP volume.",
-    path: "/roi-calculator",
-    cta: "See ROI Calculator",
-  },
-  {
-    title: "Your Custom Roadmap",
-    message: "Not sure where to start? Take a 2-minute assessment and I will map out the exact AI capabilities you need.",
-    path: "/assessment",
-    cta: "View Assessment",
-  },
-  {
-    title: "The Cost of Waiting",
-    message: "Doing nothing is expensive. See how manual errors and employee attrition compound over time if you delay automation.",
-    path: "/cost-of-inaction",
-    cta: "Finish Tour",
+// ─── Tour step definition ────────────────────────────────────────────────────
+interface TourStep {
+  elementId: string          // DOM element to spotlight
+  title: string
+  message: string
+  placement: 'top' | 'bottom' | 'left' | 'right'  // tooltip side
+}
+
+// ─── Page-specific tour definitions ──────────────────────────────────────────
+const PAGE_TOURS: Record<string, TourStep[]> = {
+  '/roi-calculator': [
+    {
+      elementId: 'tour-currency',
+      title: '🌍 Global Currency Support',
+      message: 'Flowtaris serves clients worldwide. Select your local currency — all projections will instantly convert.',
+      placement: 'right',
+    },
+    {
+      elementId: 'tour-erp',
+      title: '⚙️ Select Your ERP Platform',
+      message: 'We tailor multipliers per platform. NetSuite, SAP, Workday, Coupa — each has different automation leverage.',
+      placement: 'right',
+    },
+    {
+      elementId: 'tour-calculate',
+      title: '🚀 Calculate Your ROI',
+      message: 'Once you set your baseline metrics, hit Calculate. The engine runs live projections using your exact numbers — no generic defaults.',
+      placement: 'top',
+    },
+    {
+      elementId: 'tour-stats',
+      title: '📊 Your Live Impact Metrics',
+      message: 'Annual savings, payback period, and FTE freed — computed in real time from your inputs. Every number is yours.',
+      placement: 'top',
+    },
+    {
+      elementId: 'tour-report',
+      title: '📩 Get Your ROI Report',
+      message: 'Enter your email to receive a full PDF with projections, attrition savings, compliance savings, and capability-specific breakdowns.',
+      placement: 'top',
+    },
+  ],
+
+  '/assessment': [
+    {
+      elementId: 'tour-progress',
+      title: '🗺️ Your 6-Step Roadmap',
+      message: 'This 3-minute assessment is tailored to your ERP and finance operations. We use your answers to build a prioritized AI roadmap.',
+      placement: 'bottom',
+    },
+    {
+      elementId: 'tour-step',
+      title: '🔷 Choose Your ERP Platform',
+      message: 'Select the ERP platform your finance team runs on. This is the single biggest factor in determining which AI capabilities will have the highest immediate impact.',
+      placement: 'right',
+    },
+    {
+      elementId: 'tour-nav',
+      title: '⬅️ ➡️ Navigate the Assessment',
+      message: 'Use Next and Back to move through the 6 steps. You can also use your keyboard arrow keys.',
+      placement: 'top',
+    },
+  ],
+}
+
+// ─── Padding around spotlight cutout ─────────────────────────────────────────
+const SPOTLIGHT_PADDING = 12
+
+// ─── Tooltip position calculation ────────────────────────────────────────────
+function getTooltipStyle(
+  rect: DOMRect,
+  placement: TourStep['placement'],
+  tooltipRef: React.RefObject<HTMLDivElement | null>
+): React.CSSProperties {
+  const PAD = 16
+  const tooltipW = tooltipRef.current?.offsetWidth || 320
+  const tooltipH = tooltipRef.current?.offsetHeight || 200
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+
+  let top = 0, left = 0
+
+  switch (placement) {
+    case 'bottom':
+      top = rect.bottom + PAD
+      left = rect.left + rect.width / 2 - tooltipW / 2
+      break
+    case 'top':
+      top = rect.top - tooltipH - PAD
+      left = rect.left + rect.width / 2 - tooltipW / 2
+      break
+    case 'left':
+      top = rect.top + rect.height / 2 - tooltipH / 2
+      left = rect.left - tooltipW - PAD
+      break
+    case 'right':
+    default:
+      top = rect.top + rect.height / 2 - tooltipH / 2
+      left = rect.right + PAD
+      break
   }
-]
 
+  // Keep inside viewport
+  left = Math.max(PAD, Math.min(left, vw - tooltipW - PAD))
+  top = Math.max(PAD, Math.min(top, vh - tooltipH - PAD))
+
+  return { position: 'fixed', top, left, width: tooltipW, zIndex: 110 }
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function FlowtarisGuide() {
-  const [mounted, setMounted] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
-  const [hasCompleted, setHasCompleted] = useState(true) // Default to true to prevent flash
-  
-  const router = useRouter()
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+  const [tourSteps, setTourSteps] = useState<TourStep[]>([])
+  const [currentStep, setCurrentStep] = useState(0)
+  const [isActive, setIsActive] = useState(false)
+  const [spotlight, setSpotlight] = useState<DOMRect | null>(null)
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
+  const [hasSeenTour, setHasSeenTour] = useState(true) // default true to prevent flash
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
 
-  // Initialize from local storage
+  // Detect page and load the relevant tour steps
   useEffect(() => {
     setMounted(true)
-    const seen = localStorage.getItem('flowtaris_tour_completed')
-    if (!seen) {
-      setHasCompleted(false)
-      // Only auto-expand if they are on the home page for the first time
-      if (pathname === '/') {
-        setTimeout(() => setIsExpanded(true), 1500)
-      }
-    }
+    const steps = PAGE_TOURS[pathname] || []
+    setTourSteps(steps)
+    if (steps.length === 0) return
+
+    const key = `flowtaris_tour_${pathname.replace(/\//g, '_')}`
+    const seen = localStorage.getItem(key)
+    setHasSeenTour(!!seen)
   }, [pathname])
+
+  // Position spotlight and tooltip for the current step
+  const positionStep = useCallback((stepIndex: number, steps: TourStep[]) => {
+    if (stepIndex >= steps.length) return
+    const step = steps[stepIndex]
+    const el = document.getElementById(step.elementId)
+    if (!el) return
+
+    // Scroll element into view, centered
+    el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
+
+    // Small delay to let scroll settle
+    setTimeout(() => {
+      const rect = el.getBoundingClientRect()
+      setSpotlight(rect)
+      if (tooltipRef.current) {
+        setTooltipStyle(getTooltipStyle(rect, step.placement, tooltipRef))
+      }
+    }, 350)
+  }, [])
+
+  // Re-position on resize or scroll
+  useEffect(() => {
+    if (!isActive) return
+    const handler = () => positionStep(currentStep, tourSteps)
+    window.addEventListener('resize', handler)
+    window.addEventListener('scroll', handler, true)
+    return () => {
+      window.removeEventListener('resize', handler)
+      window.removeEventListener('scroll', handler, true)
+    }
+  }, [isActive, currentStep, tourSteps, positionStep])
+
+  // Compute tooltip position after render when tooltipRef changes size
+  useEffect(() => {
+    if (isActive && spotlight) {
+      setTooltipStyle(getTooltipStyle(spotlight, tourSteps[currentStep]?.placement || 'bottom', tooltipRef))
+    }
+  }, [isActive, spotlight, currentStep, tourSteps])
 
   if (!mounted) return null
 
-  const handleSkip = () => {
-    setIsExpanded(false)
-    setHasCompleted(true)
-    localStorage.setItem('flowtaris_tour_completed', 'true')
+  const startTour = () => {
+    setCurrentStep(0)
+    setIsActive(true)
+    positionStep(0, tourSteps)
   }
 
   const handleNext = () => {
-    if (currentStep < TOUR_STEPS.length - 1) {
-      const nextStep = currentStep + 1
-      setCurrentStep(nextStep)
-      router.push(TOUR_STEPS[nextStep].path)
+    if (currentStep < tourSteps.length - 1) {
+      const next = currentStep + 1
+      setCurrentStep(next)
+      positionStep(next, tourSteps)
     } else {
-      handleSkip() // Finish
+      endTour(true)
     }
   }
 
-  const toggleOrb = () => {
-    setIsExpanded(!isExpanded)
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      const prev = currentStep - 1
+      setCurrentStep(prev)
+      positionStep(prev, tourSteps)
+    }
   }
+
+  const endTour = (completed = false) => {
+    setIsActive(false)
+    setSpotlight(null)
+    if (completed || !hasSeenTour) {
+      const key = `flowtaris_tour_${pathname.replace(/\//g, '_')}`
+      localStorage.setItem(key, 'true')
+      setHasSeenTour(true)
+    }
+  }
+
+  // Don't render anything if no tour for this page
+  if (tourSteps.length === 0) return null
+
+  const step = tourSteps[currentStep]
 
   return (
     <>
-      {/* Background Overlay when expanded */}
-      {isExpanded && !hasCompleted && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]" 
-          onClick={handleSkip}
-          aria-hidden="true"
+      {/* ── Spotlight Overlay ─────────────────────────────────────────────── */}
+      {isActive && spotlight && (
+        <div className="fixed inset-0 z-[100] pointer-events-none">
+          {/* Dark overlay with spotlight cutout using box-shadow technique */}
+          <div
+            className="absolute rounded-xl pointer-events-none transition-all duration-300"
+            style={{
+              top: spotlight.top - SPOTLIGHT_PADDING,
+              left: spotlight.left - SPOTLIGHT_PADDING,
+              width: spotlight.width + SPOTLIGHT_PADDING * 2,
+              height: spotlight.height + SPOTLIGHT_PADDING * 2,
+              boxShadow: '0 0 0 9999px rgba(0,0,0,0.72)',
+              border: '2px solid rgba(6, 182, 212, 0.7)',
+              boxSizing: 'border-box',
+            }}
+          />
+          {/* Pulsing ring around spotlight */}
+          <div
+            className="absolute rounded-xl pointer-events-none animate-ping"
+            style={{
+              top: spotlight.top - SPOTLIGHT_PADDING - 4,
+              left: spotlight.left - SPOTLIGHT_PADDING - 4,
+              width: spotlight.width + SPOTLIGHT_PADDING * 2 + 8,
+              height: spotlight.height + SPOTLIGHT_PADDING * 2 + 8,
+              border: '2px solid rgba(6, 182, 212, 0.3)',
+              animationDuration: '2s',
+            }}
+          />
+        </div>
+      )}
+
+      {/* ── Overlay click-to-close area ───────────────────────────────────── */}
+      {isActive && (
+        <div
+          className="fixed inset-0 z-[101] cursor-pointer"
+          onClick={() => endTour(false)}
         />
       )}
 
-      {/* The Orb / Modal Container */}
-      <div 
-        className={`fixed z-[100] transition-all duration-700 ease-in-out ${
-          isExpanded 
-            ? !hasCompleted 
-              ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md' // Center large modal
-              : 'bottom-6 right-6 w-80' // Bottom right expanded menu
-            : 'bottom-6 right-6 w-14 h-14' // Collapsed orb
-        }`}
-      >
-        {isExpanded ? (
-          <div className="glass-card overflow-hidden shadow-2xl shadow-brand-cyan-500/20 rounded-2xl border border-white/10 animate-in zoom-in-95 duration-300 bg-black/40 backdrop-blur-xl">
-            {/* Header/Header Glow */}
-            <div className="relative h-24 bg-gradient-to-br from-brand-purple-900/40 to-brand-cyan-900/40 flex items-center px-6 border-b border-white/10">
-              <div className="absolute inset-0 opacity-20 mix-blend-overlay"></div>
-              <div className="relative z-10 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-brand-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.6)]">
-                  <Zap className="h-5 w-5 text-white" />
+      {/* ── Floating Tooltip Card ─────────────────────────────────────────── */}
+      {isActive && step && (
+        <div
+          ref={tooltipRef}
+          className="z-[110] w-80 pointer-events-auto"
+          style={tooltipStyle}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="bg-[#0a0f1a]/95 backdrop-blur-xl border border-brand-cyan-500/30 rounded-2xl shadow-2xl shadow-brand-cyan-500/20 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-full bg-brand-cyan-500 flex items-center justify-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">
+                  <Zap className="h-3 w-3 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-white font-display font-medium">Flowtaris AI</h3>
-                  <p className="text-brand-cyan-300 text-xs">Intelligence Engine</p>
-                </div>
+                <span className="text-xs text-brand-cyan-300 font-medium tracking-wide uppercase">Flowtaris Guide</span>
               </div>
-              <button 
-                onClick={toggleOrb}
-                className="absolute right-4 top-4 text-white/50 hover:text-white transition-colors"
-                aria-label="Close"
+              <button
+                onClick={() => endTour(false)}
+                className="text-neutral-500 hover:text-white transition-colors"
+                aria-label="Close tour"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Content Area */}
-            <div className="p-6">
-              <h4 className="text-lg font-medium text-white mb-2">
-                {!hasCompleted ? TOUR_STEPS[currentStep].title : "How can I help?"}
-              </h4>
-              <p className="text-neutral-300 text-sm leading-relaxed mb-6">
-                {!hasCompleted ? TOUR_STEPS[currentStep].message : "Access our key tools below to see the impact of AI on your workflows."}
-              </p>
+            {/* Body */}
+            <div className="px-5 py-4">
+              <h4 className="text-white font-semibold text-sm mb-1.5">{step.title}</h4>
+              <p className="text-neutral-400 text-xs leading-relaxed">{step.message}</p>
+            </div>
 
+            {/* Footer */}
+            <div className="px-5 pb-4 flex items-center justify-between">
               {/* Progress dots */}
-              {!hasCompleted && (
-                <div className="flex gap-1.5 mb-6 justify-center">
-                  {TOUR_STEPS.map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === currentStep ? 'w-6 bg-brand-cyan-400' : 'w-1.5 bg-white/20'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="flex gap-1">
+                {tourSteps.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === currentStep ? 'w-4 bg-brand-cyan-400' : 'w-1.5 bg-white/20'
+                    }`}
+                  />
+                ))}
+              </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-3">
-                {!hasCompleted && currentStep === 0 ? (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      className="flex-1 glass text-white hover:text-brand-cyan-300 border-white/20"
-                      onClick={handleSkip}
-                    >
-                      I'll explore myself
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-brand-cyan-500 hover:bg-brand-cyan-400 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                      onClick={handleNext}
-                    >
-                      <Play className="h-4 w-4 mr-2 fill-current" />
-                      Start Tour
-                    </Button>
-                  </>
-                ) : !hasCompleted ? (
-                   <>
-                    <Button 
-                      variant="ghost" 
-                      className="text-neutral-400 hover:text-white"
-                      onClick={handleSkip}
-                    >
-                      Skip
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-brand-cyan-500 hover:bg-brand-cyan-400 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                      onClick={handleNext}
-                    >
-                      {currentStep === TOUR_STEPS.length - 1 ? (
-                        <><CheckCircle className="h-4 w-4 mr-2" /> Finish Tour</>
-                      ) : (
-                        <>{TOUR_STEPS[currentStep].cta} <ArrowRight className="h-4 w-4 ml-2" /></>
-                      )}
-                    </Button>
-                  </>
-                ) : (
-                   <div className="flex flex-col gap-2 w-full">
-                     <Button variant="outline" className="w-full glass justify-start border-white/20 hover:bg-white/5" onClick={() => { router.push('/roi-calculator'); toggleOrb(); }}>
-                       <Zap className="h-4 w-4 mr-3 text-brand-cyan-400" /> Calculate ROI
-                     </Button>
-                     <Button variant="outline" className="w-full glass justify-start border-white/20 hover:bg-white/5" onClick={() => { router.push('/assessment'); toggleOrb(); }}>
-                       <CheckCircle className="h-4 w-4 mr-3 text-brand-purple-400" /> AI Assessment
-                     </Button>
-                   </div>
+              {/* Navigation buttons */}
+              <div className="flex items-center gap-2">
+                {currentStep > 0 && (
+                  <button
+                    onClick={handlePrev}
+                    className="flex items-center gap-1 text-xs text-neutral-400 hover:text-white transition-colors px-2 py-1"
+                  >
+                    <ChevronLeft className="h-3 w-3" /> Back
+                  </button>
                 )}
+                <button
+                  onClick={handleNext}
+                  className="flex items-center gap-1 text-xs bg-brand-cyan-500 hover:bg-brand-cyan-400 text-white px-3 py-1.5 rounded-lg transition-colors font-medium shadow-[0_0_10px_rgba(6,182,212,0.4)]"
+                >
+                  {currentStep === tourSteps.length - 1 ? 'Finish' : 'Next'}
+                  <ArrowRight className="h-3 w-3" />
+                </button>
               </div>
             </div>
+
+            {/* Skip link */}
+            <div className="px-5 pb-3 text-center">
+              <button
+                onClick={() => endTour(false)}
+                className="text-[10px] text-neutral-600 hover:text-neutral-400 transition-colors"
+              >
+                Skip tour
+              </button>
+            </div>
           </div>
-        ) : (
+        </div>
+      )}
+
+      {/* ── Launcher Button (bottom-right) ────────────────────────────────── */}
+      {!isActive && (
+        <div className="fixed bottom-6 right-6 z-[99]">
           <button
-            onClick={toggleOrb}
-            className="group relative h-14 w-14 rounded-full bg-brand-cyan-500/10 backdrop-blur-md border border-brand-cyan-400/30 flex items-center justify-center hover:bg-brand-cyan-500/20 transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]"
-            aria-label="Open Flowtaris Assistant"
+            onClick={startTour}
+            className="group relative flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand-cyan-500/10 backdrop-blur-md border border-brand-cyan-400/30 hover:bg-brand-cyan-500/20 transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]"
+            aria-label="Start guided tour"
           >
-            <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-brand-cyan-400"></div>
-            <Zap className="h-6 w-6 text-brand-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.8)] group-hover:scale-110 transition-transform" />
+            <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-brand-cyan-400" style={{ animationDuration: '3s' }} />
+            <Zap className="h-4 w-4 text-brand-cyan-300 drop-shadow-[0_0_6px_rgba(103,232,249,0.8)]" />
+            <span className="text-xs text-brand-cyan-200 font-medium pr-1">
+              {hasSeenTour ? 'Replay Tour' : 'Take a Tour'}
+            </span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </>
   )
 }
