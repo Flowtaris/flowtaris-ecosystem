@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, FormEvent, useMemo } from 'react'
-import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Label, RadioGroup, Progress, Checkbox, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@repo/ui'
 import { ArrowRight, ChevronRight, Sparkles, Zap, Shield, BarChart3, CheckCircle, Loader2, ChartBar, ChevronLeft, Mail, ExternalLink } from 'lucide-react'
 import { runAssessment, type AssessmentAnswers, type AssessmentResult, type Recommendation } from '@flowtaris/assessment-engine'
@@ -775,40 +774,57 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
 
   return (
     <div className="flex flex-col flex-1 w-full">
-      <HeroPattern
-        headline={{
-          text: 'AI Readiness<br />Assessment',
-          split: ['words', 'lines'],
-          className: 'text-display-xl text-gradient-brand text-balance',
-        }}
-        subheadline={{
-          text: 'Free 3-minute diagnostic → Personalized roadmap with Quick Wins (0-3mo), Strategic initiatives (3-9mo), and Innovation opportunities (9-18mo).',
-          shape: 'wave',
-          className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
-        }}
-        stats={[
-          { label: 'Completion Time', value: '3 min' },
-          { label: 'Questions', value: '6' },
-          { label: 'Roadmap Columns', value: '3' },
-          { label: 'No Cost', value: 'Free' },
-        ]}
-        scrollIndicator={{ show: true }}
-        vignette={{ show: true, intensity: 0.3 }}
-        noise={{ show: true, opacity: 0.03 }}
-      />
+
+      {/* ── Premium Hero Header ─────────────────────────────────────────── */}
+      <div className="relative overflow-hidden bg-[#020817] border-b border-white/5">
+        {/* Subtle grid */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
+        {/* Radial glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-cyan-500/10 blur-[80px] rounded-full" />
+        
+        <Container size="lg">
+          <div className="relative z-10 py-16 text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-brand-cyan-500/10 border border-brand-cyan-500/30 rounded-full px-4 py-1.5 mb-6">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan-400 animate-pulse" />
+              <span className="text-xs text-brand-cyan-300 font-medium tracking-wider uppercase">Free · No signup required</span>
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
+              AI Readiness{' '}
+              <span className="bg-gradient-to-r from-brand-cyan-400 to-brand-purple-400 bg-clip-text text-transparent">
+                Assessment
+              </span>
+            </h1>
+            <p className="text-lg text-neutral-400 max-w-2xl mx-auto mb-10">
+              Free 3-minute diagnostic → Get a personalized roadmap with Quick Wins (0–3mo), Strategic initiatives (3–9mo), and Innovation opportunities (9–18mo).
+            </p>
+
+            {/* Stats row */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {[
+                { value: '3 min', label: 'To complete' },
+                { value: '6', label: 'Questions' },
+                { value: '3', label: 'Roadmap tracks' },
+                { value: 'Free', label: 'No cost' },
+              ].map(({ value, label }) => (
+                <div key={label} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
+                  <span className="text-xl font-bold text-white">{value}</span>
+                  <span className="text-xs text-neutral-500">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </div>
 
       <main className="flex-1 w-full">
-        <section className="py-24 px-6" aria-labelledby="assessment-heading">
+        <section className="py-12 px-6" aria-labelledby="assessment-heading">
           <Container size="lg">
             <Stack gap="2xl" className="w-full max-w-3xl mx-auto">
-              <header className="text-center">
-                <h2 id="assessment-heading" className="text-display-md text-gradient-brand text-balance mb-6">
-                  Your Personalized AI Automation Roadmap
-                </h2>
-                <p className="text-headline-md text-neutral-400 text-balance">
-                  Answer 6 questions to get capability recommendations tailored to your ERP, volume, and urgency.
-                </p>
-              </header>
+              <h2 id="assessment-heading" className="sr-only">Your Personalized AI Automation Roadmap</h2>
+
 
               {/* Progress Indicator */}
               <div id="tour-progress" className="glass-strong rounded-2xl p-6">
