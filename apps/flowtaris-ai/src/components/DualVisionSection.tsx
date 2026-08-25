@@ -164,7 +164,7 @@ function VisionPanel({
   side: 'left' | 'right'
   domain: string; domainHref: string
   headline1: string; headline2: string; intro: string
-  pillars: typeof COM_PILLARS; gold?: boolean
+  pillars: Array<{ number: string; title: string; subtitle: string; body: string; tag: string }>; gold?: boolean
   ctaLabel: string; ctaHref: string
   imageSrc: string; imageAlt: string
   panelVisible: boolean
