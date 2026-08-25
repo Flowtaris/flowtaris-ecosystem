@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, FormEvent, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, FormEvent, useMemo } from 'react'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Label, RadioGroup, Progress, Checkbox, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@repo/ui'
 import { ArrowRight, ChevronRight, Sparkles, Zap, Shield, BarChart3, CheckCircle, Loader2, ChartBar, ChevronLeft, Mail, ExternalLink } from 'lucide-react'
@@ -365,8 +365,8 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
     setCurrentStep(prev => Math.max(prev - 1, 1))
   }
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.MouseEvent | React.FormEvent) => {
+    if (e) e.preventDefault()
     if (!validateStep(6, answers)) return
 
     setIsSubmitting(true)
@@ -402,20 +402,22 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
 
   const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!email || !result || !assessmentId) return
+    if (!email || !result) return
 
     try {
-      // Call API route to persist email to Supabase
-      const response = await fetch('/api/leads/assessment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: assessmentId, email }),
-      })
+      // Call API route to persist email to Supabase (if we have an assessmentId)
+      if (assessmentId) {
+        const response = await fetch('/api/leads/assessment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: assessmentId, email }),
+        })
 
-      const data = await response.json()
+        const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to capture email')
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to capture email')
+        }
       }
 
       // Track analytics event

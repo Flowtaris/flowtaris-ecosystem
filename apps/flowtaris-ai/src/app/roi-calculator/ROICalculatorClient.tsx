@@ -268,11 +268,23 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
 
   const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!email || !roiCalculationId) return
+    if (!email) return
     setIsSubmitting(true)
     try {
       analytics.roi.emailCapture({ email, projectedSavings: derived.annualSavings })
+
+      // Persist email to Supabase if we have a saved calculation ID
+      if (roiCalculationId) {
+        await fetch('/api/leads/roi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: roiCalculationId, email }),
+        })
+      }
+
       setEmailSent(true)
+    } catch (err) {
+      console.error('ROI email capture error:', err)
     } finally {
       setIsSubmitting(false)
     }
