@@ -32,8 +32,8 @@
   body {
     font-family: var(--font-body);
     color: var(--text-primary);
-    background-color: var(--surface-layer4);
-    background: var(--gradient-layer-1);
+    background-color: #0d0b14;
+    background: radial-gradient(circle at top, #1c182b 0%, #0d0b14 100%);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;

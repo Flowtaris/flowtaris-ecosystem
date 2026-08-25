@@ -181,39 +181,49 @@ function VisionPanel({
       className="flex flex-col h-full"
     >
       {/* ── Visual header image ── */}
-      <div className="relative h-[240px] rounded-2xl overflow-hidden mb-7 group">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageSrc}
-          alt={imageAlt}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-        />
-        {/* Gradient overlay — heavier at bottom for text readability */}
-        <div className={`absolute inset-0 ${gold
-          ? 'bg-gradient-to-t from-[#08060a] via-[#08060a]/65 to-transparent'
-          : 'bg-gradient-to-t from-[#05050a] via-[#05050a]/65 to-transparent'
-        }`} />
+      <div className="relative mb-10 group">
+        {/* Ambient glow behind image */}
+        <div className={`absolute -inset-2 rounded-3xl blur-xl opacity-20 group-hover:opacity-40 transition duration-1000 ${gold ? 'bg-[#D4A847]' : 'bg-blue-400'}`} />
+        
+        {/* Main image container */}
+        <div className={`
+          relative h-[260px] rounded-[1.5rem] overflow-hidden 
+          border-[0.5px] ${gold ? 'border-[#D4A847]/30' : 'border-blue-300/30'}
+          bg-[#0d0b14]/50 backdrop-blur-md shadow-2xl
+        `}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageSrc}
+            alt={imageAlt}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 mix-blend-screen"
+          />
+          {/* Internal gradients for depth */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0b14] via-[#0d0b14]/40 to-transparent" />
+          <div className={`absolute inset-0 bg-gradient-to-r ${gold ? 'from-[#0d0b14]/90' : 'from-[#0d0b14]/90'} to-transparent w-2/3`} />
+          
+          {/* Tech accents */}
+          <div className={`absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl ${gold ? 'from-[#D4A847]/20' : 'from-blue-400/20'} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000`} />
+          
+          {/* Scanning line effect */}
+          <div className={`absolute top-0 left-0 w-full h-[1px] ${gold ? 'bg-[#D4A847]/50' : 'bg-blue-400/50'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} style={{ animation: 'slide-down 3s linear infinite' }} />
+        </div>
 
-        {/* Corner accent lines */}
-        <div className={`absolute top-4 right-4 w-10 h-10 border-t-[1.5px] border-r-[1.5px] rounded-tr-lg opacity-50 transition-opacity duration-500 group-hover:opacity-100 ${gold ? 'border-[#D4A847]' : 'border-white/30'}`} />
-        <div className={`absolute bottom-4 left-4 w-10 h-10 border-b-[1.5px] border-l-[1.5px] rounded-bl-lg opacity-30 transition-opacity duration-500 group-hover:opacity-70 ${gold ? 'border-[#D4A847]' : 'border-white/20'}`} />
-
-        {/* Domain badge */}
-        <div className="absolute bottom-4 left-5">
+        {/* Floating Domain badge */}
+        <div className="absolute -bottom-4 right-6 z-20">
           <a
             href={domainHref}
             target={domainHref.startsWith('http') ? '_blank' : undefined}
             rel={domainHref.startsWith('http') ? 'noopener noreferrer' : undefined}
             className={`
-              inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold tracking-[0.12em] uppercase
-              backdrop-blur-sm border transition-all duration-300
+              inline-flex items-center gap-2.5 px-6 py-2 rounded-full text-[12px] font-bold tracking-[0.15em] uppercase
+              backdrop-blur-xl border shadow-xl transition-all duration-500 hover:-translate-y-1
               ${gold
-                ? 'bg-[#D4A847]/20 border-[#D4A847]/50 text-[#f0c97a] hover:bg-[#D4A847]/30'
-                : 'bg-white/[0.1] border-white/20 text-white/80 hover:bg-white/[0.17]'
+                ? 'bg-[#15121c]/80 border-[#D4A847]/40 text-[#f0c97a] hover:bg-[#1a1625] shadow-[#D4A847]/10'
+                : 'bg-[#15121c]/80 border-blue-400/40 text-blue-200 hover:bg-[#1a1625] shadow-blue-900/20'
               }
             `}
           >
-            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${gold ? 'bg-[#D4A847] animate-pulse' : 'bg-white/60'}`} />
+            <span className={`w-2 h-2 rounded-full shrink-0 ${gold ? 'bg-[#D4A847] animate-pulse' : 'bg-blue-400 animate-pulse'}`} />
             {domain}
           </a>
         </div>
@@ -335,7 +345,7 @@ export default function DualVisionSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full overflow-hidden bg-[#05050a]"
+      className="relative w-full overflow-hidden bg-transparent"
       aria-labelledby="dual-vision-heading"
       itemScope
       itemType="https://schema.org/Organization"
@@ -344,7 +354,7 @@ export default function DualVisionSection() {
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         {/* Blueprint grid */}
         <div
-          className="absolute inset-0 opacity-[0.022]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `
               linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px),

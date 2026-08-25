@@ -72,7 +72,7 @@ export function HomeHero() {
           alignItems: 'center',
           overflow: 'hidden',
           padding: '120px 24px 80px',
-          background: '#05050a',
+          background: 'transparent',
         }}
         aria-label="Flowtaris AI Hero"
       >
@@ -85,14 +85,14 @@ export function HomeHero() {
             backgroundSize: 'cover',
             backgroundPosition: 'center center',
             backgroundRepeat: 'no-repeat',
-            opacity: 0.8,
-            filter: 'contrast(1.1) brightness(1.1)',
+            opacity: 0.9,
+            filter: 'contrast(1.1) brightness(1.3)',
           }} />
 
           {/* Minimal dark overlay mainly at top/bottom for text/nav contrast */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(180deg, rgba(5,5,10,0.8) 0%, rgba(5,5,10,0.2) 30%, rgba(5,5,10,0.2) 70%, rgba(5,5,10,0.85) 100%)',
+            background: 'linear-gradient(180deg, rgba(13,11,20,0.9) 0%, rgba(13,11,20,0.1) 30%, rgba(13,11,20,0.1) 70%, rgba(13,11,20,0.95) 100%)',
           }} />
 
           {/* Center radial glow behind the main text */}
@@ -100,7 +100,7 @@ export function HomeHero() {
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
             width: '80%', height: '80%',
-            background: 'radial-gradient(circle, rgba(5,5,10,0.6) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(13,11,20,0.5) 0%, transparent 70%)',
             filter: 'blur(40px)',
           }} />
         </div>
@@ -115,19 +115,20 @@ export function HomeHero() {
           {/* Label */}
           <div className="hh-fade delay-1" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '6px 18px', borderRadius: 99, marginBottom: 32,
-            border: '1px solid rgba(212,168,71,0.3)',
-            background: 'rgba(212,168,71,0.08)',
-            fontSize: 12, fontWeight: 700, letterSpacing: '0.12em',
-            textTransform: 'uppercase', color: '#f0c97a',
+            marginBottom: 32,
+            fontSize: 13, fontWeight: 600, letterSpacing: '0.15em',
+            textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)',
             fontFamily: "'Inter', system-ui, sans-serif",
           }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: '50%',
-              background: '#D4A847', display: 'inline-block',
-              boxShadow: '0 0 10px #D4A847',
+            <span style={{ 
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)', 
+              height: 1, width: 40 
             }} />
-            Experience Flowtaris AI
+            <span>The Future of Enterprise Finance</span>
+            <span style={{ 
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)', 
+              height: 1, width: 40 
+            }} />
           </div>
 
           {/* Headline with Typing Effect */}
