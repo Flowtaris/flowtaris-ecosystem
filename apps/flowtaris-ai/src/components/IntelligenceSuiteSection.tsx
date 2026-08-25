@@ -114,11 +114,14 @@ function AssessmentPreview({ active }: { active: boolean }) {
   const [showScore, setShowScore] = useState(false)
   const [score, setScore] = useState(0)
   const [hint, setHint] = useState('')
+  const [loopCycle, setLoopCycle] = useState(0)
 
   useEffect(() => {
     if (!active) {
       setStep(-1); setSelectedOpts(-1); setTypedFields([]); setShowScore(false); setScore(0); setHint(''); return
     }
+    setStep(-1); setSelectedOpts(-1); setTypedFields([]); setShowScore(false); setScore(0); setHint('')
+
     const T: NodeJS.Timeout[] = []
     const go = (s: number, delay: number) => {
       T.push(setTimeout(() => {
@@ -168,11 +171,11 @@ function AssessmentPreview({ active }: { active: boolean }) {
     // Loop reset
     T.push(setTimeout(() => {
       setStep(-1); setSelectedOpts(-1); setTypedFields([]); setShowScore(false); setScore(0); setHint('')
-      setTimeout(() => { setStep(0); setHint('Select to continue') }, 300)
-    }, 15000))
+      T.push(setTimeout(() => setLoopCycle(c => c + 1), 300))
+    }, 14700))
 
     return () => T.forEach(t => clearTimeout(t))
-  }, [active])
+  }, [active, loopCycle])
 
   const progPct = step < 0 ? 0 : step >= 6 ? 100 : ((step) / 6) * 100
   const ws = step >= 0 && step < 6 ? WIZARD_STEPS[step] : null
@@ -315,9 +318,11 @@ function ROIPreview({ active }: { active: boolean }) {
   const [savings, setSavings] = useState(0)
   const [showReport, setShowReport] = useState(false)
   const [hint, setHint] = useState('')
+  const [loopCycle, setLoopCycle] = useState(0)
 
   useEffect(() => {
     if (!active) { setPhase(0); setVolume(0); setSavings(0); setShowReport(false); setHint(''); return }
+    setPhase(0); setVolume(0); setSavings(0); setShowReport(false); setHint('')
     const T: NodeJS.Timeout[] = []
     T.push(setTimeout(() => { setPhase(1); setHint('Select your ERP platform') }, 300))
     T.push(setTimeout(() => { setPhase(2); setHint('Drag to enter invoice volume') }, 1800))
@@ -335,10 +340,10 @@ function ROIPreview({ active }: { active: boolean }) {
     T.push(setTimeout(() => { setShowReport(true); setHint('Send full report to CFO') }, 6200))
     T.push(setTimeout(() => {
       setPhase(0); setVolume(0); setSavings(0); setShowReport(false); setHint('')
-      setTimeout(() => { setPhase(1); setHint('Select your ERP platform') }, 300)
+      T.push(setTimeout(() => setLoopCycle(c => c + 1), 300))
     }, 12000))
     return () => T.forEach(t => clearTimeout(t))
-  }, [active])
+  }, [active, loopCycle])
 
   return (
     <div className="h-full flex flex-col gap-2.5 font-['Inter',sans-serif] select-none">
@@ -429,9 +434,11 @@ function InactionPreview({ active }: { active: boolean }) {
   const [gap, setGap] = useState(0)
   const [tick, setTick] = useState(0)
   const [showExport, setShowExport] = useState(false)
+  const [loopCycle, setLoopCycle] = useState(0)
 
   useEffect(() => {
     if (!active) { setPhase(0); setLeakage(0); setCompRisk(0); setGap(0); setTick(0); setShowExport(false); return }
+    setPhase(0); setLeakage(0); setCompRisk(0); setGap(0); setTick(0); setShowExport(false)
     const T: NodeJS.Timeout[] = []
     T.push(setTimeout(() => setPhase(1), 300))
     const roll = setTimeout(() => {
@@ -450,10 +457,10 @@ function InactionPreview({ active }: { active: boolean }) {
     T.push(setTimeout(() => { setShowExport(true) }, 7000))
     T.push(setTimeout(() => {
       setPhase(0); setLeakage(0); setCompRisk(0); setGap(0); setTick(0); setShowExport(false)
-      setTimeout(() => setPhase(1), 300)
+      T.push(setTimeout(() => setLoopCycle(c => c + 1), 300))
     }, 13000))
     return () => T.forEach(t => clearTimeout(t))
-  }, [active])
+  }, [active, loopCycle])
 
   return (
     <div className="h-full flex flex-col gap-2.5 font-['Inter',sans-serif] select-none">
@@ -537,9 +544,11 @@ function LabPreview({ active }: { active: boolean }) {
   const [revealed, setRevealed] = useState(0)
   const [expandedIdx, setExpandedIdx] = useState(-1)
   const [showJoin, setShowJoin] = useState(false)
+  const [loopCycle, setLoopCycle] = useState(0)
 
   useEffect(() => {
     if (!active) { setRevealed(0); setExpandedIdx(-1); setShowJoin(false); return }
+    setRevealed(0); setExpandedIdx(-1); setShowJoin(false)
     const T: NodeJS.Timeout[] = []
     let i = 0
     const iv = setInterval(() => { i++; setRevealed(i); if (i >= LAB_TRACKS.length) clearInterval(iv) }, 240)
@@ -549,12 +558,10 @@ function LabPreview({ active }: { active: boolean }) {
     T.push(setTimeout(() => setShowJoin(true), 6000))
     T.push(setTimeout(() => {
       setRevealed(0); setExpandedIdx(-1); setShowJoin(false)
-      let j = 0
-      const iv2 = setInterval(() => { j++; setRevealed(j); if (j >= LAB_TRACKS.length) clearInterval(iv2) }, 240)
-      T.push(iv2)
+      T.push(setTimeout(() => setLoopCycle(c => c + 1), 300))
     }, 12000))
     return () => T.forEach(t => clearTimeout(t))
-  }, [active])
+  }, [active, loopCycle])
 
   return (
     <div className="h-full flex flex-col gap-2 font-['Inter',sans-serif] select-none">
@@ -863,15 +870,7 @@ export default function IntelligenceSuiteSection() {
                 </div>
               </div>
 
-              {/* ── Hover overlay to show "Click to open" ── */}
-              <div className="absolute inset-0 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-40 pointer-events-none flex items-center justify-center"
-                style={{ background: 'rgba(0,0,0,0.25)' }}>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: `1px solid ${c.a}55` }}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: c.b }} />
-                  <span className="text-[12px] font-semibold text-white">Open {tool.tagline}</span>
-                </div>
-              </div>
+
 
               {/* ── HINGE ── */}
               <div className="mx-1">
