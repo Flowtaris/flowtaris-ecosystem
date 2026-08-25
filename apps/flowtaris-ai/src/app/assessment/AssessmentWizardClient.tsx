@@ -242,7 +242,12 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Use Sanity config or fallback to defaults
-  const questions = useMemo(() => initialConfig?.questions ?? defaultSteps, [initialConfig])
+  const questions = useMemo(() => {
+    if (initialConfig?.questions && Array.isArray(initialConfig.questions) && initialConfig.questions.length > 0) {
+      return initialConfig.questions
+    }
+    return defaultSteps
+  }, [initialConfig])
 
   // Map Sanity question IDs to AssessmentAnswers fields
   const questionFieldMap: Record<string, keyof AssessmentAnswers> = {
