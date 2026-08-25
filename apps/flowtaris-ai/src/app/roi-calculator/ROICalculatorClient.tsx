@@ -68,7 +68,6 @@ interface SanityROIConfig {
     keyClaims?: string[]
     faqItems?: Array<{ question: string; answer: string }>
     entityAssociations?: string[]
-    entityAssociations?: string[]
     topicClusters?: string[]
   }
   uiContent?: Record<string, string>
