@@ -71,41 +71,41 @@ export function HomeHero() {
       >
         {/* ── Background: Floating UI mockup image ── */}
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          {/* The generated floating screens image */}
+          {/* The generated floating screens image — visible at high opacity */}
           <div style={{
             position: 'absolute', inset: 0,
             backgroundImage: "url('/images/hero-bg.png')",
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: 'center center',
             backgroundRepeat: 'no-repeat',
-            opacity: 0.22,
+            opacity: 0.55,
           }} />
 
-          {/* Dark overlay to make text pop cleanly */}
+          {/* Lighter dark overlay — just enough to keep text readable */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(180deg, rgba(5,5,10,0.82) 0%, rgba(5,5,10,0.68) 40%, rgba(5,5,10,0.88) 100%)',
+            background: 'linear-gradient(180deg, rgba(5,5,10,0.60) 0%, rgba(5,5,10,0.42) 40%, rgba(5,5,10,0.70) 100%)',
           }} />
 
-          {/* Left side tint — neutral/white territory */}
+          {/* Left side: very subtle cool tint */}
           <div style={{
             position: 'absolute', inset: 0, right: '50%',
-            background: 'linear-gradient(90deg, rgba(5,5,10,0.5) 0%, transparent 100%)',
+            background: 'linear-gradient(90deg, rgba(5,5,10,0.35) 0%, transparent 100%)',
           }} />
 
-          {/* Right side tint — gold territory */}
+          {/* Right side: very subtle warm tint */}
           <div style={{
             position: 'absolute', inset: 0, left: '50%',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(10,8,3,0.4) 100%)',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(10,8,3,0.25) 100%)',
           }} />
 
           {/* Center gold glow */}
           <div style={{
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 300, height: '120%',
-            background: 'radial-gradient(ellipse, rgba(212,168,71,0.12) 0%, transparent 60%)',
-            filter: 'blur(40px)',
+            width: 400, height: '130%',
+            background: 'radial-gradient(ellipse, rgba(212,168,71,0.18) 0%, transparent 65%)',
+            filter: 'blur(50px)',
           }} />
         </div>
 
