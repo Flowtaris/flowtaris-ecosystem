@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getSiteConfig } from '@/lib/supabase'
+import { getSiteConfig, createAdminClient } from '@/lib/supabase'
 
 /**
  * GET /api/site-config
@@ -48,5 +48,59 @@ export async function GET() {
         headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=120' },
       }
     )
+  }
+}
+
+/**
+ * POST /api/site-config
+ * Updates site_config using the service-role admin client (server-side only).
+ * The anon key cannot UPDATE via RLS, so all saves must go through this route.
+ */
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+
+    const {
+      site_name, site_url, tagline, logo_url, favicon_url,
+      header_brand_name, header_badge_text, header_show_logo,
+      navigation, social_links, contact_email, support_email,
+      privacy_policy_url, terms_of_service_url, cookie_policy_url,
+      analytics, seo,
+    } = body
+
+    const updatePayload: Record<string, unknown> = {}
+    if (site_name !== undefined)            updatePayload.site_name = site_name
+    if (site_url !== undefined)             updatePayload.site_url = site_url
+    if (tagline !== undefined)              updatePayload.tagline = tagline
+    if (logo_url !== undefined)             updatePayload.logo_url = logo_url
+    if (favicon_url !== undefined)          updatePayload.favicon_url = favicon_url
+    if (header_brand_name !== undefined)    updatePayload.header_brand_name = header_brand_name
+    if (header_badge_text !== undefined)    updatePayload.header_badge_text = header_badge_text
+    if (header_show_logo !== undefined)     updatePayload.header_show_logo = header_show_logo
+    if (navigation !== undefined)           updatePayload.navigation = navigation
+    if (social_links !== undefined)         updatePayload.social_links = social_links
+    if (contact_email !== undefined)        updatePayload.contact_email = contact_email
+    if (support_email !== undefined)        updatePayload.support_email = support_email
+    if (privacy_policy_url !== undefined)   updatePayload.privacy_policy_url = privacy_policy_url
+    if (terms_of_service_url !== undefined) updatePayload.terms_of_service_url = terms_of_service_url
+    if (cookie_policy_url !== undefined)    updatePayload.cookie_policy_url = cookie_policy_url
+    if (analytics !== undefined)            updatePayload.analytics = analytics
+    if (seo !== undefined)                  updatePayload.seo = seo
+
+    const adminClient = createAdminClient()
+    const { error } = await adminClient
+      .from('site_config')
+      .update(updatePayload)
+      .eq('id', '00000000-0000-0000-0000-000000000001')
+
+    if (error) {
+      console.error('[POST /api/site-config] Supabase error:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 })
+  } catch (err: any) {
+    console.error('[POST /api/site-config] Unexpected error:', err)
+    return NextResponse.json({ error: err.message ?? 'Unknown error' }, { status: 500 })
   }
 }

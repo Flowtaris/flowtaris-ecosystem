@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, useRef } from 'react'
-import Image from 'next/image'
-import { getSiteConfig, updateSiteConfig, supabase } from '@/lib/supabase'
+import { getSiteConfig, supabase } from '@/lib/supabase'
 import { Upload, X, Eye, EyeOff, RefreshCw, CheckCircle2, AlertCircle, ImageIcon, Type, Tag } from 'lucide-react'
 
 // ── Shared UI primitives ─────────────────────────────────────────────────────
@@ -500,22 +499,31 @@ export default function SiteConfigPage() {
       try { analytics = JSON.parse(config.analytics) } catch { throw new Error('Analytics JSON is invalid') }
       try { seo = JSON.parse(config.seo) } catch { throw new Error('SEO JSON is invalid') }
 
-      await updateSiteConfig({
-        site_name: config.site_name,
-        site_url: config.site_url,
-        tagline: config.tagline,
-        logo_url: config.logo_url,
-        favicon_url: config.favicon_url,
-        navigation: nav,
-        social_links: social,
-        contact_email: config.contact_email,
-        support_email: config.support_email,
-        privacy_policy_url: config.privacy_policy_url,
-        terms_of_service_url: config.terms_of_service_url,
-        cookie_policy_url: config.cookie_policy_url,
-        analytics: analytics,
-        seo: seo,
-      } as any)
+      const res = await fetch('/api/site-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          site_name: config.site_name,
+          site_url: config.site_url,
+          tagline: config.tagline,
+          logo_url: config.logo_url,
+          favicon_url: config.favicon_url,
+          header_brand_name: config.header_brand_name,
+          header_badge_text: config.header_badge_text,
+          header_show_logo: config.header_show_logo,
+          navigation: nav,
+          social_links: social,
+          contact_email: config.contact_email,
+          support_email: config.support_email,
+          privacy_policy_url: config.privacy_policy_url,
+          terms_of_service_url: config.terms_of_service_url,
+          cookie_policy_url: config.cookie_policy_url,
+          analytics: analytics,
+          seo: seo,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to save configuration')
 
       setSuccess('Site configuration saved successfully!')
       setTimeout(() => setSuccess(null), 4000)
