@@ -168,8 +168,7 @@ export async function getSiteConfig() {
 }
 
 export async function updateSiteConfig(data: Partial<SiteConfig>) {
-  const client = createAdminClient()
-  const { data: updatedData, error } = await client
+  const { data: updatedData, error } = await supabase
     .from('site_config')
     .update(data)
     .eq('id', '00000000-0000-0000-0000-000000000001')

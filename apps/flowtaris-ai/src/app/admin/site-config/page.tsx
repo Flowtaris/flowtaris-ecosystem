@@ -415,9 +415,10 @@ function HeaderPreview({ brandName, badgeText, showLogo, logoUrl }: {
                 />
               </div>
             )}
-            <span className="flex items-baseline gap-0.5">
-              <span className="text-white font-bold text-[13px]">{brandName || 'Flowtaris'}</span>
-              <span className="text-[#00b8db] text-[10px] font-bold px-1 py-0.5 rounded bg-[#00b8db]/10 border border-[#00b8db]/25 ml-0.5">
+            <span className="flex items-center gap-1.5 ml-1.5">
+              <span className="text-white font-medium text-[13px] tracking-wide font-sans">{brandName || 'Flowtaris'}</span>
+              <span className="relative inline-flex items-center px-1.5 py-0.5 rounded-md bg-gradient-to-br from-white/10 to-white/5 border border-white/10 text-white/80 text-[10px] font-semibold tracking-wider uppercase shadow-sm">
+                <span className="absolute -top-[2px] -right-[2px] w-[4px] h-[4px] rounded-full bg-gradient-to-b from-[#e8b84b] to-[#b3852b] shadow-[0_0_4px_rgba(212,168,71,0.5)]" />
                 {badgeText || '.ai'}
               </span>
             </span>
