@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, FormEvent, useMemo } from 'react'
-import { Section, Container, Stack, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Label, RadioGroup, Progress, Checkbox, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@repo/ui'
+import { Section, Container, Stack, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Label, Progress, Checkbox, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@repo/ui'
 import { ArrowRight, ChevronRight, Sparkles, Zap, Shield, BarChart3, CheckCircle, Loader2, ChartBar, ChevronLeft, Mail, ExternalLink } from 'lucide-react'
 import { runAssessment, type AssessmentAnswers, type AssessmentResult, type Recommendation } from '@flowtaris/assessment-engine'
 import { insertAssessmentLead } from '@flowtaris/supabase-client'
@@ -190,12 +190,7 @@ const stepIcons: Record<string, string> = {
 const initialAnswers: AssessmentAnswers = {
   erp: '',
   painPoints: [],
-  volume: {
-    invoicesPerMonth: 0,
-    employees: 1,
-    transactions: 0,
-    poLines: 0,
-  },
+  volume: { invoicesPerMonth: 0, employees: 1, transactions: 0, poLines: 0 },
   currentState: '',
   techMaturity: '',
   urgency: '',
@@ -496,6 +491,8 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
 
     // Radio or Select type
     if ((question.type === 'radio' || question.type === 'select') && question.options && fieldName) {
+      const currentValue = (answers[fieldName] as string) || ''
+
       return (
         <Card className={`glass-card ${isActive ? '' : isComplete ? 'opacity-50 pointer-events-none' : 'opacity-30 pointer-events-none'}`}>
           <CardHeader className="pb-4">
@@ -512,38 +509,38 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
             <p className="text-body-md text-neutral-400">{question.description}</p>
           </CardHeader>
           <CardContent>
-            {question.type === 'radio' ? (
-              <RadioGroup
-                name={fieldName}
-                value={(answers[fieldName] as string) || ''}
-                onChange={(value) => handleAnswerChange(fieldName, value)}
-                options={question.options.map((opt) => ({
-                  value: opt.value,
-                  label: opt.label,
-                  description: opt.description,
-                }))}
-                inline
-                size="md"
-              />
-            ) : (
-              <Select
-                value={(answers[fieldName] as string) || ''}
-                onValueChange={(value) => handleAnswerChange(fieldName, value)}
-                disabled={!isActive}
-              >
-                <SelectTrigger className="glass">
-                  <SelectValue placeholder="Select an option..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {question.options.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                      {opt.description && <span className="text-neutral-400 ml-2">— {opt.description}</span>}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {question.options.map((opt) => {
+                const isSelected = currentValue === opt.value
+                return (
+                  <label
+                    key={opt.value}
+                    className={`glass rounded-xl p-4 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'border-brand-cyan-500/50 bg-brand-cyan-500/10'
+                        : 'hover:border-white/10'
+                    } ${!isActive ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name={fieldName}
+                      value={opt.value}
+                      checked={isSelected}
+                      onChange={() => handleAnswerChange(fieldName, opt.value)}
+                      disabled={!isActive}
+                      className="sr-only"
+                    />
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">{getOptionIcon(opt.icon)}</span>
+                      <div>
+                        <p className="font-medium text-white">{opt.label}</p>
+                        {opt.description && <p className="text-body-xs text-neutral-400 mt-1">{opt.description}</p>}
+                      </div>
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
             {errors[fieldName as string] && (
               <p className="text-body-sm text-brand-red-400 mt-3">{errors[fieldName as string]}</p>
             )}
@@ -647,7 +644,8 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
                     value={answers.volume[field.id as keyof typeof answers.volume]}
                     onChange={(e) => {
                       const newVolume = { ...answers.volume }
-                      newVolume[field.id as keyof typeof newVolume] = parseInt(e.target.value) || 0
+                      const val = e.target.value
+                      newVolume[field.id as keyof typeof newVolume] = val === '' ? '' : (parseInt(val) || 0)
                       handleAnswerChange('volume', newVolume)
                     }}
                     disabled={!isActive}
