@@ -376,6 +376,31 @@
   .animate-shimmer { animation: shimmer 2s linear infinite; background-size: 200% 100%; }
   .animate-float { animation: float 3s ease-in-out infinite; }
   .animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+
+  /* ── Site Header animations ── */
+  @keyframes header-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-14px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.45; transform: scale(0.75); }
+  }
+
+  .animate-header-enter {
+    animation: header-enter 0.48s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  }
+
+  .animate-badge-pulse {
+    animation: badge-pulse 2.6s ease-in-out infinite;
+  }
 }
 
 /* ===== PARALLAX CONTAINER ===== */

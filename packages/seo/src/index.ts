@@ -1,6 +1,8 @@
 // @flowtaris/seo - Schema.org generators, meta tags, sitemap
 
-import { Metadata } from 'next'
+// Inline Metadata type to avoid depending on 'next' package in the shared package context.
+// The consuming app (flowtaris-ai) already has next installed and enforces the full type.
+type PageMetadata = Record<string, unknown>
 
 // Organization schema - used site-wide
 export const organizationSchema = {
@@ -179,7 +181,7 @@ export function generatePageMetadata({
   schema?: object
   ogImage?: string
   twitterCard?: 'summary' | 'summary_large_image'
-}): Metadata {
+}): PageMetadata {
   const url = `https://flowtaris.ai${path}`
 
   return {
