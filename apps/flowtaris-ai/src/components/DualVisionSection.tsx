@@ -3,12 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONTENT — framing: .com and .ai as EQUAL PARTNERS, not upgrade path
-// .ai is built TO STRENGTHEN .com authority, not replace it
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Default content (fallback when DB has no data yet) ───────────────────────
 
-const COM_PILLARS = [
+const DEFAULT_COM_PILLARS = [
   {
     number: '01',
     title: 'Global ERP Implementation',
@@ -32,7 +29,7 @@ const COM_PILLARS = [
   },
 ]
 
-const AI_PILLARS = [
+const DEFAULT_AI_PILLARS = [
   {
     number: '01',
     title: 'Autonomous Finance Agents',
@@ -55,8 +52,48 @@ const AI_PILLARS = [
     tag: 'Document AI',
   },
 ]
+// ── Default section-level config ───────────────────────────────────────────
+const DEFAULT_SECTION = {
+  eyebrow: 'One Brand · Two Disciplines',
+  heading1: 'Enterprise Mastery Meets',
+  heading2: 'AI Intelligence',
+  intro: 'Flowtaris.ai was built to amplify Flowtaris.com — not compete with it. Two disciplines. One brand. The trust of decades of enterprise work, now accelerated by AI that actually works inside your ERP.',
+  unifyingText: 'Flowtaris AI does not replace what Flowtaris.com has built — it deepens it. Our AI products inherit the same governance controls, implementation expertise, and enterprise trust model that our clients across 40+ countries depend on. This is AI with accountability, not a proof-of-concept.',
+  stats: [
+    { label: '40+', sub: 'Countries' },
+    { label: '200+', sub: 'Enterprises' },
+    { label: '99.8%', sub: 'AI Accuracy' },
+    { label: '10+', sub: 'Yrs Experience' },
+  ],
+  left: {
+    domain: 'flowtaris.com',
+    domainHref: 'https://flowtaris.com',
+    headline1: 'The Enterprise',
+    headline2: 'Operations Backbone',
+    intro: 'The foundation every enterprise finance team can stake their ERP on. Decade-deep implementations, partner-grade governance, and a 40+ country delivery network built for when execution cannot fail.',
+    imageSrc: '/images/com-vision.png',
+    imageAlt: 'Flowtaris enterprise ERP operations — corporate finance operations center with SAP, NetSuite, Workday dashboards',
+    ctaLabel: 'Explore Flowtaris.com',
+    ctaHref: 'https://flowtaris.com',
+    pillars: DEFAULT_COM_PILLARS,
+  },
+  right: {
+    domain: 'flowtaris.ai',
+    domainHref: '/assessment',
+    headline1: 'The AI Intelligence',
+    headline2: 'Layer Unlocked',
+    intro: 'Built on the same enterprise trust foundation as Flowtaris.com — Flowtaris AI adds autonomous agents, predictive intelligence, and GenAI document processing to the ERP systems your team already runs.',
+    imageSrc: '/images/ai-vision.png',
+    imageAlt: 'Flowtaris AI intelligence layer — same enterprise finance environment now enhanced with golden AI agent data streams and autonomous processing',
+    ctaLabel: 'Assess Your AI Readiness',
+    ctaHref: '/assessment',
+    pillars: DEFAULT_AI_PILLARS,
+  },
+}
 
-// ── Scroll-reveal hook ────────────────────────────────────────────────────────
+// Type alias
+type SectionData = typeof DEFAULT_SECTION
+
 function useReveal(threshold = 0.1) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
@@ -249,6 +286,37 @@ function VisionPanel({
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function DualVisionSection() {
+  const [data, setData] = useState<SectionData>(DEFAULT_SECTION)
+
+  // Fetch live data from Admin Panel / DB
+  useEffect(() => {
+    fetch('/api/site-config')
+      .then(r => r.json())
+      .then(cfg => {
+        if (cfg?.dualVision) {
+          const dv = cfg.dualVision
+          setData({
+            eyebrow: dv.eyebrow ?? DEFAULT_SECTION.eyebrow,
+            heading1: dv.heading1 ?? DEFAULT_SECTION.heading1,
+            heading2: dv.heading2 ?? DEFAULT_SECTION.heading2,
+            intro: dv.intro ?? DEFAULT_SECTION.intro,
+            unifyingText: dv.unifyingText ?? DEFAULT_SECTION.unifyingText,
+            stats: dv.stats ?? DEFAULT_SECTION.stats,
+            left: {
+              ...DEFAULT_SECTION.left,
+              ...(dv.left ?? {}),
+              pillars: dv.left?.pillars ?? DEFAULT_SECTION.left.pillars,
+            },
+            right: {
+              ...DEFAULT_SECTION.right,
+              ...(dv.right ?? {}),
+              pillars: dv.right?.pillars ?? DEFAULT_SECTION.right.pillars,
+            },
+          })
+        }
+      })
+      .catch(() => {/* use defaults */})
+  }, [])
   // Section trigger — fires when section enters viewport
   const { ref: sectionRef, visible: sectionVisible } = useReveal(0.12)
 
@@ -323,7 +391,7 @@ export default function DualVisionSection() {
           <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-[#D4A847]/22 bg-[#D4A847]/[0.05] mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4A847] animate-pulse" />
             <span className="text-[11px] font-bold tracking-[0.2em] text-[#f0c97a]/80 uppercase">
-              One Brand · Two Disciplines
+              {data.eyebrow}
             </span>
           </div>
           <h2
@@ -331,15 +399,13 @@ export default function DualVisionSection() {
             className="text-3xl sm:text-4xl lg:text-[2.8rem] font-black tracking-tight text-white leading-tight mb-4"
             itemProp="name"
           >
-            Enterprise Mastery Meets{' '}
+            {data.heading1}{' '}
             <span className="bg-gradient-to-r from-[#f5d98c] to-[#b3852b] bg-clip-text text-transparent">
-              AI Intelligence
+              {data.heading2}
             </span>
           </h2>
           <p className="text-[15px] text-white/38 max-w-xl mx-auto leading-relaxed" itemProp="description">
-            Flowtaris.ai was built to <em className="not-italic font-semibold text-white/55">amplify</em> Flowtaris.com — 
-            not compete with it. Two disciplines. One brand. The trust of decades of enterprise work, 
-            now accelerated by AI that actually works inside your ERP.
+            {data.intro}
           </p>
         </div>
 
@@ -350,16 +416,16 @@ export default function DualVisionSection() {
           <div className="lg:pr-12 xl:pr-16">
             <VisionPanel
               side="left"
-              domain="flowtaris.com"
-              domainHref="https://flowtaris.com"
-              headline1="The Enterprise"
-              headline2="Operations Backbone"
-              intro="The foundation every enterprise finance team can stake their ERP on. Decade-deep implementations, partner-grade governance, and a 40+ country delivery network built for when execution cannot fail."
-              pillars={COM_PILLARS}
-              ctaLabel="Explore Flowtaris.com"
-              ctaHref="https://flowtaris.com"
-              imageSrc="/images/com-vision.png"
-              imageAlt="Flowtaris enterprise ERP operations — corporate finance operations center with SAP, NetSuite, Workday dashboards"
+              domain={data.left.domain}
+              domainHref={data.left.domainHref}
+              headline1={data.left.headline1}
+              headline2={data.left.headline2}
+              intro={data.left.intro}
+              pillars={data.left.pillars}
+              ctaLabel={data.left.ctaLabel}
+              ctaHref={data.left.ctaHref}
+              imageSrc={data.left.imageSrc}
+              imageAlt={data.left.imageAlt}
               panelVisible={sectionVisible}
             />
           </div>
@@ -368,17 +434,17 @@ export default function DualVisionSection() {
           <div className="lg:pl-12 xl:pl-16 border-t border-white/[0.05] pt-10 lg:border-t-0 lg:pt-0">
             <VisionPanel
               side="right"
-              domain="flowtaris.ai"
-              domainHref="/assessment"
-              headline1="The AI Intelligence"
-              headline2="Layer Unlocked"
-              intro="Built on the same enterprise trust foundation as Flowtaris.com — Flowtaris AI adds autonomous agents, predictive intelligence, and GenAI document processing to the ERP systems your team already runs."
-              pillars={AI_PILLARS}
+              domain={data.right.domain}
+              domainHref={data.right.domainHref}
+              headline1={data.right.headline1}
+              headline2={data.right.headline2}
+              intro={data.right.intro}
+              pillars={data.right.pillars}
               gold
-              ctaLabel="Assess Your AI Readiness"
-              ctaHref="/assessment"
-              imageSrc="/images/ai-vision.png"
-              imageAlt="Flowtaris AI intelligence layer — same enterprise finance environment now enhanced with golden AI agent data streams and autonomous processing"
+              ctaLabel={data.right.ctaLabel}
+              ctaHref={data.right.ctaHref}
+              imageSrc={data.right.imageSrc}
+              imageAlt={data.right.imageAlt}
               panelVisible={rightVisible}
             />
           </div>
@@ -395,11 +461,7 @@ export default function DualVisionSection() {
                 transition: 'all 0.7s ease 0.3s',
               }}
             >
-              <span className="font-semibold text-white/55">Flowtaris AI</span> does not replace what{' '}
-              <span className="font-semibold text-white/55">Flowtaris.com</span> has built —
-              it deepens it. Our AI products inherit the same governance controls, implementation expertise,
-              and enterprise trust model that our clients across 40+ countries depend on.
-              This is AI with accountability, not a proof-of-concept.
+              {data.unifyingText}
             </p>
 
             <div
@@ -410,12 +472,7 @@ export default function DualVisionSection() {
                 transition: 'all 0.7s ease 0.5s',
               }}
             >
-              {[
-                { label: '40+', sub: 'Countries' },
-                { label: '200+', sub: 'Enterprises' },
-                { label: '99.8%', sub: 'AI Accuracy' },
-                { label: '10+', sub: 'Yrs Experience' },
-              ].map((stat, i) => (
+              {data.stats.map((stat, i) => (
                 <div key={i} className="text-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-[#D4A847]/25 transition-colors duration-300">
                   <div className="text-[18px] font-black text-white tracking-tight">{stat.label}</div>
                   <div className="text-[9px] text-white/28 uppercase tracking-widest font-bold mt-0.5">{stat.sub}</div>

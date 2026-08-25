@@ -30,6 +30,7 @@ export async function GET() {
         { id: '5', label: 'API Calls/Day', value: '50M+' },
         { id: '6', label: 'Trusted By', value: 'Fortune 500' },
       ],
+      dualVision: (data as any)?.dual_vision ?? null,
     }
 
     return NextResponse.json(publicConfig, {
@@ -96,6 +97,7 @@ export async function POST(request: Request) {
     if (analytics !== undefined)            updatePayload.analytics = analytics
     if (seo !== undefined)                  updatePayload.seo = seo
     if (trust_signals !== undefined)        updatePayload.trust_signals = trust_signals
+    if (body.dual_vision !== undefined)      updatePayload.dual_vision = body.dual_vision
 
     const adminClient = createAdminClient()
     const { error } = await adminClient

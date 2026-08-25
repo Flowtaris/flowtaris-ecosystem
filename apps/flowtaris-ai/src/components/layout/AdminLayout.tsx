@@ -26,6 +26,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Settings className="mr-3 h-4 w-4" />
               Site Configuration
             </Link>
+
+            <Link
+              href="/admin/dual-vision"
+              className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
+            >
+              <Layers className="mr-3 h-4 w-4" />
+              Dual Vision Config
+            </Link>
             
             <Link
               href="/admin/platforms"
