@@ -81,24 +81,26 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
             </div>
           )}
 
-          <span className="flex items-center gap-1.5 select-none leading-none">
-            <span className="text-white font-medium text-[14px] tracking-wide font-sans">
+          <span className="flex items-center gap-2 select-none leading-none">
+            <span className="text-white font-semibold text-[14px] tracking-wide font-sans">
               {brandName}
             </span>
 
-            {/* Premium, understated .ai badge */}
+            {/* Premium animated .ai badge */}
             <span
               className="
-                relative inline-flex items-center px-1.5 py-0.5 rounded-md
-                bg-gradient-to-br from-white/10 to-white/5
-                border border-white/10
-                text-white/80 text-[10px] font-semibold tracking-wider uppercase
-                group-hover:text-white group-hover:border-white/20 group-hover:shadow-[0_0_10px_rgba(255,255,255,0.1)]
-                transition-all duration-300
+                relative inline-flex items-center gap-[3px] px-2 py-[3px] rounded-full
+                bg-gradient-to-r from-[#D4A847]/20 via-[#f0c97a]/10 to-[#D4A847]/20
+                border border-[#D4A847]/40
+                text-[#f0c97a] text-[10px] font-bold tracking-widest uppercase
+                shadow-[0_0_12px_rgba(212,168,71,0.2),inset_0_1px_0_rgba(255,255,255,0.08)]
+                group-hover:shadow-[0_0_18px_rgba(212,168,71,0.4),inset_0_1px_0_rgba(255,255,255,0.12)]
+                group-hover:border-[#D4A847]/70 group-hover:text-[#fde68a]
+                transition-all duration-500
               "
             >
-              {/* Subtle metallic dot */}
-              <span className="absolute -top-[2px] -right-[2px] w-[5px] h-[5px] rounded-full bg-gradient-to-b from-[#e8b84b] to-[#b3852b] shadow-[0_0_4px_rgba(212,168,71,0.5)]" />
+              {/* Animated AI spark */}
+              <span className="w-[5px] h-[5px] rounded-full bg-gradient-to-b from-[#fde68a] to-[#D4A847] animate-badge-pulse shadow-[0_0_6px_rgba(212,168,71,0.8)] flex-shrink-0" />
               {badgeText}
             </span>
           </span>

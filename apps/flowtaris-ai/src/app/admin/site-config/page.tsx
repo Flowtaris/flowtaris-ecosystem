@@ -247,14 +247,12 @@ function LogoManager({
               </div>
             ) : showLogo && !previewError ? (
               <>
-                <Image
-                  src={currentLogo.startsWith('/') ? currentLogo : (currentLogo || DEFAULT_LOGO)}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentLogo}
                   alt="Current logo preview"
-                  width={64}
-                  height={64}
                   className={`object-contain w-16 h-16 transition-opacity ${isDragOver ? 'opacity-30' : 'opacity-100 group-hover/upload:opacity-30'}`}
                   onError={() => setPreviewError(true)}
-                  unoptimized={currentLogo.startsWith('http')}
                 />
                 <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity
                   ${isDragOver ? 'opacity-100' : 'opacity-0 group-hover/upload:opacity-100'}`}>
@@ -403,22 +401,21 @@ function HeaderPreview({ brandName, badgeText, showLogo, logoUrl }: {
           {/* Brand */}
           <div className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5">
             {showLogo && !imgError && (
-              <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/15 flex-shrink-0">
-                <Image
-                  src={logo.startsWith('/') ? logo : (logo || DEFAULT_LOGO)}
+              <div className="w-7 h-7 rounded-full overflow-hidden bg-white ring-1 ring-white/15 flex-shrink-0 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={logo}
                   alt="Logo preview"
-                  width={28}
-                  height={28}
-                  className="object-contain"
+                  className="object-contain w-6 h-6"
                   onError={() => setImgError(true)}
-                  unoptimized={logo.startsWith('http')}
                 />
               </div>
             )}
-            <span className="flex items-center gap-1.5 ml-1.5">
-              <span className="text-white font-medium text-[13px] tracking-wide font-sans">{brandName || 'Flowtaris'}</span>
-              <span className="relative inline-flex items-center px-1.5 py-0.5 rounded-md bg-gradient-to-br from-white/10 to-white/5 border border-white/10 text-white/80 text-[10px] font-semibold tracking-wider uppercase shadow-sm">
-                <span className="absolute -top-[2px] -right-[2px] w-[4px] h-[4px] rounded-full bg-gradient-to-b from-[#e8b84b] to-[#b3852b] shadow-[0_0_4px_rgba(212,168,71,0.5)]" />
+            <span className="flex items-center gap-2 ml-1">
+              <span className="text-white font-semibold text-[13px] tracking-wide">{brandName || 'Flowtaris'}</span>
+              {/* Premium gold badge — matches live header */}
+              <span className="inline-flex items-center gap-[3px] px-2 py-[3px] rounded-full bg-gradient-to-r from-[#D4A847]/20 via-[#f0c97a]/10 to-[#D4A847]/20 border border-[#D4A847]/40 text-[#f0c97a] text-[10px] font-bold tracking-widest uppercase shadow-[0_0_10px_rgba(212,168,71,0.2)]">
+                <span className="w-[4px] h-[4px] rounded-full bg-[#f0c97a] animate-pulse flex-shrink-0" />
                 {badgeText || '.ai'}
               </span>
             </span>
