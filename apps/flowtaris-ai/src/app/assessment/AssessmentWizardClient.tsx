@@ -644,8 +644,7 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
                     value={answers.volume[field.id as keyof typeof answers.volume]}
                     onChange={(e) => {
                       const newVolume = { ...answers.volume }
-                      const val = e.target.value
-                      newVolume[field.id as keyof typeof newVolume] = val === '' ? '' : (parseInt(val) || 0)
+                      newVolume[field.id as keyof typeof newVolume] = parseInt(e.target.value) || 0
                       handleAnswerChange('volume', newVolume)
                     }}
                     disabled={!isActive}
