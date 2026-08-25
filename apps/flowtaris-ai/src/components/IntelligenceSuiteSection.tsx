@@ -1,610 +1,653 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface Tool {
-  id: string
-  tab: string
-  headline: string
-  tagline: string
-  description: string
-  href: string
-  ctaLabel: string
-  color: 'violet' | 'amber' | 'red' | 'purple'
-  metrics: { label: string; value: string }[]
-}
-
-const TOOLS: Tool[] = [
+// ─── Tool definitions ─────────────────────────────────────────────────────────
+const TOOLS = [
   {
-    id: 'assessment',
-    tab: 'AI Readiness Score',
+    id: 'assessment', tab: 'AI Readiness Score', href: '/assessment',
+    tagline: 'AI Readiness Assessment', ctaLabel: 'Take the Assessment',
     headline: '6 questions. Your personalized AI roadmap.',
-    tagline: 'AI Readiness Assessment',
-    description: 'Answer 6 questions about your ERP stack, pain points, and team — and receive a scored roadmap categorising your highest-ROI automation opportunities into Quick Wins, Strategic plays, and Innovation bets.',
-    href: '/assessment',
-    ctaLabel: 'Take the Assessment',
-    color: 'violet',
-    metrics: [
-      { label: 'Completion time', value: '~4 min' },
-      { label: 'Steps', value: '6 steps' },
-      { label: 'Lead score tiers', value: '3 tiers' },
-      { label: 'Cost', value: 'Free' },
-    ],
+    description: 'Answer 6 questions about your ERP stack, pain points, and team — receive a scored roadmap categorising your highest-ROI opportunities into Quick Wins, Strategic plays, and Innovation bets.',
+    color: 'indigo' as const,
+    metrics: [{ l: 'Completion', v: '~4 min' }, { l: 'Steps', v: '6' }, { l: 'Score tiers', v: '3' }, { l: 'Cost', v: 'Free' }],
   },
   {
-    id: 'roi',
-    tab: 'ROI Calculator',
-    headline: 'Slide. Watch $4.5M appear in real-time.',
-    tagline: 'Enterprise ROI Calculator',
-    description: 'Enter your invoice volume, team size, and error rate. Our ROI engine outputs annual savings, payback period, FTE freed, and 3-year NPV across 15 global currencies and 5 ERP platforms.',
-    href: '/roi-calculator',
-    ctaLabel: 'Calculate My ROI',
-    color: 'amber',
-    metrics: [
-      { label: 'Currencies', value: '15' },
-      { label: 'ERP platforms', value: '5' },
-      { label: 'Avg annual savings', value: '$4.5M' },
-      { label: 'Avg payback', value: '3 months' },
-    ],
+    id: 'roi', tab: 'ROI Calculator', href: '/roi-calculator',
+    tagline: 'Enterprise ROI Calculator', ctaLabel: 'Calculate My ROI',
+    headline: 'Drag a slider. Watch $4.5M appear in real-time.',
+    description: 'Enter your invoice volume, team size, and error rate. Our engine outputs annual savings, payback period, FTE freed, and 3-year NPV across 15 global currencies and 5 ERP platforms.',
+    color: 'emerald' as const,
+    metrics: [{ l: 'Currencies', v: '15' }, { l: 'ERP platforms', v: '5' }, { l: 'Avg savings', v: '$4.5M' }, { l: 'Avg payback', v: '3 mo' }],
   },
   {
-    id: 'inaction',
-    tab: 'Cost of Waiting',
-    headline: 'Every day of delay has a price. See yours.',
-    tagline: 'Cost of Inaction Engine',
-    description: 'Built for CFOs and board presentations. Calculates monthly revenue leakage, annual compliance risk, the 3-year competitive gap from delaying AI, and the cost of a 6-month delay — in your currency.',
-    href: '/cost-of-inaction',
-    ctaLabel: 'See My Delay Cost',
-    color: 'red',
-    metrics: [
-      { label: 'Monthly leakage', value: 'Live' },
-      { label: 'Compliance risk', value: 'Quantified' },
-      { label: '3-year gap model', value: 'Included' },
-      { label: 'Board-ready output', value: 'Yes' },
-    ],
+    id: 'inaction', tab: 'Cost of Waiting', href: '/cost-of-inaction',
+    tagline: 'Cost of Inaction Engine', ctaLabel: 'Calculate My Delay Cost',
+    headline: 'Every day of delay costs money. See yours live.',
+    description: 'Built for CFOs and board decks. Calculates monthly revenue leakage, compliance risk exposure, 3-year competitive gap, and the cost of a 6-month delay — in your local currency.',
+    color: 'rose' as const,
+    metrics: [{ l: 'Leakage calc', v: 'Live' }, { l: 'Compliance', v: 'Quantified' }, { l: '3-yr model', v: 'Included' }, { l: 'Output', v: 'Board PDF' }],
   },
   {
-    id: 'lab',
-    tab: 'Innovation Lab',
+    id: 'lab', tab: 'Innovation Lab', href: '/innovation-lab',
+    tagline: 'Flowtaris Innovation Lab', ctaLabel: 'Explore the Lab',
     headline: 'Where R&D becomes your competitive edge.',
-    tagline: 'Flowtaris Innovation Lab',
-    description: 'Six active research tracks — from Conversational ERP (NL-to-SQL, 92% accuracy) to GenAI Document Understanding (99.5%+, 25+ formats) to Agentic Workflow Orchestration. Battle-tested before reaching your ERP.',
-    href: '/innovation-lab',
-    ctaLabel: 'Explore the Lab',
-    color: 'purple',
-    metrics: [
-      { label: 'Research tracks', value: '6 active' },
-      { label: 'Doc AI accuracy', value: '99.5%+' },
-      { label: 'Languages', value: '15+' },
-      { label: 'Agentic success', value: '78%' },
-    ],
+    description: '6 active research tracks — from Conversational ERP at 92% NL-to-SQL accuracy to GenAI Document Understanding at 99.5%+ to Agentic Workflow Orchestration. Battle-tested before reaching your ERP.',
+    color: 'violet' as const,
+    metrics: [{ l: 'Research tracks', v: '6 active' }, { l: 'Doc AI', v: '99.5%+' }, { l: 'Languages', v: '15+' }, { l: 'Agentic', v: '78%' }],
   },
 ]
 
-// ─── Colour system ────────────────────────────────────────────────────────────
+// ─── Color system (sophisticated, not neon) ───────────────────────────────────
 const C = {
+  indigo: {
+    a: '#4f46e5', b: '#818cf8', dim: 'rgba(79,70,229,0.14)', glow: 'rgba(79,70,229,0.2)',
+    tab: 'border-indigo-500/40 bg-indigo-500/10 text-indigo-300 ring-2 ring-indigo-500/20',
+    badge: 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300',
+    bar: 'bg-indigo-500', dot: 'bg-indigo-400',
+    cta: 'from-indigo-600 to-indigo-800 text-white shadow-[0_8px_30px_rgba(79,70,229,0.4)]',
+    scan: '#818cf8', key: '#4f46e5',
+  },
+  emerald: {
+    a: '#059669', b: '#34d399', dim: 'rgba(5,150,105,0.14)', glow: 'rgba(5,150,105,0.18)',
+    tab: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 ring-2 ring-emerald-500/20',
+    badge: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+    bar: 'bg-emerald-500', dot: 'bg-emerald-400',
+    cta: 'from-emerald-600 to-emerald-800 text-white shadow-[0_8px_30px_rgba(5,150,105,0.35)]',
+    scan: '#34d399', key: '#059669',
+  },
+  rose: {
+    a: '#e11d48', b: '#fb7185', dim: 'rgba(225,29,72,0.12)', glow: 'rgba(225,29,72,0.18)',
+    tab: 'border-rose-500/40 bg-rose-500/10 text-rose-300 ring-2 ring-rose-500/20',
+    badge: 'border-rose-500/30 bg-rose-500/10 text-rose-300',
+    bar: 'bg-rose-500', dot: 'bg-rose-400',
+    cta: 'from-rose-600 to-rose-900 text-white shadow-[0_8px_30px_rgba(225,29,72,0.35)]',
+    scan: '#fb7185', key: '#e11d48',
+  },
   violet: {
-    accent: '#8b5cf6', accentLight: '#a78bfa', accentDim: 'rgba(139,92,246,0.15)',
-    badge: 'text-[#a78bfa] bg-[#8b5cf6]/10 border-[#8b5cf6]/30',
-    tab: 'border-[#8b5cf6]/50 text-[#a78bfa] bg-[#8b5cf6]/10 ring-2 ring-[#8b5cf6]/20',
-    bar: 'bg-[#8b5cf6]', glow: 'rgba(139,92,246,0.18)',
-    cta: 'from-[#8b5cf6] to-[#6d28d9] text-white shadow-[0_0_40px_rgba(139,92,246,0.35)]',
-    scan: '#a78bfa', hint: 'bg-[#1e1333] border-[#8b5cf6]/40 text-[#a78bfa]',
-  },
-  amber: {
-    accent: '#D4A847', accentLight: '#f0c97a', accentDim: 'rgba(212,168,71,0.15)',
-    badge: 'text-[#f0c97a] bg-[#D4A847]/10 border-[#D4A847]/30',
-    tab: 'border-[#D4A847]/50 text-[#f0c97a] bg-[#D4A847]/10 ring-2 ring-[#D4A847]/20',
-    bar: 'bg-[#D4A847]', glow: 'rgba(212,168,71,0.18)',
-    cta: 'from-[#f5d98c] to-[#b3852b] text-[#0a0805] shadow-[0_0_40px_rgba(212,168,71,0.35)]',
-    scan: '#D4A847', hint: 'bg-[#1a1505] border-[#D4A847]/40 text-[#f0c97a]',
-  },
-  red: {
-    accent: '#f43f5e', accentLight: '#fb7185', accentDim: 'rgba(244,63,94,0.12)',
-    badge: 'text-[#fb7185] bg-[#f43f5e]/10 border-[#f43f5e]/30',
-    tab: 'border-[#f43f5e]/50 text-[#fb7185] bg-[#f43f5e]/10 ring-2 ring-[#f43f5e]/20',
-    bar: 'bg-[#f43f5e]', glow: 'rgba(244,63,94,0.15)',
-    cta: 'from-[#f43f5e] to-[#be123c] text-white shadow-[0_0_40px_rgba(244,63,94,0.3)]',
-    scan: '#f43f5e', hint: 'bg-[#200a0d] border-[#f43f5e]/40 text-[#fb7185]',
-  },
-  purple: {
-    accent: '#a855f7', accentLight: '#c084fc', accentDim: 'rgba(168,85,247,0.12)',
-    badge: 'text-[#c084fc] bg-[#a855f7]/10 border-[#a855f7]/30',
-    tab: 'border-[#a855f7]/50 text-[#c084fc] bg-[#a855f7]/10 ring-2 ring-[#a855f7]/20',
-    bar: 'bg-[#a855f7]', glow: 'rgba(168,85,247,0.15)',
-    cta: 'from-[#a855f7] to-[#7e22ce] text-white shadow-[0_0_40px_rgba(168,85,247,0.3)]',
-    scan: '#a855f7', hint: 'bg-[#140d1f] border-[#a855f7]/40 text-[#c084fc]',
+    a: '#7c3aed', b: '#c084fc', dim: 'rgba(124,58,237,0.14)', glow: 'rgba(124,58,237,0.2)',
+    tab: 'border-violet-500/40 bg-violet-500/10 text-violet-300 ring-2 ring-violet-500/20',
+    badge: 'border-violet-500/30 bg-violet-500/10 text-violet-300',
+    bar: 'bg-violet-500', dot: 'bg-violet-400',
+    cta: 'from-violet-600 to-violet-900 text-white shadow-[0_8px_30px_rgba(124,58,237,0.4)]',
+    scan: '#c084fc', key: '#7c3aed',
   },
 }
 
-// ─── Hint bubble ──────────────────────────────────────────────────────────────
-function HintBubble({ text, visible, style, color }: {
-  text: string; visible: boolean; style?: React.CSSProperties; color: keyof typeof C
+// ─── Hint bubble (no emoji, clean design) ─────────────────────────────────────
+function HintBubble({ text, visible, style, accent }: {
+  text: string; visible: boolean; style?: React.CSSProperties; accent: string
 }) {
-  const c = C[color]
   return (
-    <div
-      className={`absolute z-30 flex items-center gap-2 px-3 py-2 rounded-xl border text-[11px] font-semibold pointer-events-none transition-all duration-500 backdrop-blur-sm ${c.hint}`}
+    <div className="absolute z-30 pointer-events-none transition-all duration-500"
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? 'scale(1) translateY(0)' : 'scale(0.85) translateY(6px)',
+        transform: visible ? 'scale(1) translateY(0)' : 'scale(0.9) translateY(4px)',
         ...style,
-      }}
-    >
-      <span className="text-base leading-none">💡</span>
-      {text}
+      }}>
+      {/* Arrow */}
+      <div className="flex items-center gap-2 backdrop-blur-md rounded-lg border px-3 py-1.5"
+        style={{ background: 'rgba(10,8,20,0.85)', borderColor: `${accent}55` }}>
+        <div className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse" style={{ background: accent }} />
+        <span className="text-[10px] font-semibold whitespace-nowrap" style={{ color: accent }}>{text}</span>
+      </div>
     </div>
   )
 }
 
-// ─── PREVIEW 1: Assessment Wizard ────────────────────────────────────────────
+// ─── ASSESSMENT: Full 6-step wizard demo ──────────────────────────────────────
+const WIZARD_STEPS = [
+  { title: 'ERP Platform', q: 'Which ERP do you use?', opts: ['NetSuite', 'SAP', 'Workday', 'Coupa'], sel: 0 },
+  { title: 'Pain Points', q: 'Select top pain points', opts: ['Manual Invoice Processing', 'Cash Flow Visibility', 'Integration Failures', 'Compliance Risk'], sel: [0, 1, 3] },
+  { title: 'Volume Metrics', q: 'Your monthly volumes', fields: [{ l: 'Invoices/Month', v: '12,500' }, { l: 'Finance Team FTEs', v: '18' }, { l: 'Transactions/Mo', v: '45,000' }] },
+  { title: 'Current State', q: 'How do you handle this now?', opts: ['Fully Manual', 'Partial Automation', 'iPaaS Integration', 'Custom Dev'], sel: 1 },
+  { title: 'Tech Maturity', q: 'Tech maturity of your org?', opts: ['Legacy Systems', 'Modern Cloud', 'Hybrid', 'AI Pilot Active'], sel: 1 },
+  { title: 'Urgency', q: "What's driving your timeline?", opts: ['Exploring Options', 'Budget Approved', 'Board Mandate', 'Audit-Driven'], sel: 2 },
+]
+
 function AssessmentPreview({ active }: { active: boolean }) {
-  const [phase, setPhase] = useState(0)
-  const [selected, setSelected] = useState(-1)
+  const [step, setStep] = useState(-1) // -1 = not started
+  const [selectedOpts, setSelectedOpts] = useState<number | number[]>(-1)
+  const [typedFields, setTypedFields] = useState<string[]>([])
+  const [showScore, setShowScore] = useState(false)
   const [score, setScore] = useState(0)
-  const [showHint1, setShowHint1] = useState(false)
-  const [showHint2, setShowHint2] = useState(false)
-  const options = ['NetSuite', 'SAP', 'Workday', 'Coupa']
+  const [hint, setHint] = useState('')
 
   useEffect(() => {
     if (!active) {
-      setPhase(0); setSelected(-1); setScore(0); setShowHint1(false); setShowHint2(false)
-      return
+      setStep(-1); setSelectedOpts(-1); setTypedFields([]); setShowScore(false); setScore(0); setHint(''); return
     }
-    const timers: NodeJS.Timeout[] = []
-    // Phase 1 — card appears
-    timers.push(setTimeout(() => setPhase(1), 500))
-    // Phase 2 — hint 1 appears
-    timers.push(setTimeout(() => setShowHint1(true), 1500))
-    // Phase 3 — select SAP
-    timers.push(setTimeout(() => { setSelected(1); setShowHint1(false) }, 3200))
-    // Phase 4 — next step
-    timers.push(setTimeout(() => setPhase(2), 4200))
-    // Phase 5 — score starts counting
-    timers.push(setTimeout(() => setPhase(3), 5400))
-    // Phase 6 — score ticks up
-    const scoreStart = setTimeout(() => {
+    const T: NodeJS.Timeout[] = []
+    const go = (s: number, delay: number) => {
+      T.push(setTimeout(() => {
+        setStep(s)
+        setSelectedOpts(-1)
+        setTypedFields([])
+        setShowScore(false)
+        setHint(s === 0 ? 'Select to continue' : s === 1 ? 'Pick up to 3' : s === 2 ? 'Enter your volumes' : 'One answer per step')
+      }, delay))
+    }
+
+    const select = (val: number | number[], delay: number) => {
+      T.push(setTimeout(() => setSelectedOpts(val), delay))
+    }
+
+    const typeFields = (vals: string[], delay: number) => {
+      T.push(setTimeout(() => setTypedFields(vals), delay))
+    }
+
+    // Step 0 — ERP Platform
+    go(0, 200)
+    select(0, 1400) // NetSuite selected
+    // Step 1 — Pain Points
+    go(1, 2600)
+    select([0, 1, 3], 3600)
+    // Step 2 — Volume Metrics
+    go(2, 4600)
+    typeFields(['12,500', '18', '45,000'], 5400)
+    // Step 3 — Current State (fast)
+    go(3, 6400)
+    select(1, 7000)
+    // Step 4 — Tech Maturity (fast)
+    go(4, 7600)
+    select(1, 8100)
+    // Step 5 — Urgency (fast)
+    go(5, 8600)
+    select(2, 9000)
+    // Submit
+    T.push(setTimeout(() => { setStep(6); setHint('') }, 9600))
+    // Score reveal
+    T.push(setTimeout(() => {
+      setShowScore(true)
       let s = 0
-      const iv = setInterval(() => {
-        s += 3; setScore(Math.min(s, 82))
-        if (s >= 82) clearInterval(iv)
-      }, 22)
-      timers.push(iv)
-    }, 5500)
-    timers.push(scoreStart)
-    // Phase 7 — hint 2 appears
-    timers.push(setTimeout(() => setShowHint2(true), 7800))
-    // Phase 8 — loop reset
-    timers.push(setTimeout(() => {
-      setPhase(0); setSelected(-1); setScore(0); setShowHint1(false); setShowHint2(false)
-      setTimeout(() => setPhase(1), 400)
-    }, 13000))
-    return () => timers.forEach(t => clearTimeout(t))
+      const iv = setInterval(() => { s += 3; setScore(Math.min(s, 82)); if (s >= 82) clearInterval(iv) }, 20)
+      T.push(iv)
+    }, 10400))
+    // Loop reset
+    T.push(setTimeout(() => {
+      setStep(-1); setSelectedOpts(-1); setTypedFields([]); setShowScore(false); setScore(0); setHint('')
+      setTimeout(() => { setStep(0); setHint('Select to continue') }, 300)
+    }, 15000))
+
+    return () => T.forEach(t => clearTimeout(t))
   }, [active])
 
-  const progressPct = phase === 0 ? 0 : phase === 1 ? 16 : phase >= 2 ? 33 : 16
+  const progPct = step < 0 ? 0 : step >= 6 ? 100 : ((step) / 6) * 100
+  const ws = step >= 0 && step < 6 ? WIZARD_STEPS[step] : null
 
   return (
-    <div className="relative h-full flex flex-col gap-3 select-none font-['Inter',sans-serif]">
-      {/* Hint 1 */}
-      <HintBubble text="Select your ERP platform to begin →" visible={showHint1} color="violet"
-        style={{ top: '30%', left: '8%' }} />
-      {/* Hint 2 */}
-      <HintBubble text="Your roadmap is ready — view full report →" visible={showHint2} color="violet"
-        style={{ bottom: '5%', right: '4%' }} />
-
-      {/* Progress */}
-      <div className="flex items-center gap-3">
+    <div className="h-full flex flex-col gap-2.5 font-['Inter',sans-serif] select-none">
+      {/* Progress strip */}
+      <div className="flex items-center gap-2">
         <div className="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-[#8b5cf6] to-[#a78bfa] rounded-full transition-all duration-700"
-            style={{ width: `${progressPct}%` }} />
+          <div className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 rounded-full transition-all duration-500"
+            style={{ width: `${progPct}%` }} />
         </div>
-        <span className="text-[10px] text-white/30 font-mono whitespace-nowrap">
-          {phase === 0 ? 'Ready' : phase === 1 ? 'Step 1 / 6' : 'Step 2 / 6'}
+        <span className="text-[9px] text-white/25 font-mono whitespace-nowrap">
+          {step < 0 ? 'Ready' : step >= 6 ? 'Complete' : `${step + 1} / 6`}
         </span>
       </div>
 
-      {/* Question card */}
-      <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-4 transition-all duration-500"
-        style={{ opacity: phase >= 1 ? 1 : 0, transform: phase >= 1 ? 'translateY(0)' : 'translateY(10px)' }}>
-        <div className="mb-1">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#8b5cf6]/60">Step 1 of 6 — ERP Platform</span>
-        </div>
-        <p className="text-white/85 text-sm font-semibold mb-3">Which ERP platform do you use?</p>
-        <div className="grid grid-cols-2 gap-2">
-          {options.map((o, i) => (
-            <div key={o} className={`rounded-lg border px-3 py-2.5 text-xs font-medium transition-all duration-300 ${
-              selected === i
-                ? 'border-[#8b5cf6]/60 bg-[#8b5cf6]/15 text-[#a78bfa]'
-                : 'border-white/[0.06] bg-white/[0.02] text-white/45'
-            }`}>
-              {o}
-            </div>
-          ))}
-        </div>
+      {/* Step dots */}
+      <div className="flex items-center gap-1.5 justify-center">
+        {[0, 1, 2, 3, 4, 5].map(i => (
+          <div key={i} className={`rounded-full transition-all duration-400 ${
+            step > i ? 'w-4 h-1 bg-indigo-500' : step === i ? 'w-5 h-1.5 bg-indigo-400' : 'w-1 h-1 bg-white/[0.12]'
+          }`} />
+        ))}
       </div>
 
-      {/* Pain points preview (step 2) */}
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 transition-all duration-500"
-        style={{ opacity: phase >= 2 ? 1 : 0, transform: phase >= 2 ? 'translateY(0)' : 'translateY(10px)' }}>
-        <span className="text-[9px] font-bold uppercase tracking-widest text-[#8b5cf6]/60">Step 2 of 6 — Pain Points</span>
-        <p className="text-white/70 text-[12px] font-semibold mt-1 mb-2.5">Select your top 3 pain points</p>
-        <div className="space-y-1.5">
-          {['Manual Invoice Processing', 'Cash Flow Visibility', 'Compliance & Audit Risk'].map((p, i) => (
-            <div key={p} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition-all duration-300 ${
-              phase >= 2 ? 'border border-[#8b5cf6]/30 bg-[#8b5cf6]/8 text-[#a78bfa]' : 'text-white/30'
-            }`}
-              style={{ transitionDelay: `${i * 120}ms` }}>
-              <span className="text-[#8b5cf6]">✓</span> {p}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Current step card */}
+      {ws && (
+        <div className="flex-1 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4 flex flex-col gap-3 transition-all duration-300 relative overflow-hidden">
+          {/* Step label */}
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-bold text-indigo-400/70 uppercase tracking-widest">{ws.title}</span>
+            {hint && (
+              <span className="flex items-center gap-1 text-[9px] text-white/30">
+                <div className="w-1 h-1 rounded-full bg-indigo-400/60 animate-pulse" />
+                {hint}
+              </span>
+            )}
+          </div>
+          <p className="text-white/70 text-[12px] font-semibold">{ws.q}</p>
 
-      {/* Score reveal */}
-      <div className="rounded-xl border border-[#8b5cf6]/25 bg-[#8b5cf6]/[0.05] p-4 transition-all duration-700"
-        style={{ opacity: phase >= 3 ? 1 : 0, transform: phase >= 3 ? 'translateY(0)' : 'translateY(14px)' }}>
-        <p className="text-[9px] text-white/35 mb-2 uppercase tracking-widest">Your AI Readiness Score</p>
-        <div className="flex items-end gap-2">
-          <span className="text-5xl font-black text-[#a78bfa] tabular-nums leading-none">{score}</span>
-          <span className="text-xl text-white/25 mb-1">/100</span>
-          <span className="mb-1 ml-auto text-[9px] font-bold bg-[#8b5cf6]/15 border border-[#8b5cf6]/30 text-[#a78bfa] rounded-full px-2.5 py-1">
-            High Potential ✦
-          </span>
-        </div>
-        <div className="mt-2.5 h-1 bg-white/[0.05] rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-[#8b5cf6] to-[#a78bfa] rounded-full transition-all duration-1000"
-            style={{ width: `${score}%` }} />
-        </div>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {[{ l: 'Quick Wins', v: '3', c: 'text-green-400' }, { l: 'Strategic', v: '5', c: 'text-[#a78bfa]' }, { l: 'Innovation', v: '2', c: 'text-orange-400' }].map(k => (
-            <div key={k.l} className="text-center">
-              <p className={`text-base font-black ${k.c}`}>{phase >= 3 ? k.v : '—'}</p>
-              <p className="text-[8px] text-white/25 uppercase tracking-wider">{k.l}</p>
+          {/* Radio options */}
+          {'opts' in ws && ws.opts && !Array.isArray(selectedOpts) && (
+            <div className="grid grid-cols-2 gap-1.5">
+              {ws.opts.map((o, i) => (
+                <div key={o} className={`rounded-lg border px-2.5 py-2 text-[11px] font-medium transition-all duration-300 ${
+                  selectedOpts === i
+                    ? 'border-indigo-500/60 bg-indigo-500/15 text-indigo-300'
+                    : 'border-white/[0.06] text-white/40'
+                }`}>{o}</div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Checkbox options */}
+          {'opts' in ws && ws.opts && Array.isArray(selectedOpts) && (
+            <div className="space-y-1.5">
+              {ws.opts.map((o, i) => {
+                const checked = (selectedOpts as number[]).includes(i)
+                return (
+                  <div key={o} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition-all duration-300 ${
+                    checked ? 'border border-indigo-500/40 bg-indigo-500/10 text-indigo-300' : 'text-white/35'
+                  }`}>
+                    <div className={`w-3 h-3 rounded border flex items-center justify-center text-[8px] shrink-0 transition-all ${
+                      checked ? 'border-indigo-400 bg-indigo-500' : 'border-white/20'
+                    }`}>
+                      {checked && <span className="text-white font-bold">✓</span>}
+                    </div>
+                    {o}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Number fields */}
+          {'fields' in ws && ws.fields && (
+            <div className="space-y-2">
+              {ws.fields.map((f, i) => (
+                <div key={f.l} className="flex items-center gap-2">
+                  <span className="text-[9px] text-white/30 w-24 shrink-0">{f.l}</span>
+                  <div className={`flex-1 rounded border bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-mono transition-all duration-300 ${
+                    typedFields[i] ? 'border-indigo-500/30 text-indigo-300' : 'border-white/[0.08] text-white/20'
+                  }`}>
+                    {typedFields[i] || '—'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Submitting state */}
+      {step === 6 && !showScore && (
+        <div className="flex-1 rounded-xl border border-white/[0.07] bg-white/[0.02] flex flex-col items-center justify-center gap-3">
+          <div className="w-6 h-6 rounded-full border-2 border-indigo-500/30 border-t-indigo-400 animate-spin" />
+          <p className="text-[11px] text-white/35">Generating your roadmap…</p>
+        </div>
+      )}
+
+      {/* Score result */}
+      {showScore && (
+        <div className="flex-1 rounded-xl border border-indigo-500/20 bg-indigo-500/[0.05] p-4 flex flex-col gap-3">
+          <div className="flex items-end gap-2">
+            <span className="text-5xl font-black text-indigo-300 tabular-nums leading-none">{score}</span>
+            <span className="text-lg text-white/20 mb-1">/100</span>
+            <div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+              <span className="text-[9px] font-bold text-indigo-300">High Potential</span>
+            </div>
+          </div>
+          <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 rounded-full transition-all duration-1000"
+              style={{ width: `${score}%` }} />
+          </div>
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            {[{ l: 'Quick Wins', v: '3', c: 'text-emerald-400' }, { l: 'Strategic', v: '5', c: 'text-indigo-300' }, { l: 'Innovation', v: '2', c: 'text-violet-300' }].map(k => (
+              <div key={k.l} className="text-center rounded-lg border border-white/[0.05] bg-white/[0.02] py-2">
+                <p className={`text-base font-black ${k.c}`}>{k.v}</p>
+                <p className="text-[8px] text-white/25 uppercase tracking-wide mt-0.5">{k.l}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <div className="flex-1 h-px bg-white/[0.05]" />
+            <span className="text-[9px] text-indigo-400">Get your roadmap emailed</span>
+            <div className="flex-1 h-px bg-white/[0.05]" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── PREVIEW 2: ROI Calculator ────────────────────────────────────────────────
+// ─── ROI CALCULATOR preview ───────────────────────────────────────────────────
 function ROIPreview({ active }: { active: boolean }) {
   const [phase, setPhase] = useState(0)
   const [volume, setVolume] = useState(0)
   const [savings, setSavings] = useState(0)
-  const [showHint1, setShowHint1] = useState(false)
-  const [showHint2, setShowHint2] = useState(false)
+  const [showReport, setShowReport] = useState(false)
+  const [hint, setHint] = useState('')
 
   useEffect(() => {
-    if (!active) { setPhase(0); setVolume(0); setSavings(0); setShowHint1(false); setShowHint2(false); return }
-    const timers: NodeJS.Timeout[] = []
-    timers.push(setTimeout(() => setPhase(1), 500))
-    timers.push(setTimeout(() => setShowHint1(true), 1800))
-    const countStart = setTimeout(() => {
-      setShowHint1(false)
+    if (!active) { setPhase(0); setVolume(0); setSavings(0); setShowReport(false); setHint(''); return }
+    const T: NodeJS.Timeout[] = []
+    T.push(setTimeout(() => { setPhase(1); setHint('Select your ERP platform') }, 300))
+    T.push(setTimeout(() => { setPhase(2); setHint('Drag to enter invoice volume') }, 1800))
+    const roll = setTimeout(() => {
+      setHint('')
       let s = 0
       const iv = setInterval(() => {
-        s += 1; const pct = 1 - Math.pow(1 - s / 70, 3)
-        setVolume(Math.round(50000 * pct))
-        setSavings(Math.round(4500000 * pct))
-        if (s >= 70) { clearInterval(iv); setPhase(2) }
+        s++; const p = 1 - Math.pow(1 - s / 65, 3)
+        setVolume(Math.round(50000 * p)); setSavings(Math.round(4500000 * p))
+        if (s >= 65) { clearInterval(iv); setPhase(3); setHint('Your savings projected') }
       }, 22)
-      timers.push(iv)
-    }, 3000)
-    timers.push(countStart)
-    timers.push(setTimeout(() => setPhase(3), 5800))
-    timers.push(setTimeout(() => setShowHint2(true), 7200))
-    timers.push(setTimeout(() => {
-      setPhase(0); setVolume(0); setSavings(0); setShowHint1(false); setShowHint2(false)
-      setTimeout(() => setPhase(1), 400)
-    }, 13500))
-    return () => timers.forEach(t => clearTimeout(t))
+      T.push(iv)
+    }, 2800)
+    T.push(roll)
+    T.push(setTimeout(() => { setShowReport(true); setHint('Send full report to CFO') }, 6200))
+    T.push(setTimeout(() => {
+      setPhase(0); setVolume(0); setSavings(0); setShowReport(false); setHint('')
+      setTimeout(() => { setPhase(1); setHint('Select your ERP platform') }, 300)
+    }, 12000))
+    return () => T.forEach(t => clearTimeout(t))
   }, [active])
 
-  const savPct = savings / 4500000
-  const beforeW = 100
-  const afterW = Math.max(8, 100 - savPct * 62)
-
   return (
-    <div className="relative h-full flex flex-col gap-3 select-none font-['Inter',sans-serif]">
-      <HintBubble text="Drag the slider to see your annual savings →" visible={showHint1} color="amber"
-        style={{ top: '32%', left: '4%' }} />
-      <HintBubble text="📊 Download your full ROI report as PDF" visible={showHint2} color="amber"
-        style={{ bottom: '5%', right: '4%' }} />
-
-      {/* Config row */}
-      <div className="grid grid-cols-2 gap-2 transition-all duration-500"
-        style={{ opacity: phase >= 1 ? 1 : 0 }}>
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 py-2.5">
-          <p className="text-[9px] text-white/30 uppercase tracking-widest mb-0.5">Platform</p>
-          <p className="text-xs font-bold text-white">NetSuite</p>
-        </div>
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 py-2.5">
-          <p className="text-[9px] text-white/30 uppercase tracking-widest mb-0.5">Use Case</p>
-          <p className="text-xs font-bold text-white">AP Automation</p>
-        </div>
-      </div>
-
-      {/* Slider */}
-      <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-4 transition-all duration-500"
-        style={{ opacity: phase >= 1 ? 1 : 0 }}>
-        <div className="flex justify-between mb-2">
-          <p className="text-[10px] text-white/35">Annual Invoice Volume</p>
-          <p className="text-xs font-mono font-black text-[#D4A847] tabular-nums">{volume.toLocaleString()}</p>
-        </div>
-        <div className="relative h-2 bg-white/[0.06] rounded-full">
-          <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#f5d98c] to-[#D4A847] rounded-full"
-            style={{ width: `${(volume / 50000) * 100}%` }} />
-          <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#D4A847] border-2 border-white/80 shadow-lg shadow-amber-600/30"
-            style={{ left: `calc(${(volume / 50000) * 100}% - 8px)` }} />
-        </div>
-        <div className="flex justify-between mt-1.5">
-          <span className="text-[9px] text-white/20">0</span>
-          <span className="text-[9px] text-white/20">500K</span>
-        </div>
-      </div>
-
-      {/* Before/After */}
-      <div className="rounded-xl border border-[#D4A847]/20 bg-[#D4A847]/[0.04] p-4 transition-all duration-500"
-        style={{ opacity: phase >= 1 ? 1 : 0 }}>
-        <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3">Annual Cost — Before vs After AI</p>
-        <div className="space-y-2.5">
-          <div>
-            <div className="flex justify-between text-[10px] mb-1">
-              <span className="text-white/35">Manual Process Today</span>
-              <span className="text-red-400 font-mono font-bold">$6.0M</span>
-            </div>
-            <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-              <div className="h-full bg-red-500/50 rounded-full" style={{ width: `${beforeW}%` }} />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-[10px] mb-1">
-              <span className="text-white/35">With Flowtaris AI</span>
-              <span className="text-[#f0c97a] font-mono font-bold">${((6000000 - savings) / 1000000).toFixed(1)}M</span>
-            </div>
-            <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#f5d98c] to-[#D4A847] rounded-full transition-all duration-100"
-                style={{ width: `${afterW}%` }} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI strip */}
-      <div className="grid grid-cols-3 gap-2 transition-all duration-700"
-        style={{ opacity: phase >= 2 ? 1 : 0, transform: phase >= 2 ? 'translateY(0)' : 'translateY(10px)' }}>
-        {[
-          { l: 'Annual Savings', v: `$${(savings / 1000000).toFixed(1)}M`, c: 'text-[#f0c97a]' },
-          { l: 'Payback Period', v: phase >= 3 ? '3.0 mo' : '…', c: 'text-green-400' },
-          { l: 'FTE Freed', v: phase >= 3 ? '12.4' : '…', c: 'text-violet-400' },
-        ].map(k => (
-          <div key={k.l} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-            <p className={`text-sm font-black tabular-nums ${k.c}`}>{k.v}</p>
-            <p className="text-[8px] text-white/25 uppercase tracking-wider mt-0.5">{k.l}</p>
+    <div className="h-full flex flex-col gap-2.5 font-['Inter',sans-serif] select-none">
+      {/* Config */}
+      <div className="grid grid-cols-2 gap-2 transition-all duration-500" style={{ opacity: phase >= 1 ? 1 : 0 }}>
+        {[{ l: 'ERP Platform', v: 'NetSuite' }, { l: 'Use Case', v: 'AP Automation' }].map(f => (
+          <div key={f.l} className="rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 py-2.5">
+            <p className="text-[8px] text-white/28 uppercase tracking-widest mb-0.5">{f.l}</p>
+            <p className="text-[11px] font-bold text-white">{f.v}</p>
           </div>
         ))}
       </div>
 
-      {/* Report CTA row */}
-      <div className="flex items-center gap-3 transition-all duration-700"
-        style={{ opacity: phase >= 3 ? 1 : 0, transform: phase >= 3 ? 'translateY(0)' : 'translateY(8px)' }}>
-        <div className="flex-1 h-px bg-white/[0.06]" />
-        <span className="text-[10px] text-[#D4A847] font-semibold">Send full report to your CFO →</span>
-        <div className="flex-1 h-px bg-white/[0.06]" />
+      {/* Slider */}
+      <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-4 transition-all duration-500"
+        style={{ opacity: phase >= 2 ? 1 : 0 }}>
+        <div className="flex justify-between mb-2.5">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1 h-1 rounded-full bg-emerald-400/60 animate-pulse" />
+            <p className="text-[9px] text-white/30">Annual Invoice Volume</p>
+          </div>
+          <p className="text-[11px] font-mono font-black text-emerald-300">{volume.toLocaleString()}</p>
+        </div>
+        <div className="relative h-2 bg-white/[0.06] rounded-full">
+          <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-emerald-700 to-emerald-400 rounded-full"
+            style={{ width: `${(volume / 50000) * 100}%` }} />
+          <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-emerald-400 border-2 border-[#0c0c14] shadow-lg"
+            style={{ left: `calc(${(volume / 50000) * 100}% - 8px)` }} />
+        </div>
+        <div className="flex justify-between mt-1.5">
+          <span className="text-[8px] text-white/15">0</span>
+          <span className="text-[8px] text-white/15">500K invoices</span>
+        </div>
       </div>
+
+      {/* Before / After */}
+      <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-4 transition-all duration-500"
+        style={{ opacity: phase >= 2 ? 1 : 0 }}>
+        <p className="text-[8px] text-white/25 uppercase tracking-widest mb-2.5">Annual Cost — Before vs After</p>
+        {[
+          { l: 'Manual Process', val: '$6.0M', w: 100, c: 'bg-rose-600/60' },
+          { l: 'With Flowtaris AI', val: `$${((6000000 - savings) / 1000000).toFixed(1)}M`, w: Math.max(8, 100 - (savings / 4500000) * 62), c: 'bg-gradient-to-r from-emerald-700 to-emerald-500' },
+        ].map(row => (
+          <div key={row.l} className="mb-2">
+            <div className="flex justify-between text-[9px] mb-1">
+              <span className="text-white/30">{row.l}</span>
+              <span className={`font-mono font-bold ${row.c.includes('rose') ? 'text-rose-400' : 'text-emerald-300'}`}>{row.val}</span>
+            </div>
+            <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+              <div className={`h-full ${row.c} rounded-full`} style={{ width: `${row.w}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-3 gap-2 transition-all duration-600"
+        style={{ opacity: phase >= 3 ? 1 : 0, transform: phase >= 3 ? 'translateY(0)' : 'translateY(8px)' }}>
+        {[
+          { l: 'Annual Savings', v: `$${(savings / 1000000).toFixed(1)}M`, c: 'text-emerald-300' },
+          { l: 'Payback Period', v: phase >= 3 ? '3.0 mo' : '—', c: 'text-white/70' },
+          { l: 'FTE Freed', v: phase >= 3 ? '12.4' : '—', c: 'text-indigo-300' },
+        ].map(k => (
+          <div key={k.l} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-2.5 text-center">
+            <p className={`text-sm font-black tabular-nums ${k.c}`}>{k.v}</p>
+            <p className="text-[7px] text-white/22 uppercase tracking-wider mt-0.5">{k.l}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Report row */}
+      {showReport && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] px-3 py-2.5 transition-all duration-500">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+          <p className="text-[10px] text-white/55 font-medium flex-1">Full ROI report ready</p>
+          <span className="text-[9px] text-emerald-400 font-semibold">Send to CFO</span>
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── PREVIEW 3: Cost of Inaction ──────────────────────────────────────────────
+// ─── COST OF INACTION preview ─────────────────────────────────────────────────
 function InactionPreview({ active }: { active: boolean }) {
   const [phase, setPhase] = useState(0)
   const [leakage, setLeakage] = useState(0)
-  const [tick, setTick] = useState(0)
   const [compRisk, setCompRisk] = useState(0)
   const [gap, setGap] = useState(0)
-  const [showHint1, setShowHint1] = useState(false)
-  const [showHint2, setShowHint2] = useState(false)
+  const [tick, setTick] = useState(0)
+  const [showExport, setShowExport] = useState(false)
 
   useEffect(() => {
-    if (!active) {
-      setPhase(0); setLeakage(0); setTick(0); setCompRisk(0); setGap(0)
-      setShowHint1(false); setShowHint2(false); return
-    }
-    const timers: NodeJS.Timeout[] = []
-    timers.push(setTimeout(() => setPhase(1), 400))
-    const rollup = setTimeout(() => {
+    if (!active) { setPhase(0); setLeakage(0); setCompRisk(0); setGap(0); setTick(0); setShowExport(false); return }
+    const T: NodeJS.Timeout[] = []
+    T.push(setTimeout(() => setPhase(1), 300))
+    const roll = setTimeout(() => {
       let s = 0
       const iv = setInterval(() => {
-        s += 1; const p = 1 - Math.pow(1 - s / 60, 3)
-        setLeakage(Math.round(142500 * p))
-        setCompRisk(Math.round(280000 * p))
-        setGap(Math.round(3700000 * p))
-        if (s >= 60) { clearInterval(iv); setPhase(2) }
+        s++; const p = 1 - Math.pow(1 - s / 55, 3)
+        setLeakage(Math.round(142500 * p)); setCompRisk(Math.round(280000 * p)); setGap(Math.round(3700000 * p))
+        if (s >= 55) { clearInterval(iv); setPhase(2) }
       }, 25)
-      timers.push(iv)
+      T.push(iv)
     }, 600)
-    timers.push(rollup)
-    timers.push(setTimeout(() => setShowHint1(true), 2000))
-    timers.push(setTimeout(() => setShowHint1(false), 4500))
-    timers.push(setTimeout(() => setPhase(3), 5500))
-    timers.push(setTimeout(() => setShowHint2(true), 7000))
-    // Tick every second
+    T.push(roll)
     const tickIv = setInterval(() => setTick(t => t + 1), 1000)
-    timers.push(tickIv)
-    timers.push(setTimeout(() => {
-      setPhase(0); setLeakage(0); setTick(0); setCompRisk(0); setGap(0)
-      setShowHint1(false); setShowHint2(false)
-      setTimeout(() => setPhase(1), 400)
-    }, 14000))
-    return () => timers.forEach(t => clearTimeout(t))
+    T.push(tickIv)
+    T.push(setTimeout(() => setPhase(3), 4500))
+    T.push(setTimeout(() => { setShowExport(true) }, 7000))
+    T.push(setTimeout(() => {
+      setPhase(0); setLeakage(0); setCompRisk(0); setGap(0); setTick(0); setShowExport(false)
+      setTimeout(() => setPhase(1), 300)
+    }, 13000))
+    return () => T.forEach(t => clearTimeout(t))
   }, [active])
 
-  const liveLeak = leakage + tick * 4.75
-
   return (
-    <div className="relative h-full flex flex-col gap-3 select-none font-['Inter',sans-serif]">
-      <HintBubble text="⚡ This counter updates every second — live" visible={showHint1} color="red"
-        style={{ top: '12%', right: '4%' }} />
-      <HintBubble text="📋 Export board-ready PDF for your CFO" visible={showHint2} color="red"
-        style={{ bottom: '5%', left: '4%' }} />
-
-      {/* Live bleeding counter */}
-      <div className="rounded-2xl border border-red-500/30 bg-red-500/[0.06] p-5 relative overflow-hidden transition-all duration-500"
+    <div className="h-full flex flex-col gap-2.5 font-['Inter',sans-serif] select-none">
+      {/* Live bleed */}
+      <div className="rounded-2xl border border-rose-500/25 bg-rose-500/[0.06] p-4 relative overflow-hidden transition-all duration-500"
         style={{ opacity: phase >= 1 ? 1 : 0 }}>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-bl-full pointer-events-none" />
-        <div className="flex items-start justify-between mb-2">
-          <p className="text-[9px] text-red-400/70 uppercase tracking-widest font-bold">Monthly Revenue Leakage</p>
-          <span className="flex items-center gap-1.5 text-[9px] text-red-400 font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-            Live tracking
-          </span>
+        <div className="absolute right-0 top-0 w-24 h-24 rounded-bl-full bg-rose-500/8 pointer-events-none" />
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[9px] text-rose-400/65 uppercase tracking-widest font-bold">Monthly Revenue Leakage</p>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+            <span className="text-[9px] text-rose-400 font-bold">Live</span>
+          </div>
         </div>
-        <p className="text-4xl font-black text-red-200 tabular-nums leading-none">
-          ${Math.round(liveLeak).toLocaleString()}
+        <p className="text-[38px] font-black text-rose-200 tabular-nums leading-none">
+          ${Math.round(leakage + tick * 4.75).toLocaleString()}
         </p>
-        <p className="text-[9px] text-red-400/40 mt-1.5">Estimated since you opened this page</p>
+        <p className="text-[8px] text-rose-400/35 mt-1.5">Accumulated since page load</p>
       </div>
 
-      {/* 2-col metrics */}
-      <div className="grid grid-cols-2 gap-2 transition-all duration-700"
-        style={{ opacity: phase >= 2 ? 1 : 0, transform: phase >= 2 ? 'translateY(0)' : 'translateY(10px)' }}>
-        <div className="rounded-xl border border-orange-500/20 bg-orange-500/[0.05] p-3">
-          <p className="text-[9px] text-orange-400/55 uppercase tracking-widest mb-1">Annual Compliance Risk</p>
-          <p className="text-xl font-black text-orange-300 tabular-nums">${(compRisk / 1000).toFixed(0)}K</p>
-        </div>
-        <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/[0.04] p-3">
-          <p className="text-[9px] text-yellow-400/55 uppercase tracking-widest mb-1">3-Year Competitive Gap</p>
-          <p className="text-xl font-black text-yellow-200 tabular-nums">${(gap / 1000000).toFixed(1)}M</p>
-        </div>
-      </div>
-
-      {/* Delay cost bars */}
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 transition-all duration-700"
+      {/* 2-col */}
+      <div className="grid grid-cols-2 gap-2 transition-all duration-600"
         style={{ opacity: phase >= 2 ? 1 : 0 }}>
-        <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3">Impact of 6-Month Delay</p>
-        <div className="space-y-2">
-          {[
-            { l: 'Revenue Leakage', pct: 72, c: 'bg-red-500' },
-            { l: 'Compliance Exposure', pct: 55, c: 'bg-orange-500' },
-            { l: 'Competitive Erosion', pct: 88, c: 'bg-yellow-500' },
-          ].map((row, ri) => (
-            <div key={row.l}>
-              <div className="flex justify-between text-[9px] mb-1">
-                <span className="text-white/35">{row.l}</span>
-                <span className="text-white/40 font-mono">{phase >= 2 ? row.pct : 0}%</span>
-              </div>
-              <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
-                <div className={`h-full ${row.c} rounded-full transition-all duration-1200`}
-                  style={{ width: phase >= 2 ? `${row.pct}%` : '0%', transitionDelay: `${ri * 150}ms` }} />
-              </div>
-            </div>
-          ))}
+        <div className="rounded-xl border border-orange-500/18 bg-orange-500/[0.04] p-3">
+          <p className="text-[8px] text-orange-400/55 uppercase tracking-widest mb-1">Annual Compliance Risk</p>
+          <p className="text-lg font-black text-orange-200 tabular-nums">${(compRisk / 1000).toFixed(0)}K</p>
         </div>
+        <div className="rounded-xl border border-amber-500/18 bg-amber-500/[0.04] p-3">
+          <p className="text-[8px] text-amber-400/55 uppercase tracking-widest mb-1">3-Year Competitive Gap</p>
+          <p className="text-lg font-black text-amber-100 tabular-nums">${(gap / 1000000).toFixed(1)}M</p>
+        </div>
+      </div>
+
+      {/* Delay bars */}
+      <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4 transition-all duration-600"
+        style={{ opacity: phase >= 3 ? 1 : 0 }}>
+        <p className="text-[8px] text-white/25 uppercase tracking-widest mb-3">Impact of 6-Month Delay</p>
+        {[
+          { l: 'Revenue Leakage', pct: 72, c: 'bg-rose-600' },
+          { l: 'Compliance Exposure', pct: 55, c: 'bg-orange-600' },
+          { l: 'Competitive Erosion', pct: 88, c: 'bg-amber-500' },
+        ].map((row, i) => (
+          <div key={row.l} className="mb-2">
+            <div className="flex justify-between text-[8px] mb-1">
+              <span className="text-white/30">{row.l}</span>
+              <span className="text-white/35 font-mono">{row.pct}%</span>
+            </div>
+            <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
+              <div className={`h-full ${row.c} rounded-full transition-all duration-1000`}
+                style={{ width: phase >= 3 ? `${row.pct}%` : '0%', transitionDelay: `${i * 100}ms` }} />
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Export CTA */}
-      <div className="flex items-center justify-between rounded-xl border border-red-500/20 bg-red-500/[0.04] px-4 py-3 transition-all duration-700"
-        style={{ opacity: phase >= 3 ? 1 : 0 }}>
-        <div>
-          <p className="text-[10px] text-white/60 font-semibold">Board-ready PDF ready</p>
-          <p className="text-[9px] text-white/25 mt-0.5">Includes 3-year model, benchmarks & delay cost</p>
+      {showExport && (
+        <div className="flex items-center justify-between rounded-lg border border-rose-500/20 bg-rose-500/[0.04] px-3 py-2.5">
+          <div>
+            <p className="text-[10px] text-white/55 font-semibold">Board-ready PDF ready</p>
+            <p className="text-[8px] text-white/22 mt-0.5">3-year model + benchmarks</p>
+          </div>
+          <span className="text-[9px] text-rose-300 font-bold">Export</span>
         </div>
-        <div className="text-[10px] text-red-300 font-bold whitespace-nowrap">Export →</div>
-      </div>
+      )}
     </div>
   )
 }
 
-// ─── PREVIEW 4: Innovation Lab ────────────────────────────────────────────────
+// ─── INNOVATION LAB preview ───────────────────────────────────────────────────
 const LAB_TRACKS = [
-  { title: 'GenAI Document Understanding', status: 'production', metric: '99.5% accuracy', c: 'text-green-400 bg-green-500/10 border-green-500/30' },
-  { title: 'Conversational ERP Interface', status: 'beta', metric: 'NL→SQL 92%', c: 'text-[#a78bfa] bg-[#8b5cf6]/10 border-[#8b5cf6]/30' },
-  { title: 'Predictive Finance Models', status: 'pilot', metric: '30-day accuracy 92%', c: 'text-amber-300 bg-amber-500/10 border-amber-500/30' },
-  { title: 'AI Governance & Compliance', status: 'pilot', metric: 'EU AI Act ready', c: 'text-amber-300 bg-amber-500/10 border-amber-500/30' },
-  { title: 'Agentic Workflow Orchestration', status: 'research', metric: '78% success rate', c: 'text-purple-300 bg-purple-500/10 border-purple-500/30' },
-  { title: 'Multimodal Finance Understanding', status: 'research', metric: 'Chart extraction 89%', c: 'text-purple-300 bg-purple-500/10 border-purple-500/30' },
+  { t: 'GenAI Document Understanding', s: 'production', m: '99.5% accuracy', c: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25' },
+  { t: 'Conversational ERP Interface', s: 'beta', m: 'NL→SQL 92%', c: 'text-indigo-300 bg-indigo-500/10 border-indigo-500/25' },
+  { t: 'Predictive Finance Models', s: 'pilot', m: '30-day fcst 92%', c: 'text-amber-300 bg-amber-500/10 border-amber-500/25' },
+  { t: 'AI Governance & Compliance', s: 'pilot', m: 'EU AI Act ready', c: 'text-amber-300 bg-amber-500/10 border-amber-500/25' },
+  { t: 'Agentic Workflow Orchestration', s: 'research', m: '78% success', c: 'text-violet-300 bg-violet-500/10 border-violet-500/25' },
+  { t: 'Multimodal Finance Understanding', s: 'research', m: 'Chart ext. 89%', c: 'text-violet-300 bg-violet-500/10 border-violet-500/25' },
 ]
 
 function LabPreview({ active }: { active: boolean }) {
   const [revealed, setRevealed] = useState(0)
   const [expandedIdx, setExpandedIdx] = useState(-1)
-  const [showHint1, setShowHint1] = useState(false)
-  const [showHint2, setShowHint2] = useState(false)
+  const [showJoin, setShowJoin] = useState(false)
 
   useEffect(() => {
-    if (!active) { setRevealed(0); setExpandedIdx(-1); setShowHint1(false); setShowHint2(false); return }
-    const timers: NodeJS.Timeout[] = []
-    timers.push(setTimeout(() => setShowHint1(true), 800))
+    if (!active) { setRevealed(0); setExpandedIdx(-1); setShowJoin(false); return }
+    const T: NodeJS.Timeout[] = []
     let i = 0
-    const iv = setInterval(() => {
-      i++; setRevealed(i)
-      if (i >= LAB_TRACKS.length) clearInterval(iv)
-    }, 230)
-    timers.push(iv)
-    timers.push(setTimeout(() => setShowHint1(false), 3500))
-    timers.push(setTimeout(() => setExpandedIdx(1), 4200))
-    timers.push(setTimeout(() => setShowHint2(true), 5500))
-    timers.push(setTimeout(() => {
-      setRevealed(0); setExpandedIdx(-1); setShowHint1(false); setShowHint2(false)
+    const iv = setInterval(() => { i++; setRevealed(i); if (i >= LAB_TRACKS.length) clearInterval(iv) }, 240)
+    T.push(iv)
+    T.push(setTimeout(() => setExpandedIdx(1), 2200))
+    T.push(setTimeout(() => setExpandedIdx(0), 4500))
+    T.push(setTimeout(() => setShowJoin(true), 6000))
+    T.push(setTimeout(() => {
+      setRevealed(0); setExpandedIdx(-1); setShowJoin(false)
       let j = 0
-      const iv2 = setInterval(() => { j++; setRevealed(j); if (j >= LAB_TRACKS.length) clearInterval(iv2) }, 230)
-      timers.push(iv2)
-    }, 13000))
-    return () => { timers.forEach(t => clearTimeout(t)); clearInterval(iv) }
+      const iv2 = setInterval(() => { j++; setRevealed(j); if (j >= LAB_TRACKS.length) clearInterval(iv2) }, 240)
+      T.push(iv2)
+    }, 12000))
+    return () => T.forEach(t => clearTimeout(t))
   }, [active])
 
   return (
-    <div className="relative h-full flex flex-col gap-2 select-none font-['Inter',sans-serif]">
-      <HintBubble text="← 6 active R&D tracks — tap to explore" visible={showHint1} color="purple"
-        style={{ top: '2%', right: '4%' }} />
-      <HintBubble text="🔬 Join our beta program → get early access" visible={showHint2} color="purple"
-        style={{ bottom: '4%', left: '4%' }} />
-
+    <div className="h-full flex flex-col gap-2 font-['Inter',sans-serif] select-none">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-[9px] text-white/25 uppercase tracking-widest">Active Research Tracks</p>
-        <span className="text-[9px] font-mono text-purple-400">{Math.min(revealed, LAB_TRACKS.length)} / 6 loaded</span>
+        <p className="text-[8px] text-white/22 uppercase tracking-widest">Active Research Tracks</p>
+        <div className="flex items-center gap-1">
+          <div className="w-1 h-1 rounded-full bg-violet-400 animate-pulse" />
+          <span className="text-[8px] font-mono text-violet-400">{Math.min(revealed, 6)} / 6</span>
+        </div>
       </div>
-      {LAB_TRACKS.map((t, i) => (
-        <div key={t.title}
-          className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden transition-all duration-500 cursor-pointer"
-          style={{
-            opacity: i < revealed ? 1 : 0,
-            transform: i < revealed ? 'translateX(0)' : 'translateX(-10px)',
-            transitionDelay: `${i * 40}ms`,
-          }}>
-          <div className="flex items-center gap-3 px-3 py-2.5">
+
+      {LAB_TRACKS.map((tr, i) => (
+        <div key={tr.t}
+          className="rounded-xl border border-white/[0.05] bg-white/[0.02] overflow-hidden transition-all duration-500"
+          style={{ opacity: i < revealed ? 1 : 0, transform: i < revealed ? 'translateX(0)' : 'translateX(-8px)', transitionDelay: `${i * 30}ms` }}>
+          <div className="flex items-center gap-2.5 px-3 py-2.5">
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold text-white/80 truncate">{t.title}</p>
+              <p className="text-[10px] font-semibold text-white/75 truncate">{tr.t}</p>
               {expandedIdx === i && (
-                <p className="text-[9px] text-white/35 mt-0.5 transition-all">{t.metric}</p>
+                <div className="mt-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-violet-600 to-violet-400 rounded-full transition-all duration-800 delay-200"
+                        style={{ width: expandedIdx === i ? '92%' : '0%' }} />
+                    </div>
+                    <span className="text-[8px] text-violet-400 font-mono">{tr.m}</span>
+                  </div>
+                </div>
               )}
             </div>
-            <span className={`text-[8px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border shrink-0 ${t.c}`}>
-              {t.status}
+            <span className={`text-[7px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border shrink-0 ${tr.c}`}>
+              {tr.s}
             </span>
           </div>
-          {expandedIdx === i && (
-            <div className="px-3 pb-3 flex items-center gap-3 border-t border-white/[0.05] pt-2">
-              <div className="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#a855f7] to-[#c084fc] rounded-full transition-all duration-700" style={{ width: '92%' }} />
-              </div>
-              <span className="text-[9px] text-purple-400 font-mono">92%</span>
-            </div>
-          )}
         </div>
       ))}
+
+      {showJoin && (
+        <div className="mt-1 flex items-center justify-between rounded-lg border border-violet-500/20 bg-violet-500/[0.04] px-3 py-2.5">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+            <p className="text-[9px] text-white/50 font-medium">Beta program open</p>
+          </div>
+          <span className="text-[9px] text-violet-400 font-semibold">Request access</span>
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── Intersection Observer hook ───────────────────────────────────────────────
-function useReveal(threshold = 0.15) {
+// ─── Realistic MacBook keyboard ───────────────────────────────────────────────
+function MacKeyboard() {
+  const rows = [
+    { keys: 14, heights: 'h-[6px]', gap: 'gap-[2px]' },  // fn row
+    { keys: 14, heights: 'h-[9px]', gap: 'gap-[2px]' },  // number row
+    { keys: 14, heights: 'h-[9px]', gap: 'gap-[2px]' },  // QWERTY
+    { keys: 13, heights: 'h-[9px]', gap: 'gap-[2px]' },  // ASDF
+    { keys: 12, heights: 'h-[9px]', gap: 'gap-[2px]' },  // ZXCV
+  ]
+  return (
+    <div className="px-6 pt-3 pb-1 space-y-[2px]">
+      {rows.map((row, ri) => (
+        <div key={ri} className={`flex items-center justify-center ${row.gap}`}>
+          {Array.from({ length: row.keys }).map((_, ki) => (
+            <div key={ki}
+              className={`flex-1 max-w-[28px] ${row.heights} rounded-[1.5px]`}
+              style={{
+                background: 'linear-gradient(180deg, #2e2e31 0%, #252528 100%)',
+                boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03)',
+                border: '0.5px solid rgba(0,0,0,0.5)',
+              }} />
+          ))}
+        </div>
+      ))}
+      {/* Space bar row */}
+      <div className="flex items-center justify-center gap-[2px] mt-[2px]">
+        {[1, 1, 1, 5, 1, 1, 1].map((flex, i) => (
+          <div key={i}
+            className="h-[9px] rounded-[1.5px]"
+            style={{
+              flex,
+              background: 'linear-gradient(180deg, #2e2e31 0%, #252528 100%)',
+              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03)',
+              border: '0.5px solid rgba(0,0,0,0.5)',
+            }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Intersection observer ────────────────────────────────────────────────────
+function useReveal(threshold = 0.1) {
   const ref = useRef<HTMLElement>(null)
   const [visible, setVisible] = useState(false)
   useEffect(() => {
@@ -617,27 +660,25 @@ function useReveal(threshold = 0.15) {
 
 // ─── Bottom stats ─────────────────────────────────────────────────────────────
 const STATS = [
-  { v: '$4.5M', l: 'Avg Annual Savings' },
-  { v: '3 mo', l: 'Avg Payback Period' },
-  { v: '99.5%', l: 'Document AI Accuracy' },
-  { v: '6', l: 'R&D Research Tracks' },
-  { v: '15+', l: 'Languages Supported' },
-  { v: 'Free', l: 'All Tools — No Signup' },
+  { v: '$4.5M', l: 'Avg Annual Savings' }, { v: '3 mo', l: 'Avg Payback Period' },
+  { v: '99.5%', l: 'Document AI Accuracy' }, { v: '6', l: 'Live R&D Tracks' },
+  { v: '15+', l: 'Languages Supported' }, { v: 'Free', l: 'All Tools, No Signup' },
 ]
 
-// ─── MAIN EXPORT ──────────────────────────────────────────────────────────────
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function IntelligenceSuiteSection() {
   const [activeTab, setActiveTab] = useState(0)
   const { ref: sectionRef, visible: sectionVisible } = useReveal(0.1)
+  const router = useRouter()
 
   const tool = TOOLS[activeTab]
   const c = C[tool.color]
 
   const PREVIEWS = [
-    <AssessmentPreview key={`assessment-${activeTab}`} active={activeTab === 0 && sectionVisible} />,
-    <ROIPreview key={`roi-${activeTab}`} active={activeTab === 1 && sectionVisible} />,
-    <InactionPreview key={`inaction-${activeTab}`} active={activeTab === 2 && sectionVisible} />,
-    <LabPreview key={`lab-${activeTab}`} active={activeTab === 3 && sectionVisible} />,
+    <AssessmentPreview key={`a-${activeTab}`} active={activeTab === 0 && sectionVisible} />,
+    <ROIPreview key={`r-${activeTab}`} active={activeTab === 1 && sectionVisible} />,
+    <InactionPreview key={`i-${activeTab}`} active={activeTab === 2 && sectionVisible} />,
+    <LabPreview key={`l-${activeTab}`} active={activeTab === 3 && sectionVisible} />,
   ]
 
   return (
@@ -645,55 +686,53 @@ export default function IntelligenceSuiteSection() {
       ref={sectionRef as React.RefObject<HTMLElement>}
       className="relative w-full overflow-hidden py-24 lg:py-36"
       aria-labelledby="suite-heading"
-      itemScope itemType="https://schema.org/SoftwareApplication"
     >
-      {/* ── Background ── */}
+      {/* Background */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.9) 1px, transparent 1px)`,
-          backgroundSize: '72px 72px',
+        <div className="absolute inset-0 opacity-[0.018]" style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)`,
+          backgroundSize: '64px 64px',
         }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] h-[55%] rounded-full blur-[130px] transition-all duration-1000"
-          style={{ background: c.glow, opacity: 0.45 }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[50%] rounded-full blur-[140px] transition-all duration-1000"
+          style={{ background: c.glow, opacity: 0.4 }} />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8">
 
-        {/* ── Header ── */}
-        <div className="text-center mb-14 lg:mb-18" style={{
+        {/* Header */}
+        <div className="text-center mb-14" style={{
           opacity: sectionVisible ? 1 : 0,
           transform: sectionVisible ? 'translateY(0)' : 'translateY(24px)',
           transition: 'all 0.8s cubic-bezier(0.22,1,0.36,1)',
         }}>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/[0.04] mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-500/70 animate-pulse" />
-            <span className="text-[11px] font-bold tracking-[0.18em] text-white/45 uppercase">The Flowtaris Intelligence Suite</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.035] mb-6">
+            <div className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
+            <span className="text-[11px] font-semibold tracking-[0.16em] text-white/40 uppercase">The Flowtaris Intelligence Suite</span>
           </div>
-          <h2 id="suite-heading" className="text-3xl sm:text-4xl lg:text-[2.9rem] font-black tracking-tight text-white leading-tight mb-5" itemProp="name">
+          <h2 id="suite-heading" className="text-3xl sm:text-4xl lg:text-[2.8rem] font-black tracking-tight text-white leading-tight mb-5">
             Stop guessing.{' '}
-            <span className="bg-gradient-to-r from-[#a78bfa] via-[#D4A847] to-[#f43f5e] bg-clip-text text-transparent">
+            <span style={{ background: 'linear-gradient(135deg, #818cf8 0%, #34d399 50%, #fb7185 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Start calculating.
             </span>
           </h2>
-          <p className="text-[15px] text-white/38 max-w-xl mx-auto leading-relaxed" itemProp="description">
-            Four enterprise-grade tools — built on real benchmarks — that prove the financial impact of AI
-            <em className="not-italic font-semibold text-white/55"> before</em> you sign a contract. No fake dashboards. Your numbers.
+          <p className="text-[15px] text-white/35 max-w-xl mx-auto leading-relaxed">
+            Four enterprise-grade tools — built on real benchmarks — that prove AI's financial impact
+            <em className="not-italic font-semibold text-white/55"> before</em> you sign a contract.
           </p>
         </div>
 
-        {/* ── Tabs ── */}
+        {/* Tabs */}
         <div className="flex flex-wrap justify-center gap-2 mb-12" style={{
           opacity: sectionVisible ? 1 : 0,
           transition: 'all 0.8s cubic-bezier(0.22,1,0.36,1) 0.15s',
         }} role="tablist">
           {TOOLS.map((t, i) => {
-            const tc = C[t.color]
-            const isActive = activeTab === i
+            const tc = C[t.color]; const isActive = activeTab === i
             return (
               <button key={t.id} role="tab" aria-selected={isActive}
                 onClick={() => setActiveTab(i)}
                 className={`px-5 py-2.5 rounded-full border text-[13px] font-semibold transition-all duration-300 ${
-                  isActive ? `${tc.tab} scale-[1.04]` : 'border-white/[0.08] text-white/40 hover:border-white/20 hover:text-white/60 hover:bg-white/[0.04]'
+                  isActive ? `${tc.tab} scale-[1.03]` : 'border-white/[0.07] text-white/35 hover:border-white/18 hover:text-white/55 hover:bg-white/[0.03]'
                 }`}>
                 {t.tab}
               </button>
@@ -701,134 +740,192 @@ export default function IntelligenceSuiteSection() {
           })}
         </div>
 
-        {/* ── Main Grid ── */}
+        {/* Main grid */}
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center" style={{
-          opacity: sectionVisible ? 1 : 0,
-          transition: 'opacity 0.6s ease',
+          opacity: sectionVisible ? 1 : 0, transition: 'opacity 0.5s ease',
         }}>
-
-          {/* LEFT — text */}
+          {/* LEFT — description */}
           <div className="flex flex-col gap-6">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold uppercase tracking-widest w-fit ${c.badge}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${c.bar} animate-pulse`} />
-              {tool.tagline}
-            </span>
-            <h3 className="text-2xl lg:text-3xl font-black text-white leading-tight tracking-tight">
-              {tool.headline}
-            </h3>
-            <p className="text-[15px] text-white/40 leading-[1.85]">{tool.description}</p>
+            <div>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold uppercase tracking-widest ${c.badge}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${c.dot} animate-pulse`} />
+                {tool.tagline}
+              </span>
+            </div>
+            <h3 className="text-2xl lg:text-[1.75rem] font-black text-white leading-tight tracking-tight">{tool.headline}</h3>
+            <p className="text-[15px] text-white/38 leading-[1.9]">{tool.description}</p>
             <div className="grid grid-cols-2 gap-3">
               {tool.metrics.map(m => (
-                <div key={m.label} className="rounded-xl border border-white/[0.06] bg-white/[0.025] px-4 py-3">
-                  <p className="text-lg font-black tabular-nums" style={{ color: c.accent }}>{m.value}</p>
-                  <p className="text-[10px] text-white/28 uppercase tracking-wider mt-0.5">{m.label}</p>
+                <div key={m.l} className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5">
+                  <p className="text-lg font-black tabular-nums" style={{ color: c.b }}>{m.v}</p>
+                  <p className="text-[10px] text-white/25 uppercase tracking-wider mt-0.5">{m.l}</p>
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-4 mt-2">
+            <div className="flex items-center gap-4 mt-1">
               <Link href={tool.href}
-                className={`inline-flex items-center gap-3 px-7 py-3.5 rounded-full font-bold text-[14px] bg-gradient-to-r ${c.cta} hover:brightness-110 hover:-translate-y-0.5 transition-all duration-300 group`}>
+                className={`inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold text-[14px] bg-gradient-to-r ${c.cta} hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 group`}>
                 {tool.ctaLabel}
-                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 16 16">
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 16 16">
                   <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </Link>
-              <span className="text-[11px] text-white/22 font-medium">No signup required</span>
+              <span className="text-[11px] text-white/20">No signup required</span>
             </div>
           </div>
 
-          {/* RIGHT — Laptop mockup */}
+          {/* RIGHT — Realistic MacBook */}
           <div className="relative flex flex-col items-center">
-
-            {/* Glow behind laptop */}
-            <div className="absolute -inset-6 rounded-[3rem] blur-3xl opacity-25 pointer-events-none transition-colors duration-700"
+            {/* Ambient glow */}
+            <div className="absolute -inset-8 rounded-[3rem] blur-3xl opacity-20 pointer-events-none transition-all duration-700"
               style={{ background: c.glow }} aria-hidden="true" />
 
-            {/* ── LAPTOP LID / SCREEN ── */}
-            <div className="relative w-full max-w-[560px]">
+            {/* Laptop wrapper — clickable */}
+            <div
+              className="relative w-full max-w-[560px] cursor-pointer group"
+              onClick={() => router.push(tool.href)}
+              title={`Open ${tool.tagline}`}
+              role="link"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && router.push(tool.href)}
+            >
+              {/* ── SCREEN LID ── */}
+              <div
+                className="relative rounded-[14px] overflow-hidden"
+                style={{
+                  background: 'linear-gradient(160deg, #2a2a2e 0%, #1c1c1f 40%, #111113 100%)',
+                  boxShadow: '0 0 0 1px rgba(255,255,255,0.06), 0 50px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
+                  padding: '8px 8px 4px',
+                }}>
+                {/* Camera */}
+                <div className="absolute top-[4px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full"
+                  style={{ background: '#111', boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.06)' }} />
+                {/* Logo notch area */}
+                <div className="absolute top-[3px] left-1/2 -translate-x-1/2 translate-x-[-40px] w-1 h-1 rounded-full bg-white/[0.06]" />
 
-              {/* Camera notch */}
-              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#1a1a24] border border-white/10 z-20" />
+                {/* Screen inner glass */}
+                <div
+                  className="relative rounded-[8px] overflow-hidden"
+                  style={{
+                    background: '#0a0a10',
+                    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
+                  }}>
+                  {/* Subtle screen reflection */}
+                  <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-20"
+                    style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 100%)' }} />
 
-              {/* Screen bezel */}
-              <div className="rounded-t-2xl rounded-b-md bg-gradient-to-b from-[#16151f] to-[#12111c] border border-white/[0.1] border-b-white/[0.06] overflow-hidden shadow-2xl"
-                style={{ boxShadow: '0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-
-                {/* macOS-style title bar */}
-                <div className="flex items-center gap-2.5 px-4 py-3 bg-[#0f0e18]/80 border-b border-white/[0.05]">
-                  {/* Traffic lights */}
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-[#ff5f57]/80 border border-red-600/30" />
-                    <div className="w-3 h-3 rounded-full bg-[#ffbd2e]/80 border border-yellow-600/30" />
-                    <div className="w-3 h-3 rounded-full bg-[#28c840]/80 border border-green-600/30" />
-                  </div>
-                  {/* Address bar */}
-                  <div className="flex-1 mx-3">
-                    <div className="bg-white/[0.06] rounded-md px-3 py-1.5 flex items-center gap-2">
-                      <svg className="w-3 h-3 text-white/20 shrink-0" fill="none" viewBox="0 0 16 16">
-                        <path d="M11 10l3 3M4.5 8a3.5 3.5 0 107 0 3.5 3.5 0 00-7 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  {/* macOS Window chrome */}
+                  <div className="flex items-center gap-0 px-3 py-2.5 border-b"
+                    style={{ background: '#111117', borderColor: 'rgba(255,255,255,0.05)' }}>
+                    {/* Traffic lights */}
+                    <div className="flex items-center gap-[5px] mr-4">
+                      {['#ff5f57', '#ffbd2e', '#28c840'].map((col, i) => (
+                        <div key={i} className="w-[11px] h-[11px] rounded-full" style={{
+                          background: col,
+                          boxShadow: `0 0 4px ${col}55`,
+                          opacity: 0.85,
+                        }} />
+                      ))}
+                    </div>
+                    {/* Address bar */}
+                    <div className="flex-1 flex items-center bg-white/[0.05] rounded-md px-3 py-1 gap-2">
+                      <svg className="w-3 h-3 text-white/20 shrink-0" fill="none" viewBox="0 0 12 12">
+                        <path d="M5 9a4 4 0 100-8 4 4 0 000 8zM11 11l-3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                       </svg>
-                      <span className="text-[10px] text-white/30 font-mono flex-1 text-center tracking-wide">
+                      <span className="text-[10px] text-white/25 font-mono flex-1 text-center tracking-wide">
                         flowtaris.ai{tool.href}
                       </span>
                     </div>
+                    {/* Live indicator */}
+                    <div className="flex items-center gap-1.5 ml-3">
+                      <div className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ background: c.a }} />
+                      <span className="text-[9px] font-semibold" style={{ color: c.b }}>Live</span>
+                    </div>
                   </div>
-                  {/* Live dot */}
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold shrink-0" style={{ color: c.accentLight }}>
-                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: c.accent }} />
-                    Live
-                  </span>
-                </div>
 
-                {/* Screen content */}
-                <div className="p-4 min-h-[420px] bg-[#0b0a15]" key={`${activeTab}-content`}>
-                  {PREVIEWS[activeTab]}
-                </div>
-
-                {/* Bottom scan line effect */}
-                <div className="h-px w-full opacity-20" style={{ background: `linear-gradient(90deg, transparent, ${c.accent}, transparent)` }} />
-              </div>
-
-              {/* ── LAPTOP BASE / KEYBOARD ── */}
-              <div className="relative mx-auto" style={{ width: '108%', marginLeft: '-4%' }}>
-                {/* Hinge */}
-                <div className="h-[5px] bg-gradient-to-b from-[#1e1d2a] to-[#16151f] rounded-none border-x border-white/[0.06]" />
-                {/* Keyboard deck */}
-                <div className="h-[28px] bg-gradient-to-b from-[#1a192a] to-[#14131e] rounded-b-xl border border-t-0 border-white/[0.07] relative overflow-hidden"
-                  style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                  {/* Keyboard grid dots */}
-                  <div className="absolute inset-x-8 top-3 flex justify-center gap-1.5">
-                    {Array.from({ length: 22 }).map((_, i) => (
-                      <div key={i} className="w-1.5 h-1 rounded-sm bg-white/[0.04]" />
+                  {/* Tab bar */}
+                  <div className="flex gap-0 border-b" style={{ background: '#0d0d14', borderColor: 'rgba(255,255,255,0.04)' }}>
+                    {['Page', 'Elements', 'Console'].map((tab, i) => (
+                      <div key={tab} className={`px-4 py-1.5 text-[9px] border-b-2 ${
+                        i === 0 ? 'text-white/60 border-white/30' : 'text-white/20 border-transparent'
+                      }`}>{tab}</div>
                     ))}
                   </div>
-                  {/* Trackpad */}
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 rounded-md bg-white/[0.04] border border-white/[0.04]" />
+
+                  {/* Screen content */}
+                  <div className="p-4 min-h-[400px]" key={`${activeTab}`}>
+                    {PREVIEWS[activeTab]}
+                  </div>
+
+                  {/* Color scan line */}
+                  <div className="h-[1px] w-full opacity-30"
+                    style={{ background: `linear-gradient(90deg, transparent 0%, ${c.a} 30%, ${c.b} 70%, transparent 100%)` }} />
                 </div>
               </div>
 
-              {/* Desk reflection */}
-              <div className="h-2 mx-6 rounded-b-full bg-gradient-to-b from-white/[0.03] to-transparent" />
+              {/* ── Hover overlay to show "Click to open" ── */}
+              <div className="absolute inset-0 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-40 pointer-events-none flex items-center justify-center"
+                style={{ background: 'rgba(0,0,0,0.25)' }}>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: `1px solid ${c.a}55` }}>
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: c.b }} />
+                  <span className="text-[12px] font-semibold text-white">Open {tool.tagline}</span>
+                </div>
+              </div>
+
+              {/* ── HINGE ── */}
+              <div className="mx-1">
+                <div className="h-[4px]" style={{
+                  background: 'linear-gradient(180deg, #111113 0%, #1e1e22 50%, #111113 100%)',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                }} />
+              </div>
+
+              {/* ── KEYBOARD BASE ── */}
+              <div className="relative" style={{
+                background: 'linear-gradient(160deg, #232326 0%, #1a1a1d 50%, #141416 100%)',
+                borderRadius: '0 0 10px 10px',
+                boxShadow: '0 30px 60px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(255,255,255,0.05)',
+              }}>
+                {/* Screen ambient glow on keyboard */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-1 blur-xl opacity-30 pointer-events-none"
+                  style={{ background: c.a }} />
+
+                <MacKeyboard />
+
+                {/* Trackpad */}
+                <div className="mx-auto mb-3 mt-1"
+                  style={{
+                    width: '110px', height: '65px',
+                    background: 'linear-gradient(180deg, #202023 0%, #1b1b1e 100%)',
+                    borderRadius: '8px',
+                    border: '0.5px solid rgba(255,255,255,0.06)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)',
+                  }} />
+              </div>
+
+              {/* Base shadow / surface reflection */}
+              <div className="mx-8 h-3 rounded-b-full opacity-40"
+                style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.5), transparent)' }} />
             </div>
           </div>
         </div>
 
-        {/* ── Bottom stats ── */}
-        <div className="mt-20 pt-10 border-t border-white/[0.05]" style={{
+        {/* Bottom stats */}
+        <div className="mt-20 pt-10 border-t border-white/[0.04]" style={{
           opacity: sectionVisible ? 1 : 0,
           transform: sectionVisible ? 'translateY(0)' : 'translateY(20px)',
           transition: 'all 0.8s cubic-bezier(0.22,1,0.36,1) 0.4s',
         }}>
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-6">
+          <div className="flex flex-wrap justify-center gap-x-10 gap-y-6">
             {STATS.map((s, i) => (
               <div key={i} className="text-center">
                 <p className="text-2xl font-black text-white tabular-nums">{s.v}</p>
-                <p className="text-[10px] text-white/25 uppercase tracking-widest mt-0.5 max-w-[120px] mx-auto leading-snug">{s.l}</p>
+                <p className="text-[10px] text-white/22 uppercase tracking-widest mt-0.5 max-w-[110px] mx-auto leading-snug">{s.l}</p>
               </div>
             ))}
           </div>
         </div>
-
       </div>
     </section>
   )
