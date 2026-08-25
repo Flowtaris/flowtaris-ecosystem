@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { Badge, FloatingProduct } from '@repo/ui'
 import { HomeHero } from './HomeHero'
 import TrustSignalsSection from '../components/TrustSignalsSection'
+import DualVisionSection from '../components/DualVisionSection'
 
 export const metadata: Metadata = {
   title: 'Flowtaris AI | Enterprise AI Automation for Finance',
