@@ -31,7 +31,7 @@ async function fetchHeaderConfig() {
   } catch {
     // Safe defaults — header always renders even if DB is down
     return {
-      logoUrl:   '/images/flowtaris_logo.png',
+      logoUrl:   'https://www.flowtaris.com/logo.svg',
       brandName: 'Flowtaris',
       badgeText: '.ai',
       showLogo:  true,

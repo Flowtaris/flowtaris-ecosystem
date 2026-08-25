@@ -113,7 +113,7 @@ type SiteConfigFormData = {
   seo: string
 }
 
-const DEFAULT_LOGO = '/images/flowtaris_logo.png'
+const DEFAULT_LOGO = 'https://www.flowtaris.com/logo.svg'
 const DEFAULTS: SiteConfigFormData = {
   site_name: 'Flowtaris AI',
   site_url: 'https://flowtaris.ai',
