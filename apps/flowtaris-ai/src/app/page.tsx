@@ -1,8 +1,9 @@
 import { Metadata } from 'next'
-import { Badge, FloatingProduct } from '@repo/ui'
+import { Badge } from '@repo/ui'
 import { HomeHero } from './HomeHero'
 import TrustSignalsSection from '../components/TrustSignalsSection'
 import DualVisionSection from '../components/DualVisionSection'
+import IntelligenceSuiteSection from '../components/IntelligenceSuiteSection'
 
 export const metadata: Metadata = {
   title: 'Flowtaris AI | Enterprise AI Automation for Finance',
@@ -36,37 +37,8 @@ export default function Home() {
       {/* ── Dual Vision: Flowtaris × Flowtaris AI ── */}
       <DualVisionSection />
 
-      {/* ── Product Showcase ── */}
-      <section style={{ padding: '96px 24px', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 64 }}>
-          <div style={{ textAlign: 'center', maxWidth: 700 }}>
-            <p style={{ fontSize: 11, color: '#00b8db', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700, marginBottom: 16 }}>Live AI Dashboard</p>
-            <h2 className="text-display-sm text-gradient-brand" style={{ marginBottom: 20 }}>
-              Intelligence you can see and interact with
-            </h2>
-            <p className="text-headline-sm" style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
-              Experience the power of our conversational ERP interface and predictive analytics engines —
-              real-time, visual, and actionable.
-            </p>
-          </div>
-          <div style={{ width: '100%', maxWidth: 860, position: 'relative' }}>
-            <FloatingProduct
-              src="/images/home_conversational_erp.png"
-              alt="Flowtaris AI Finance Dashboard"
-              frames={['/images/home_conversational_erp.png', '/images/home_predictive_analytics.png']}
-              mouseParallax={true}
-              parallaxStrength={0.12}
-              autoRotate={true}
-              rotationSpeed={10}
-              width={860}
-              height={540}
-              borderRadius="20px"
-              shadow={true}
-              shadowIntensity={1.4}
-            />
-          </div>
-        </div>
-      </section>
+      {/* ── Intelligence Suite: 4 Real Interactive Tools ── */}
+      <IntelligenceSuiteSection />
 
       {/* ── Capabilities Grid ── */}
       <section style={{ padding: '96px 24px', background: 'rgba(255,255,255,0.01)' }} aria-labelledby="capabilities-heading">
