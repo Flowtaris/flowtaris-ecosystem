@@ -19,7 +19,7 @@ const TOOLS = [
     tagline: 'Enterprise ROI Calculator', ctaLabel: 'Calculate My ROI',
     headline: 'Drag a slider. Watch $4.5M appear in real-time.',
     description: 'Enter your invoice volume, team size, and error rate. Our engine outputs annual savings, payback period, FTE freed, and 3-year NPV across 15 global currencies and 5 ERP platforms.',
-    color: 'emerald' as const,
+    color: 'amber' as const,
     metrics: [{ l: 'Currencies', v: '15' }, { l: 'ERP platforms', v: '5' }, { l: 'Avg savings', v: '$4.5M' }, { l: 'Avg payback', v: '3 mo' }],
   },
   {
@@ -49,6 +49,14 @@ const C = {
     bar: 'bg-indigo-500', dot: 'bg-indigo-400',
     cta: 'from-indigo-600 to-indigo-800 text-white shadow-[0_8px_30px_rgba(79,70,229,0.4)]',
     scan: '#818cf8', key: '#4f46e5',
+  },
+  amber: {
+    a: '#d97706', b: '#fcd34d', dim: 'rgba(217,119,6,0.14)', glow: 'rgba(217,119,6,0.2)',
+    tab: 'border-amber-500/40 bg-amber-500/10 text-amber-300 ring-2 ring-amber-500/20',
+    badge: 'border-amber-500/30 bg-amber-500/10 text-amber-300',
+    bar: 'bg-amber-500', dot: 'bg-amber-400',
+    cta: 'from-amber-600 to-amber-800 text-white shadow-[0_8px_30px_rgba(217,119,6,0.35)]',
+    scan: '#fcd34d', key: '#d97706',
   },
   emerald: {
     a: '#059669', b: '#34d399', dim: 'rgba(5,150,105,0.14)', glow: 'rgba(5,150,105,0.18)',
@@ -207,7 +215,9 @@ function AssessmentPreview({ active }: { active: boolean }) {
         <div className="flex-1 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4 flex flex-col gap-3 transition-all duration-300 relative overflow-hidden">
           {/* Step label */}
           <div className="flex items-center justify-between">
-            <span className="text-[9px] font-bold text-indigo-400/70 uppercase tracking-widest">{ws.title}</span>
+            <span className="text-[9px] font-bold text-indigo-400/70 uppercase tracking-widest">
+              STEP {step + 1}/6 — {ws.title}
+            </span>
             {hint && (
               <span className="flex items-center gap-1 text-[9px] text-white/30">
                 <div className="w-1 h-1 rounded-full bg-indigo-400/60 animate-pulse" />
@@ -362,15 +372,15 @@ function ROIPreview({ active }: { active: boolean }) {
         style={{ opacity: phase >= 2 ? 1 : 0 }}>
         <div className="flex justify-between mb-2.5">
           <div className="flex items-center gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-emerald-400/60 animate-pulse" />
+            <div className="w-1 h-1 rounded-full bg-amber-400/60 animate-pulse" />
             <p className="text-[9px] text-white/30">Annual Invoice Volume</p>
           </div>
-          <p className="text-[11px] font-mono font-black text-emerald-300">{volume.toLocaleString()}</p>
+          <p className="text-[11px] font-mono font-black text-amber-300">{volume.toLocaleString()}</p>
         </div>
         <div className="relative h-2 bg-white/[0.06] rounded-full">
-          <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-emerald-700 to-emerald-400 rounded-full"
+          <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-amber-700 to-amber-400 rounded-full"
             style={{ width: `${(volume / 50000) * 100}%` }} />
-          <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-emerald-400 border-2 border-[#0c0c14] shadow-lg"
+          <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-amber-400 border-2 border-[#0c0c14] shadow-lg"
             style={{ left: `calc(${(volume / 50000) * 100}% - 8px)` }} />
         </div>
         <div className="flex justify-between mt-1.5">
@@ -380,17 +390,17 @@ function ROIPreview({ active }: { active: boolean }) {
       </div>
 
       {/* Before / After */}
-      <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-4 transition-all duration-500"
+      <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-4 transition-all duration-500"
         style={{ opacity: phase >= 2 ? 1 : 0 }}>
         <p className="text-[8px] text-white/25 uppercase tracking-widest mb-2.5">Annual Cost — Before vs After</p>
         {[
           { l: 'Manual Process', val: '$6.0M', w: 100, c: 'bg-rose-600/60' },
-          { l: 'With Flowtaris AI', val: `$${((6000000 - savings) / 1000000).toFixed(1)}M`, w: Math.max(8, 100 - (savings / 4500000) * 62), c: 'bg-gradient-to-r from-emerald-700 to-emerald-500' },
+          { l: 'With Flowtaris AI', val: `$${((6000000 - savings) / 1000000).toFixed(1)}M`, w: Math.max(8, 100 - (savings / 4500000) * 62), c: 'bg-gradient-to-r from-amber-700 to-amber-500' },
         ].map(row => (
           <div key={row.l} className="mb-2">
             <div className="flex justify-between text-[9px] mb-1">
               <span className="text-white/30">{row.l}</span>
-              <span className={`font-mono font-bold ${row.c.includes('rose') ? 'text-rose-400' : 'text-emerald-300'}`}>{row.val}</span>
+              <span className={`font-mono font-bold ${row.c.includes('rose') ? 'text-rose-400' : 'text-amber-300'}`}>{row.val}</span>
             </div>
             <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
               <div className={`h-full ${row.c} rounded-full`} style={{ width: `${row.w}%` }} />
@@ -403,7 +413,7 @@ function ROIPreview({ active }: { active: boolean }) {
       <div className="grid grid-cols-3 gap-2 transition-all duration-600"
         style={{ opacity: phase >= 3 ? 1 : 0, transform: phase >= 3 ? 'translateY(0)' : 'translateY(8px)' }}>
         {[
-          { l: 'Annual Savings', v: `$${(savings / 1000000).toFixed(1)}M`, c: 'text-emerald-300' },
+          { l: 'Annual Savings', v: `$${(savings / 1000000).toFixed(1)}M`, c: 'text-amber-300' },
           { l: 'Payback Period', v: phase >= 3 ? '3.0 mo' : '—', c: 'text-white/70' },
           { l: 'FTE Freed', v: phase >= 3 ? '12.4' : '—', c: 'text-indigo-300' },
         ].map(k => (
@@ -416,10 +426,10 @@ function ROIPreview({ active }: { active: boolean }) {
 
       {/* Report row */}
       {showReport && (
-        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] px-3 py-2.5 transition-all duration-500">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+        <div className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.04] px-3 py-2.5 transition-all duration-500">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
           <p className="text-[10px] text-white/55 font-medium flex-1">Full ROI report ready</p>
-          <span className="text-[9px] text-emerald-400 font-semibold">Send to CFO</span>
+          <span className="text-[9px] text-amber-400 font-semibold">Send to CFO</span>
         </div>
       )}
     </div>
@@ -612,46 +622,6 @@ function LabPreview({ active }: { active: boolean }) {
   )
 }
 
-// ─── Realistic MacBook keyboard ───────────────────────────────────────────────
-function MacKeyboard() {
-  const rows = [
-    { keys: 14, heights: 'h-[6px]', gap: 'gap-[2px]' },  // fn row
-    { keys: 14, heights: 'h-[9px]', gap: 'gap-[2px]' },  // number row
-    { keys: 14, heights: 'h-[9px]', gap: 'gap-[2px]' },  // QWERTY
-    { keys: 13, heights: 'h-[9px]', gap: 'gap-[2px]' },  // ASDF
-    { keys: 12, heights: 'h-[9px]', gap: 'gap-[2px]' },  // ZXCV
-  ]
-  return (
-    <div className="px-6 pt-3 pb-1 space-y-[2px]">
-      {rows.map((row, ri) => (
-        <div key={ri} className={`flex items-center justify-center ${row.gap}`}>
-          {Array.from({ length: row.keys }).map((_, ki) => (
-            <div key={ki}
-              className={`flex-1 max-w-[28px] ${row.heights} rounded-[1.5px]`}
-              style={{
-                background: 'linear-gradient(180deg, #2e2e31 0%, #252528 100%)',
-                boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03)',
-                border: '0.5px solid rgba(0,0,0,0.5)',
-              }} />
-          ))}
-        </div>
-      ))}
-      {/* Space bar row */}
-      <div className="flex items-center justify-center gap-[2px] mt-[2px]">
-        {[1, 1, 1, 5, 1, 1, 1].map((flex, i) => (
-          <div key={i}
-            className="h-[9px] rounded-[1.5px]"
-            style={{
-              flex,
-              background: 'linear-gradient(180deg, #2e2e31 0%, #252528 100%)',
-              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03)',
-              border: '0.5px solid rgba(0,0,0,0.5)',
-            }} />
-        ))}
-      </div>
-    </div>
-  )
-}
 
 // ─── Intersection observer ────────────────────────────────────────────────────
 function useReveal(threshold = 0.1) {
@@ -872,40 +842,6 @@ export default function IntelligenceSuiteSection() {
 
 
 
-              {/* ── HINGE ── */}
-              <div className="mx-1">
-                <div className="h-[4px]" style={{
-                  background: 'linear-gradient(180deg, #111113 0%, #1e1e22 50%, #111113 100%)',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                }} />
-              </div>
-
-              {/* ── KEYBOARD BASE ── */}
-              <div className="relative" style={{
-                background: 'linear-gradient(160deg, #232326 0%, #1a1a1d 50%, #141416 100%)',
-                borderRadius: '0 0 10px 10px',
-                boxShadow: '0 30px 60px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(255,255,255,0.05)',
-              }}>
-                {/* Screen ambient glow on keyboard */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-1 blur-xl opacity-30 pointer-events-none"
-                  style={{ background: c.a }} />
-
-                <MacKeyboard />
-
-                {/* Trackpad */}
-                <div className="mx-auto mb-3 mt-1"
-                  style={{
-                    width: '110px', height: '65px',
-                    background: 'linear-gradient(180deg, #202023 0%, #1b1b1e 100%)',
-                    borderRadius: '8px',
-                    border: '0.5px solid rgba(255,255,255,0.06)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)',
-                  }} />
-              </div>
-
-              {/* Base shadow / surface reflection */}
-              <div className="mx-8 h-3 rounded-b-full opacity-40"
-                style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.5), transparent)' }} />
             </div>
           </div>
         </div>
