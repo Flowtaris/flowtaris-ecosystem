@@ -71,6 +71,8 @@ export const metadata: Metadata = {
   },
 };
 
+import SiteHeader from "../components/SiteHeader";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -85,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <SiteHeader />
         {children}
         <FlowtarisGuide />
       </body>
