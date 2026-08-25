@@ -176,7 +176,11 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
 
     analytics.roi.open({
       source: params.get('assessmentId') ? 'assessment' : 'direct',
-      prefilled: prefilled ? true : undefined,
+      prefilled: prefilled ? {
+        erp: params.get('erp') || undefined,
+        invoices: params.get('invoices') ? parseInt(params.get('invoices')!) : undefined,
+        useCase: params.get('useCase') || undefined,
+      } : undefined,
     })
   }, [platforms, useCases])
 
