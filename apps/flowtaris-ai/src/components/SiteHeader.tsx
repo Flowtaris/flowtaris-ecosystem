@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { ArrowUpRight, BarChart3, CheckCircle2 } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2, TrendingUp } from 'lucide-react'
 
 interface HeaderConfig {
   logoUrl?: string
@@ -19,7 +19,7 @@ interface SiteHeaderProps {
 export default function SiteHeader({ config }: SiteHeaderProps = {}) {
   const pathname = usePathname()
 
-  const logoUrl   = config?.logoUrl   ?? '/images/flowtaris_logo.png'
+  const logoUrl   = config?.logoUrl   ?? '/images/flowtaris-logo.png'
   const brandName = config?.brandName ?? 'Flowtaris'
   const badgeText = config?.badgeText ?? '.ai'
   const showLogo  = config?.showLogo  !== false
@@ -29,197 +29,160 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
 
   return (
     <header
-      className="fixed top-5 right-5 z-50 pointer-events-auto"
+      className="fixed top-6 right-6 z-50 pointer-events-auto"
       role="banner"
       aria-label="Flowtaris AI — primary site navigation"
     >
-      {/* ── Glassmorphism pill container ── */}
+      {/* ── Ultra-Premium Glassmorphism Container ── */}
       <div
         className="
-          flex items-center gap-1.5 p-1.5 rounded-full
-          bg-[#05050a]/88 backdrop-blur-2xl
+          relative flex items-center gap-1.5 p-[5px] rounded-full
+          bg-[#000000]/40 backdrop-blur-[40px]
           border border-white/[0.08]
-          shadow-[0_8px_32px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.04),inset_0_1px_0_rgba(255,255,255,0.06)]
-          animate-header-enter
+          shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.08)]
+          animate-header-enter group/header
+          overflow-hidden
         "
       >
+        {/* Subtle shimmer sweep animation */}
+        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent group-hover/header:animate-shimmer pointer-events-none" />
 
         {/* ── BRAND: Logo + Name + .ai Badge ── */}
         <Link
           href="/"
           className="
-            flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full
-            hover:bg-white/[0.05] active:bg-white/[0.08]
-            transition-all duration-200 ease-out group
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b8db]/60
+            relative flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full
+            hover:bg-white/[0.04] active:bg-white/[0.06]
+            transition-all duration-300 ease-out group
+            focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20
           "
           aria-label="Flowtaris AI — go to homepage"
           title="Flowtaris AI — Enterprise AI Automation for Finance Teams"
         >
-          {/* Logo mark — same Flowtaris 'F' emblem as flowtaris.com (unified brand) */}
           {showLogo && (
             <div
               className="
-                relative w-8 h-8 flex-shrink-0 rounded-full overflow-hidden
-                ring-1 ring-white/[0.12] group-hover:ring-[#D4A847]/45
-                shadow-[0_0_0_0_rgba(212,168,71,0)] group-hover:shadow-[0_0_14px_rgba(212,168,71,0.22)]
-                transition-all duration-300 ease-out
+                relative w-8 h-8 flex-shrink-0 rounded-full
+                bg-white overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.2)]
+                group-hover:shadow-[0_0_15px_rgba(212,168,71,0.3)]
+                transition-all duration-500 ease-out
+                flex items-center justify-center
               "
               aria-hidden="true"
             >
               <Image
                 src={logoUrl}
-                alt="Flowtaris — navy and gold F emblem"
-                fill
-                sizes="32px"
-                className="object-contain p-0.5"
+                alt="Flowtaris logo"
+                width={32}
+                height={32}
+                className="object-contain w-full h-full p-1 group-hover:scale-105 transition-transform duration-500"
                 priority
               />
             </div>
           )}
 
-          {/* Wordmark: brand name + platform qualifier badge */}
-          <span className="flex items-baseline gap-0 select-none leading-none">
-            {/* "Flowtaris" — the unified brand name, same as flowtaris.com */}
-            <span className="text-white font-bold text-[13.5px] tracking-[-0.3px] font-sans">
+          <span className="flex items-center gap-1.5 select-none leading-none">
+            <span className="text-white font-medium text-[14px] tracking-wide font-sans">
               {brandName}
             </span>
 
-            {/*
-              ".ai" badge — This is a PRODUCT QUALIFIER, not a domain name written out.
-              It signals: "This is Flowtaris's AI platform" — distinct from writing "Flowtaris.ai"
-              which would read as a URL and confuse users / split brand perception.
-              Styled as a badge to make the qualifier nature visually clear.
-            */}
+            {/* Premium, understated .ai badge */}
             <span
               className="
-                relative inline-flex items-center ml-[3px] px-[5px] py-[2px] rounded
-                bg-[#00b8db]/[0.14] border border-[#00b8db]/30
-                text-[#00b8db] text-[10px] font-bold tracking-wide
-                shadow-[0_0_8px_rgba(0,184,219,0.18)]
-                group-hover:bg-[#00b8db]/[0.22] group-hover:shadow-[0_0_14px_rgba(0,184,219,0.32)]
+                relative inline-flex items-center px-1.5 py-0.5 rounded-md
+                bg-gradient-to-br from-white/10 to-white/5
+                border border-white/10
+                text-white/80 text-[10px] font-semibold tracking-wider uppercase
+                group-hover:text-white group-hover:border-white/20 group-hover:shadow-[0_0_10px_rgba(255,255,255,0.1)]
                 transition-all duration-300
               "
-              aria-label="AI Platform — product qualifier"
-              title="Flowtaris AI Platform — powered by Flowtaris.com"
             >
-              {/* Live status dot */}
-              <span
-                className="absolute -top-[3px] -right-[3px] w-[6px] h-[6px] rounded-full bg-[#00b8db] shadow-[0_0_5px_#00b8db] animate-badge-pulse"
-                aria-hidden="true"
-              />
+              {/* Subtle metallic dot */}
+              <span className="absolute -top-[2px] -right-[2px] w-[5px] h-[5px] rounded-full bg-gradient-to-b from-[#e8b84b] to-[#b3852b] shadow-[0_0_4px_rgba(212,168,71,0.5)]" />
               {badgeText}
             </span>
           </span>
         </Link>
 
         {/* ── Separator ── */}
-        <div className="w-px h-5 bg-white/[0.08] mx-0.5 flex-shrink-0" aria-hidden="true" />
+        <div className="w-[1px] h-6 bg-gradient-to-b from-transparent via-white/[0.15] to-transparent mx-1 flex-shrink-0" aria-hidden="true" />
 
         {/* ── PRIMARY NAV ── */}
         <nav
-          className="flex items-center gap-0.5"
+          className="flex items-center gap-1"
           role="navigation"
           aria-label="Main navigation links"
         >
           {/* Assessment */}
           <Link
             href="/assessment"
-            id="nav-assessment"
             className={`
-              relative flex items-center gap-1.5 px-3.5 py-2 rounded-full
-              text-[12.5px] font-medium transition-all duration-200
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b8db]/60
+              relative flex items-center gap-2 px-4 py-2.5 rounded-full
+              text-[13px] tracking-wide transition-all duration-300
+              focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20
               group
               ${isActive('/assessment')
-                ? 'text-[#00b8db] bg-[#00b8db]/[0.12] shadow-[inset_0_0_0_1px_rgba(0,184,219,0.25)]'
-                : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
+                ? 'text-white bg-white/[0.08] font-medium'
+                : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
               }
             `}
-            aria-label="AI Readiness Assessment — evaluate your team's AI maturity"
-            aria-current={isActive('/assessment') ? 'page' : undefined}
           >
             <CheckCircle2
-              className={`w-3.5 h-3.5 flex-shrink-0 transition-colors duration-200
-                ${isActive('/assessment') ? 'text-[#00b8db]' : 'text-neutral-500 group-hover:text-neutral-300'}`}
-              aria-hidden="true"
+              strokeWidth={isActive('/assessment') ? 2.5 : 2}
+              className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
+                ${isActive('/assessment') ? 'text-white' : 'text-white/40 group-hover:text-white/80'}`}
             />
-            <span className="hidden sm:inline whitespace-nowrap">Assessment</span>
-            {isActive('/assessment') && (
-              <span
-                className="absolute bottom-[5px] left-1/2 -translate-x-1/2 w-3 h-[2px] rounded-full bg-[#00b8db]/55"
-                aria-hidden="true"
-              />
-            )}
+            <span className="hidden sm:inline">Assessment</span>
           </Link>
 
           {/* ROI Calculator */}
           <Link
             href="/roi-calculator"
-            id="nav-roi"
             className={`
-              relative flex items-center gap-1.5 px-3.5 py-2 rounded-full
-              text-[12.5px] font-medium transition-all duration-200
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b8db]/60
+              relative flex items-center gap-2 px-4 py-2.5 rounded-full
+              text-[13px] tracking-wide transition-all duration-300
+              focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20
               group
               ${isActive('/roi-calculator')
-                ? 'text-[#00b8db] bg-[#00b8db]/[0.12] shadow-[inset_0_0_0_1px_rgba(0,184,219,0.25)]'
-                : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
+                ? 'text-white bg-white/[0.08] font-medium'
+                : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
               }
             `}
-            aria-label="ROI Calculator — estimate your AI automation return on investment"
-            aria-current={isActive('/roi-calculator') ? 'page' : undefined}
           >
-            <BarChart3
-              className={`w-3.5 h-3.5 flex-shrink-0 transition-colors duration-200
-                ${isActive('/roi-calculator') ? 'text-[#00b8db]' : 'text-neutral-500 group-hover:text-neutral-300'}`}
-              aria-hidden="true"
+            <TrendingUp
+              strokeWidth={isActive('/calculator') ? 2.5 : 2}
+              className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
+                ${isActive('/roi-calculator') ? 'text-white' : 'text-white/40 group-hover:text-white/80'}`}
             />
-            <span className="hidden sm:inline whitespace-nowrap">ROI</span>
-            {isActive('/roi-calculator') && (
-              <span
-                className="absolute bottom-[5px] left-1/2 -translate-x-1/2 w-3 h-[2px] rounded-full bg-[#00b8db]/55"
-                aria-hidden="true"
-              />
-            )}
+            <span className="hidden sm:inline">ROI</span>
           </Link>
         </nav>
 
         {/* ── Separator ── */}
-        <div className="w-px h-5 bg-white/[0.08] mx-0.5 flex-shrink-0" aria-hidden="true" />
+        <div className="w-[1px] h-6 bg-gradient-to-b from-transparent via-white/[0.15] to-transparent mx-1 flex-shrink-0" aria-hidden="true" />
 
-        {/* ── CORPORATE LINK → flowtaris.com ──
-            No rel="nofollow" so we pass link equity to the parent domain.
-            This reinforces brand unity and helps Google understand flowtaris.ai
-            is a product of flowtaris.com, not a competing entity.
-        */}
+        {/* ── CORPORATE LINK ── */}
         <a
           href="https://flowtaris.com"
           target="_blank"
           rel="noopener noreferrer"
-          id="nav-corporate"
           className="
-            flex items-center gap-1.5 px-4 py-2 rounded-full
-            bg-gradient-to-r from-[#D4A847]/[0.12] to-[#D4A847]/[0.05]
-            border border-[#D4A847]/20
-            hover:from-[#D4A847]/[0.2] hover:to-[#D4A847]/[0.1] hover:border-[#D4A847]/35
-            text-[12.5px] font-semibold
-            transition-all duration-200 ease-out group
-            shadow-[0_0_0_0_rgba(212,168,71,0)] hover:shadow-[0_0_16px_rgba(212,168,71,0.1)]
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A847]/60
+            relative flex items-center gap-1.5 pl-4 pr-5 py-2.5 rounded-full
+            bg-transparent border border-transparent
+            hover:bg-white/[0.04]
+            text-[13px] font-medium tracking-wide
+            transition-all duration-300 ease-out group overflow-hidden
           "
-          aria-label="Visit Flowtaris Corporate — flowtaris.com (opens in new tab)"
-          title="Flowtaris — Corporate headquarters and full product suite at flowtaris.com"
         >
-          <span className="bg-gradient-to-r from-[#D4A847] via-[#e8b84b] to-[#f0c97a] bg-clip-text text-transparent whitespace-nowrap">
+          {/* Subtle gold gradient text */}
+          <span className="bg-gradient-to-br from-[#f0c97a] via-[#D4A847] to-[#b3852b] bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-300 whitespace-nowrap">
             Corporate
           </span>
           <ArrowUpRight
-            className="w-[11px] h-[11px] text-[#D4A847]/55 group-hover:text-[#D4A847] group-hover:translate-x-[1px] group-hover:-translate-y-[1px] transition-all duration-200 flex-shrink-0"
-            aria-hidden="true"
+            strokeWidth={2.5}
+            className="w-3.5 h-3.5 text-[#D4A847]/70 group-hover:text-[#f0c97a] group-hover:translate-x-[2px] group-hover:-translate-y-[2px] transition-all duration-300 flex-shrink-0"
           />
         </a>
-
       </div>
     </header>
   )
