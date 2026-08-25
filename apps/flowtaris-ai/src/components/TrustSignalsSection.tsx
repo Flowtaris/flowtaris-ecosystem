@@ -55,15 +55,15 @@ export default function TrustSignalsSection() {
         }
         .glass-card {
           background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(212, 168, 71, 0.25);
           backdrop-filter: blur(12px);
           transition: all 0.3s ease;
         }
         .glass-card:hover {
           background: rgba(255, 255, 255, 0.05);
-          border-color: rgba(212, 168, 71, 0.4);
+          border-color: rgba(212, 168, 71, 0.6);
           transform: translateY(-4px);
-          box-shadow: 0 10px 30px -10px rgba(212, 168, 71, 0.2);
+          box-shadow: 0 10px 30px -10px rgba(212, 168, 71, 0.3);
         }
       `}</style>
 
