@@ -110,6 +110,7 @@ type SiteConfigFormData = {
   cookie_policy_url: string
   analytics: string
   seo: string
+  trust_signals: any[]
 }
 
 const DEFAULT_LOGO = 'https://www.flowtaris.com/logo.svg'
@@ -131,6 +132,14 @@ const DEFAULTS: SiteConfigFormData = {
   cookie_policy_url: '',
   analytics: '{}',
   seo: '{}',
+  trust_signals: [
+    { id: '1', label: 'Certified', value: 'SOC 2' },
+    { id: '2', label: 'Compliant', value: 'GDPR' },
+    { id: '3', label: 'Certified', value: 'ISO 27001' },
+    { id: '4', label: 'Uptime SLA', value: '99.99%' },
+    { id: '5', label: 'API Calls/Day', value: '50M+' },
+    { id: '6', label: 'Trusted By', value: 'Fortune 500' },
+  ],
 }
 
 // ── Logo Upload Component ─────────────────────────────────────────────────────
@@ -436,6 +445,155 @@ function HeaderPreview({ brandName, badgeText, showLogo, logoUrl }: {
   )
 }
 
+// ── Trust Signals Manager ──────────────────────────────────────────────────────
+
+function TrustSignalsManager({
+  signals,
+  onChange
+}: {
+  signals: any[]
+  onChange: (signals: any[]) => void
+}) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
+
+  const handleAdd = () => {
+    onChange([...(signals || []), { id: Date.now().toString(), label: 'New Label', value: 'New Value', imageUrl: null }])
+  }
+
+  const handleRemove = (index: number) => {
+    const newSignals = [...(signals || [])]
+    newSignals.splice(index, 1)
+    onChange(newSignals)
+  }
+
+  const handleUpdate = (index: number, key: string, value: any) => {
+    const newSignals = [...(signals || [])]
+    newSignals[index] = { ...newSignals[index], [key]: value }
+    onChange(newSignals)
+  }
+
+  const handleFileUpload = async (index: number, file: File) => {
+    if (!file) return
+    setUploadingIndex(index)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `trust-badge-${Date.now()}.${fileExt}`
+      const { data, error } = await supabase.storage
+        .from('assets')
+        .upload(fileName, file)
+      
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('assets')
+        .getPublicUrl(fileName)
+        
+      handleUpdate(index, 'imageUrl', publicUrl)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to upload image. Make sure it is a valid image file.')
+    } finally {
+      setUploadingIndex(null)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-2">
+        <Hint>Manage the trust badges displayed on the homepage. You can upload custom icons or just use text.</Hint>
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+        >
+          + Add Signal
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {(signals || []).map((signal, index) => (
+          <div key={signal.id} className="flex items-start gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+            {/* Image Uploader */}
+            <div className="flex-shrink-0 relative group">
+              <input
+                type="file"
+                id={`trust-file-${signal.id}`}
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleFileUpload(index, e.target.files[0])
+                  }
+                }}
+              />
+              <div 
+                className="w-16 h-16 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden cursor-pointer hover:border-blue-500 transition-colors bg-gray-50 dark:bg-gray-700/50"
+                onClick={() => document.getElementById(`trust-file-${signal.id}`)?.click()}
+              >
+                {uploadingIndex === index ? (
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                ) : signal.imageUrl ? (
+                  <img src={signal.imageUrl} alt="Badge" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <ImageIcon className="w-5 h-5 text-gray-400" />
+                )}
+              </div>
+              {signal.imageUrl && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleUpdate(index, 'imageUrl', null) }}
+                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Text Inputs */}
+            <div className="flex-1 grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Value / Title</label>
+                <input
+                  type="text"
+                  value={signal.value}
+                  onChange={e => handleUpdate(index, 'value', e.target.value)}
+                  placeholder="e.g. SOC 2 or 99.99%"
+                  className="w-full text-sm border-b border-gray-200 dark:border-gray-600 bg-transparent py-1 focus:outline-none focus:border-blue-500 transition-colors dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Label / Subtitle</label>
+                <input
+                  type="text"
+                  value={signal.label}
+                  onChange={e => handleUpdate(index, 'label', e.target.value)}
+                  placeholder="e.g. Certified or Uptime SLA"
+                  className="w-full text-sm border-b border-gray-200 dark:border-gray-600 bg-transparent py-1 focus:outline-none focus:border-blue-500 transition-colors dark:text-white"
+                />
+              </div>
+            </div>
+
+            {/* Remove Action */}
+            <button
+              type="button"
+              onClick={() => handleRemove(index)}
+              className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+        {(!signals || signals.length === 0) && (
+          <div className="text-center py-6 text-sm text-gray-500 border border-dashed rounded-xl dark:border-gray-700">
+            No trust signals added yet. Add one to build trust!
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function SiteConfigPage() {
@@ -454,13 +612,12 @@ export default function SiteConfigPage() {
         setLoading(true)
         const data = await getSiteConfig()
         if (data) {
-          setConfig({
+          const newConfig = {
             site_name: data.site_name || DEFAULTS.site_name,
             site_url: data.site_url || DEFAULTS.site_url,
             tagline: data.tagline || DEFAULTS.tagline,
             logo_url: data.logo_url || DEFAULTS.logo_url,
             favicon_url: data.favicon_url || DEFAULTS.favicon_url,
-            // Extended header fields (may not exist in DB yet — use defaults)
             header_brand_name: (data as any).header_brand_name || DEFAULTS.header_brand_name,
             header_badge_text: (data as any).header_badge_text || DEFAULTS.header_badge_text,
             header_show_logo: (data as any).header_show_logo !== undefined
@@ -475,7 +632,17 @@ export default function SiteConfigPage() {
             cookie_policy_url: data.cookie_policy_url || '',
             analytics: JSON.stringify(data.analytics ?? {}, null, 2),
             seo: JSON.stringify(data.seo ?? {}, null, 2),
-          })
+            trust_signals: (data as any).trust_signals ?? DEFAULTS.trust_signals,
+          }
+          
+          if ((data as any).trust_signals) {
+            const ts = typeof (data as any).trust_signals === 'string' 
+              ? JSON.parse((data as any).trust_signals) 
+              : (data as any).trust_signals;
+            newConfig.trust_signals = Array.isArray(ts) ? ts : DEFAULTS.trust_signals;
+          }
+
+          setConfig(newConfig)
         }
       } catch (err) {
         setError('Failed to load site configuration. Using defaults.')
@@ -521,6 +688,7 @@ export default function SiteConfigPage() {
           cookie_policy_url: config.cookie_policy_url,
           analytics: analytics,
           seo: seo,
+          trust_signals: config.trust_signals,
         }),
       })
       const json = await res.json()

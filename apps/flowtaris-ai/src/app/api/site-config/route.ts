@@ -22,6 +22,14 @@ export async function GET() {
       showLogo:   (data as any)?.header_show_logo   !== false,
       siteName:   data?.site_name   ?? 'Flowtaris AI',
       tagline:    data?.tagline     ?? 'Enterprise AI Automation for Finance',
+      trustSignals: (data as any)?.trust_signals ?? [
+        { id: '1', label: 'Certified', value: 'SOC 2' },
+        { id: '2', label: 'Compliant', value: 'GDPR' },
+        { id: '3', label: 'Certified', value: 'ISO 27001' },
+        { id: '4', label: 'Uptime SLA', value: '99.99%' },
+        { id: '5', label: 'API Calls/Day', value: '50M+' },
+        { id: '6', label: 'Trusted By', value: 'Fortune 500' },
+      ],
     }
 
     return NextResponse.json(publicConfig, {
@@ -42,6 +50,7 @@ export async function GET() {
         showLogo:  true,
         siteName:  'Flowtaris AI',
         tagline:   'Enterprise AI Automation for Finance',
+        trustSignals: [],
       },
       {
         status: 200,
@@ -65,7 +74,7 @@ export async function POST(request: Request) {
       header_brand_name, header_badge_text, header_show_logo,
       navigation, social_links, contact_email, support_email,
       privacy_policy_url, terms_of_service_url, cookie_policy_url,
-      analytics, seo,
+      analytics, seo, trust_signals
     } = body
 
     const updatePayload: Record<string, unknown> = {}
@@ -86,6 +95,7 @@ export async function POST(request: Request) {
     if (cookie_policy_url !== undefined)    updatePayload.cookie_policy_url = cookie_policy_url
     if (analytics !== undefined)            updatePayload.analytics = analytics
     if (seo !== undefined)                  updatePayload.seo = seo
+    if (trust_signals !== undefined)        updatePayload.trust_signals = trust_signals
 
     const adminClient = createAdminClient()
     const { error } = await adminClient

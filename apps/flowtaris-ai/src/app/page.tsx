@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { Badge, FloatingProduct } from '@repo/ui'
 import { HomeHero } from './HomeHero'
-import DualVisionSection from '../components/DualVisionSection'
+import TrustSignalsSection from '../components/TrustSignalsSection'
 
 export const metadata: Metadata = {
   title: 'Flowtaris AI | Enterprise AI Automation for Finance',
@@ -12,15 +12,6 @@ export const metadata: Metadata = {
     type: 'website',
   },
 }
-
-const trustSignals = [
-  { label: 'Certified', value: 'SOC 2' },
-  { label: 'Compliant', value: 'GDPR' },
-  { label: 'Certified', value: 'ISO 27001' },
-  { label: 'Uptime SLA', value: '99.99%' },
-  { label: 'API Calls/Day', value: '50M+' },
-  { label: 'Trusted By', value: 'Fortune 500' },
-]
 
 const capabilities = [
   { name: 'GenAI Document Intelligence', category: 'Document Processing', icon: '⚡', desc: 'Automatically extract, classify, and validate financial documents with 99.8% accuracy.', platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'] },
@@ -38,39 +29,8 @@ export default function Home() {
       {/* ── Animated Hero ── */}
       <HomeHero />
 
-      {/* ── Trust Signals ── */}
-      <section
-        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '56px 24px', background: 'rgba(0,0,0,0.2)' }}
-        aria-label="Compliance and reliability"
-      >
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <p style={{ textAlign: 'center', fontSize: 11, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase', marginBottom: 36, fontFamily: "'Inter', sans-serif" }}>
-            Trusted compliance &amp; reliability
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '14px 20px' }}>
-            {trustSignals.map((signal, i) => (
-              <div key={i} style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                padding: '18px 24px', borderRadius: 16,
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                minWidth: 110, transition: 'transform 0.2s',
-              }}>
-                <span style={{
-                  fontSize: 20, fontWeight: 800,
-                  background: 'linear-gradient(135deg, #00b8db, #62e4fa)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                  fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em',
-                }}>
-                  {signal.value}
-                </span>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>
-                  {signal.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── Dynamic Trust Signals ── */}
+      <TrustSignalsSection />
 
       {/* ── Dual Vision: Flowtaris × Flowtaris AI ── */}
       <DualVisionSection />
