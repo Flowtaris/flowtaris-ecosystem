@@ -219,44 +219,44 @@ export default function FlowtarisGuide() {
 
   return (
     <>
-      {/* ── Spotlight Overlay ─────────────────────────────────────────────── */}
-      {isActive && spotlight && (
-        <div className="fixed inset-0 z-[100] pointer-events-none">
-          {/* Dark overlay with spotlight cutout using box-shadow technique */}
-          <div
-            className="absolute rounded-xl pointer-events-none transition-all duration-300"
-            style={{
-              top: spotlight.top - SPOTLIGHT_PADDING,
-              left: spotlight.left - SPOTLIGHT_PADDING,
-              width: spotlight.width + SPOTLIGHT_PADDING * 2,
-              height: spotlight.height + SPOTLIGHT_PADDING * 2,
-              boxShadow: '0 0 0 9999px rgba(0,0,0,0.72)',
-              border: '2px solid rgba(6, 182, 212, 0.7)',
-              boxSizing: 'border-box',
-            }}
-          />
-          {/* Pulsing ring around spotlight */}
-          <div
-            className="absolute rounded-xl pointer-events-none animate-ping"
-            style={{
-              top: spotlight.top - SPOTLIGHT_PADDING - 4,
-              left: spotlight.left - SPOTLIGHT_PADDING - 4,
-              width: spotlight.width + SPOTLIGHT_PADDING * 2 + 8,
-              height: spotlight.height + SPOTLIGHT_PADDING * 2 + 8,
-              border: '2px solid rgba(6, 182, 212, 0.3)',
-              animationDuration: '2s',
-            }}
-          />
-        </div>
-      )}
-
-      {/* ── Overlay click-to-close area ───────────────────────────────────── */}
-      {isActive && (
-        <div
-          className="fixed inset-0 z-[101] cursor-pointer"
-          onClick={() => endTour(false)}
-        />
-      )}
+      {/* ── Spotlight Overlay — 4 dark panels leaving a hole over the element ── */}
+      {isActive && spotlight && (() => {
+        const top = spotlight.top - SPOTLIGHT_PADDING
+        const left = spotlight.left - SPOTLIGHT_PADDING
+        const right = spotlight.right + SPOTLIGHT_PADDING
+        const bottom = spotlight.bottom + SPOTLIGHT_PADDING
+        const vw = window.innerWidth
+        const vh = window.innerHeight
+        const panelStyle: React.CSSProperties = { position: 'fixed', zIndex: 100, background: 'rgba(0,0,0,0.72)', cursor: 'default' }
+        return (
+          <>
+            {/* Top panel */}
+            <div style={{ ...panelStyle, top: 0, left: 0, right: 0, height: Math.max(0, top) }} onClick={() => endTour(false)} />
+            {/* Bottom panel */}
+            <div style={{ ...panelStyle, top: Math.min(vh, bottom), left: 0, right: 0, bottom: 0 }} onClick={() => endTour(false)} />
+            {/* Left panel */}
+            <div style={{ ...panelStyle, top: Math.max(0, top), left: 0, width: Math.max(0, left), height: Math.min(vh, bottom) - Math.max(0, top) }} onClick={() => endTour(false)} />
+            {/* Right panel */}
+            <div style={{ ...panelStyle, top: Math.max(0, top), left: Math.min(vw, right), right: 0, height: Math.min(vh, bottom) - Math.max(0, top) }} onClick={() => endTour(false)} />
+            {/* Cyan border ring around spotlight — pointer-events-none so element stays clickable */}
+            <div
+              className="pointer-events-none"
+              style={{
+                position: 'fixed',
+                zIndex: 101,
+                top,
+                left,
+                width: spotlight.width + SPOTLIGHT_PADDING * 2,
+                height: spotlight.height + SPOTLIGHT_PADDING * 2,
+                border: '2px solid rgba(6, 182, 212, 0.8)',
+                borderRadius: 12,
+                boxSizing: 'border-box',
+                animation: 'pulse-border 2s ease-in-out infinite',
+              }}
+            />
+          </>
+        )
+      })()}
 
       {/* ── Floating Tooltip Card ─────────────────────────────────────────── */}
       {isActive && step && (
