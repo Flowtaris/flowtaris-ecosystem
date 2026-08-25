@@ -22,7 +22,7 @@ export default function Dashboard() {
       </h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Site Config Card */}
-        <Link href="/admin/admin/site-config" className="group">
+        <Link href="/admin/site-config" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -40,7 +40,7 @@ export default function Dashboard() {
         </Link>
         
         {/* Platforms Card */}
-        <Link href="/admin/admin/platforms" className="group">
+        <Link href="/admin/platforms" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -58,7 +58,7 @@ export default function Dashboard() {
         </Link>
         
         {/* AI Capabilities Card */}
-        <Link href="/admin/admin/capabilities" className="group">
+        <Link href="/admin/capabilities" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -76,7 +76,7 @@ export default function Dashboard() {
         </Link>
         
         {/* Case Studies Card */}
-        <Link href="/admin/admin/case-studies" className="group">
+        <Link href="/admin/case-studies" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -94,7 +94,7 @@ export default function Dashboard() {
         </Link>
         
         {/* Insights Card */}
-        <Link href="/admin/admin/insights" className="group">
+        <Link href="/admin/insights" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -112,7 +112,7 @@ export default function Dashboard() {
         </Link>
         
         {/* Assessment Config Card */}
-        <Link href="/admin/admin/assessment-config" className="group">
+        <Link href="/admin/assessment-config" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -130,7 +130,7 @@ export default function Dashboard() {
         </Link>
         
         {/* ROI Config Card */}
-        <Link href="/admin/admin/roi-config" className="group">
+        <Link href="/admin/roi-config" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
