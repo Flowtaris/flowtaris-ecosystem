@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { Badge, FloatingProduct } from '@repo/ui'
 import { HomeHero } from './HomeHero'
+import DualVisionSection from '../components/DualVisionSection'
 
 export const metadata: Metadata = {
   title: 'Flowtaris AI | Enterprise AI Automation for Finance',
@@ -70,6 +71,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── Dual Vision: Flowtaris × Flowtaris AI ── */}
+      <DualVisionSection />
 
       {/* ── Product Showcase ── */}
       <section style={{ padding: '96px 24px', overflow: 'hidden' }}>
