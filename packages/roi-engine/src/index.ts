@@ -7,6 +7,10 @@ export interface ROIInputs {
   errorRate: number
   platform: string
   useCase: string
+  // New deep domain pain point fields
+  attritionRate?: number
+  avgRecruitmentCost?: number
+  complianceFinesPerYear?: number
 }
 
 export interface ROIOutputs {
@@ -16,6 +20,8 @@ export interface ROIOutputs {
   implementationCost: number
   netAnnualBenefit: number
   threeYearROI: number
+  attritionSavings: number
+  complianceSavings: number
 }
 
 // Platform multipliers from Sanity config (defaults)
@@ -51,55 +57,67 @@ export function calculateROI(inputs: ROIInputs): ROIOutputs {
   const platformMultiplier = (PLATFORM_MULTIPLIERS[inputs.platform as keyof typeof PLATFORM_MULTIPLIERS] ?? PLATFORM_MULTIPLIERS.Default) as number
   const useCaseMultiplier = (USE_CASE_MULTIPLIERS[inputs.useCase as keyof typeof USE_CASE_MULTIPLIERS] ?? USE_CASE_MULTIPLIERS.Default) as number
 
-  // Annual manual hours
-  const annualManualHours = inputs.annualVolume * inputs.avgManualHoursPerUnit
-
-  // Annual manual cost
-  const annualManualCost = annualManualHours * inputs.hourlyCost
+  // Base calculations
+  const annualManualHours = (inputs.annualVolume || 0) * (inputs.avgManualHoursPerUnit || 0)
+  const annualManualCost = annualManualHours * (inputs.hourlyCost || 0)
 
   // Error costs
   const annualErrorCost =
-    inputs.annualVolume *
-    inputs.errorRate *
-    inputs.avgManualHoursPerUnit *
-    inputs.hourlyCost *
+    (inputs.annualVolume || 0) *
+    (inputs.errorRate || 0) *
+    (inputs.avgManualHoursPerUnit || 0) *
+    (inputs.hourlyCost || 0) *
     ASSUMPTIONS.errorCostMultiplier
 
-  // Total addressable cost
   const totalAddressableCost = annualManualCost + annualErrorCost
 
-  // AI automation saves 70-85% depending on use case
+  // AI automation rate
   const automationRate = 0.75 * useCaseMultiplier
   const cappedAutomationRate = Math.min(automationRate, 0.9)
 
-  // Annual savings
-  const annualSavings = totalAddressableCost * cappedAutomationRate * platformMultiplier
+  // Core savings
+  const coreAnnualSavings = totalAddressableCost * cappedAutomationRate * platformMultiplier
 
-  // FTE freed
   const fteFreed = annualManualHours * cappedAutomationRate / ASSUMPTIONS.fteHoursPerYear
 
+  // Deeper Domain Pain Point Calculations
+  
+  // 1. Attrition Savings: AI reduces burnout. Assume 30% reduction in attrition for freed FTEs.
+  const attritionRate = inputs.attritionRate ?? 0.15 // Default 15%
+  const avgRecruitmentCost = inputs.avgRecruitmentCost ?? 25000 // Default 25k per hire
+  const attritionSavings = fteFreed * attritionRate * 0.3 * avgRecruitmentCost
+
+  // 2. Compliance Savings: AI standardizes processes and reduces compliance fines
+  const complianceFines = inputs.complianceFinesPerYear ?? 0
+  const complianceSavings = complianceFines * cappedAutomationRate // If we automate 80%, we assume an 80% reduction in fines
+
+  // Total Annual Savings
+  const totalAnnualSavings = coreAnnualSavings + attritionSavings + complianceSavings
+
   // Implementation cost
-  const estimatedUsers = Math.max(1, Math.ceil(inputs.annualVolume / 10000))
+  const estimatedUsers = Math.max(1, Math.ceil((inputs.annualVolume || 0) / 10000))
   const implementationCost =
     ASSUMPTIONS.implementationBaseCost + estimatedUsers * ASSUMPTIONS.implementationPerUser
 
   // Payback
-  const paybackMonths = (implementationCost / annualSavings) * ASSUMPTIONS.monthsPerYear
+  const paybackMonths = totalAnnualSavings > 0 ? (implementationCost / totalAnnualSavings) * ASSUMPTIONS.monthsPerYear : 0
 
   // Net annual benefit (year 1 includes implementation cost)
-  const netAnnualBenefit = annualSavings - implementationCost / 3 // Amortized over 3 years
+  const netAnnualBenefit = totalAnnualSavings - implementationCost / 3 // Amortized over 3 years
 
   // 3-year ROI
-  const threeYearSavings = annualSavings * 3
-  const threeYearROI = ((threeYearSavings - implementationCost) / implementationCost) * 100
+  const threeYearSavings = totalAnnualSavings * 3
+  const threeYearROI = implementationCost > 0 ? ((threeYearSavings - implementationCost) / implementationCost) * 100 : 0
 
   return {
-    annualSavings: Math.round(annualSavings),
+    annualSavings: Math.round(totalAnnualSavings),
     paybackMonths: Math.round(paybackMonths * 10) / 10,
     fteFreed: Math.round(fteFreed * 10) / 10,
     implementationCost: Math.round(implementationCost),
     netAnnualBenefit: Math.round(netAnnualBenefit),
     threeYearROI: Math.round(threeYearROI),
+    attritionSavings: Math.round(attritionSavings),
+    complianceSavings: Math.round(complianceSavings),
   }
 }
 
@@ -126,13 +144,13 @@ export function sensitivityAnalysis(inputs: ROIInputs) {
   return scenarios.map((s) => {
     const adjustedInputs = {
       ...inputs,
-      annualVolume: Math.round(inputs.annualVolume * s.volumeMult),
+      annualVolume: Math.round((inputs.annualVolume || 0) * s.volumeMult),
     }
     const result = calculateROI(adjustedInputs)
     return {
       scenario: s.name,
       annualSavings: Math.round(result.annualSavings * s.rateMult),
-      paybackMonths: Math.round(result.paybackMonths / s.rateMult * 10) / 10,
+      paybackMonths: Math.round((result.paybackMonths / s.rateMult) * 10) / 10,
     }
   })
 }

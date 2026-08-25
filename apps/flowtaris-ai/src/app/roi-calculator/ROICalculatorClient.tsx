@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, FormEvent, useMemo } from 'react'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Label, Slider, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, BeforeAfterBar, StatTile } from '@repo/ui'
-import { ArrowRight, ChevronRight, BarChart3, DollarSign, Shield, TrendingUp, Calculator, Zap, Loader2, CheckCircle } from 'lucide-react'
+import { ArrowRight, ChevronRight, BarChart3, DollarSign, Shield, TrendingUp, Calculator, Zap, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { calculateROI, type ROIInputs, sensitivityAnalysis } from '@flowtaris/roi-engine'
 import { insertROICalculation } from '@flowtaris/supabase-client'
 import { analytics } from '@flowtaris/analytics'
@@ -71,14 +71,18 @@ const defaultUseCases = [
   { value: 'vendor-onboarding', label: 'Vendor Onboarding', automationRate: 65, errorReduction: 80, timeSavings: 75 },
 ]
 
+// Empty starting state
 const defaultValues = {
   platform: 'NetSuite',
   useCase: 'ap-automation',
-  annualVolume: 60000,
-  avgManualHours: 15,
-  hourlyCost: 45,
-  errorRate: 3,
-  currentAutomation: 10,
+  annualVolume: 0,
+  avgManualHours: 0,
+  hourlyCost: 0,
+  errorRate: 0,
+  currentAutomation: 0,
+  attritionRate: 0,
+  avgRecruitmentCost: 0,
+  complianceFinesPerYear: 0,
 }
 
 interface CalculatorState {
@@ -89,6 +93,9 @@ interface CalculatorState {
   hourlyCost: number
   errorRate: number
   currentAutomation: number
+  attritionRate: number
+  avgRecruitmentCost: number
+  complianceFinesPerYear: number
 }
 
 interface DerivedState {
@@ -111,99 +118,79 @@ interface ROICalculatorClientProps {
 }
 
 export default function ROICalculatorClient({ initialConfig }: ROICalculatorClientProps) {
-  // Build platforms from Sanity config or use defaults
   const platforms = useMemo(() => {
     if (initialConfig?.assumptions?.platformMultipliers) {
       return Object.entries(initialConfig.assumptions.platformMultipliers).map(([value, multiplier]) => ({
-        value,
-        label: value,
-        multiplier,
+        value, label: value, multiplier,
       }))
     }
     return defaultPlatforms
   }, [initialConfig])
 
-  // Build use cases from Sanity config or use defaults
   const useCases = useMemo(() => {
     if (initialConfig?.assumptions?.useCaseMultipliers) {
       return initialConfig.assumptions.useCaseMultipliers.map(u => ({
-        value: u.id,
-        label: u.name,
-        automationRate: u.automationRate,
-        errorReduction: u.errorReduction,
-        timeSavings: u.timeSavings,
-        description: u.description,
+        value: u.id, label: u.name, automationRate: u.automationRate,
+        errorReduction: u.errorReduction, timeSavings: u.timeSavings, description: u.description,
       }))
     }
     return defaultUseCases
   }, [initialConfig])
 
-  // Default values from Sanity config
-  const configDefaults = useMemo(() => {
-    const assumptions = initialConfig?.assumptions
-    return {
-      platform: defaultValues.platform,
-      useCase: defaultValues.useCase,
-      annualVolume: defaultValues.annualVolume,
-      avgManualHours: defaultValues.avgManualHours,
-      hourlyCost: assumptions?.avgHourlyCost || defaultValues.hourlyCost,
-      errorRate: defaultValues.errorRate,
-      currentAutomation: defaultValues.currentAutomation,
-    }
-  }, [initialConfig])
-
-  const [state, setState] = useState<CalculatorState>(configDefaults)
+  const [state, setState] = useState<CalculatorState>(defaultValues)
   const [derived, setDerived] = useState<DerivedState>({
     manualCost: 0, autoCost: 0, annualSavings: 0, payback: 0, fteFreed: 0,
     breakdownManual: 0, breakdownImpl: 0, breakdownYear1: 0, breakdownNpv: 0,
     sensBest: 0, sensExpected: 0, sensConservative: 0,
   })
+  
+  const [hasInteracted, setHasInteracted] = useState(false)
   const [roiCalculationId, setRoiCalculationId] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCalculating, setIsCalculating] = useState(false)
-  const initialCalculationDone = useRef(false)
 
-  // Parse URL params for pre-fill from assessment
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    let prefilled = false
     if (params.get('erp')) {
       const erpValue = params.get('erp')!.charAt(0).toUpperCase() + params.get('erp')!.slice(1)
-      // Validate platform exists in config
-      const platformExists = platforms.some(p => p.value === erpValue)
-      if (platformExists) {
+      if (platforms.some(p => p.value === erpValue)) {
         setState(prev => ({ ...prev, platform: erpValue }))
+        prefilled = true
       }
     }
-    if (params.get('invoices')) setState(prev => ({ ...prev, annualVolume: parseInt(params.get('invoices')!) || configDefaults.annualVolume }))
+    if (params.get('invoices')) {
+      setState(prev => ({ ...prev, annualVolume: parseInt(params.get('invoices')!) || defaultValues.annualVolume }))
+      prefilled = true
+    }
     if (params.get('useCase')) {
-      const useCaseValue = params.get('useCase')!
-      const useCaseExists = useCases.some(u => u.value === useCaseValue)
-      if (useCaseExists) {
-        setState(prev => ({ ...prev, useCase: useCaseValue }))
+      if (useCases.some(u => u.value === params.get('useCase'))) {
+        setState(prev => ({ ...prev, useCase: params.get('useCase')! }))
+        prefilled = true
       }
     }
 
-    // Track ROI calculator open
+    if (prefilled) setHasInteracted(true)
+
     analytics.roi.open({
       source: params.get('assessmentId') ? 'assessment' : 'direct',
-      prefilled: params.get('assessmentId') ? {
-        erp: params.get('erp') || undefined,
-        invoices: params.get('invoices') ? parseInt(params.get('invoices')!) : undefined,
-        useCase: params.get('useCase') || undefined,
-      } : undefined,
+      prefilled: prefilled ? true : undefined,
     })
-  }, [platforms, useCases, configDefaults])
+  }, [platforms, useCases])
 
   const calculateDerived = (s: CalculatorState): DerivedState => {
     const roiInputs: ROIInputs = {
       annualVolume: s.annualVolume,
-      avgManualHoursPerUnit: s.avgManualHours / 60, // minutes to hours
+      avgManualHoursPerUnit: s.avgManualHours / 60,
       hourlyCost: s.hourlyCost,
-      errorRate: s.errorRate / 100, // percentage to decimal
+      errorRate: s.errorRate / 100,
       platform: s.platform,
       useCase: s.useCase,
+      attritionRate: s.attritionRate / 100,
+      avgRecruitmentCost: s.avgRecruitmentCost,
+      complianceFinesPerYear: s.complianceFinesPerYear
     }
 
     const roiOutputs = calculateROI(roiInputs)
@@ -225,35 +212,34 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
     }
   }
 
-  // Calculate on state change
   useEffect(() => {
-    const d = calculateDerived(state)
-    setDerived(d)
-    if (initialCalculationDone.current) {
-      // Debounce for real-time updates
-      // Track calculate event on significant changes
-    } else {
-      initialCalculationDone.current = true
+    if (hasInteracted) {
+      setDerived(calculateDerived(state))
     }
-  }, [state])
+  }, [state, hasInteracted])
 
-  // Track inputs change
+  const handleInteraction = () => {
+    if (!hasInteracted) setHasInteracted(true)
+  }
+
   const handleSliderChange = (key: keyof CalculatorState) => (value: number | number[]) => {
+    handleInteraction()
     const v = Array.isArray(value) ? value[0] : value
     setState(prev => ({ ...prev, [key]: v }))
     analytics.roi.inputsChange({ field: key, value: v })
   }
 
   const handleSelectChange = (key: keyof CalculatorState) => (value: string) => {
+    handleInteraction()
     setState(prev => ({ ...prev, [key]: value }))
     analytics.roi.inputsChange({ field: key, value })
   }
 
   const handleCalculate = async () => {
+    handleInteraction()
     setIsCalculating(true)
     const d = calculateDerived(state)
 
-    // Track calculate event
     analytics.roi.calculate({
       projectedSavings: d.annualSavings,
       paybackMonths: d.payback,
@@ -261,7 +247,6 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
       assessmentId: new URLSearchParams(window.location.search).get('assessmentId') || undefined,
     })
 
-    // Save to Supabase
     try {
       const { data, error } = await insertROICalculation({
         inputs: state as unknown as Record<string, unknown>,
@@ -280,17 +265,10 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
   const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!email || !roiCalculationId) return
-
     setIsSubmitting(true)
     try {
-      analytics.roi.emailCapture({
-        email,
-        assessmentId: new URLSearchParams(window.location.search).get('assessmentId') || undefined,
-        projectedSavings: derived.annualSavings,
-      })
+      analytics.roi.emailCapture({ email, projectedSavings: derived.annualSavings })
       setEmailSent(true)
-    } catch (err) {
-      console.error('Email capture error:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -303,17 +281,17 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
     <div className="flex flex-col flex-1 w-full">
       <HeroPattern
         headline={{
-          text: 'ROI Calculator',
+          text: 'Enterprise ROI Calculator',
           split: ['words', 'lines'],
           className: 'text-display-xl text-gradient-brand text-balance',
         }}
         subheadline={{
-          text: 'Calculate your AI automation ROI with live sliders. Real-time projections for annual savings, payback period, and FTE freed based on your ERP, volume, and use case.',
+          text: 'Calculate your true AI automation ROI. Real-time projections for annual savings, FTE freed, and hidden costs like attrition and compliance.',
           shape: 'wave',
           className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
         }}
         cta={{
-          primary: { label: 'Calculate ROI', variant: 'default', className: 'glass-strong', href: '#calculator' },
+          primary: { label: 'Start Calculator', variant: 'default', className: 'glass-strong', href: '#calculator' },
           secondary: { label: 'Assessment First', variant: 'outline', className: 'glass', href: '/assessment' },
         }}
         stats={{
@@ -335,7 +313,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
             <div className="grid gap-8 lg:grid-cols-3">
               {/* Inputs Panel */}
               <div className="lg:col-span-1">
-                <Card className="glass-card sticky top-24 h-fit">
+                <Card className="glass-card sticky top-24 h-fit max-h-[80vh] overflow-y-auto">
                   <CardHeader>
                     <div className="flex items-center gap-3 mb-2">
                       <span className="badge-badge badge-outline text-brand-cyan-400 border-brand-cyan-400/50 text-body-xs">
@@ -343,10 +321,9 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                       </span>
                     </div>
                     <CardTitle className="text-headline-lg">Configure Your Scenario</CardTitle>
-                    <p className="text-body-md text-neutral-400">Adjust values to see live ROI updates</p>
+                    <p className="text-body-md text-neutral-400">Enter your baseline metrics</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Platform Selector */}
                     <div>
                       <Label className="block text-body-sm text-neutral-300 mb-2">ERP Platform</Label>
                       <Select value={state.platform} onValueChange={handleSelectChange('platform')}>
@@ -355,15 +332,12 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                         </SelectTrigger>
                         <SelectContent>
                           {platforms.map((p) => (
-                            <SelectItem key={p.value} value={p.value}>
-                              {p.label} <span className="text-neutral-400 ml-2">({p.multiplier}x)</span>
-                            </SelectItem>
+                            <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {/* Use Case Selector */}
                     <div>
                       <Label className="block text-body-sm text-neutral-300 mb-2">Use Case</Label>
                       <Select value={state.useCase} onValueChange={handleSelectChange('useCase')}>
@@ -372,125 +346,77 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                         </SelectTrigger>
                         <SelectContent>
                           {useCases.map((u) => (
-                            <SelectItem key={u.value} value={u.value}>
-                              {u.label} <span className="text-neutral-400 ml-2">({u.automationRate}% auto)</span>
-                            </SelectItem>
+                            <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {/* Volume Slider */}
                     <div>
                       <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Annual Invoice Volume</span>
+                        <span>Annual Volume</span>
                         <span className="text-brand-cyan-400 font-mono tabular-nums">{state.annualVolume.toLocaleString()}</span>
                       </Label>
-                      <Slider
-                        value={[state.annualVolume]}
-                        onValueChange={handleSliderChange('annualVolume')}
-                        min={1000}
-                        max={500000}
-                        step={1000}
-                        className="accent-brand-cyan-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">1,000 - 500,000 invoices/year</p>
+                      <Slider value={[state.annualVolume]} onValueChange={handleSliderChange('annualVolume')} min={0} max={500000} step={1000} className="accent-brand-cyan-500" />
                     </div>
 
-                    {/* Manual Hours Slider */}
                     <div>
                       <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Avg Manual Minutes/Invoice</span>
+                        <span>Avg Manual Minutes/Unit</span>
                         <span className="text-brand-cyan-400 font-mono tabular-nums">{state.avgManualHours}</span>
                       </Label>
-                      <Slider
-                        value={[state.avgManualHours]}
-                        onValueChange={handleSliderChange('avgManualHours')}
-                        min={1}
-                        max={60}
-                        step={0.5}
-                        className="accent-brand-cyan-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">Minutes per invoice</p>
+                      <Slider value={[state.avgManualHours]} onValueChange={handleSliderChange('avgManualHours')} min={0} max={60} step={0.5} className="accent-brand-cyan-500" />
                     </div>
 
-                    {/* Hourly Cost Slider */}
                     <div>
                       <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
                         <span>Fully Loaded Hourly Cost ($)</span>
                         <span className="text-brand-cyan-400 font-mono tabular-nums">${state.hourlyCost}</span>
                       </Label>
-                      <Slider
-                        value={[state.hourlyCost]}
-                        onValueChange={handleSliderChange('hourlyCost')}
-                        min={15}
-                        max={150}
-                        step={5}
-                        className="accent-brand-cyan-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">Includes benefits, overhead, management</p>
+                      <Slider value={[state.hourlyCost]} onValueChange={handleSliderChange('hourlyCost')} min={0} max={150} step={5} className="accent-brand-cyan-500" />
                     </div>
-
-                    {/* Error Rate Slider */}
+                    
                     <div>
                       <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
                         <span>Current Error Rate (%)</span>
                         <span className="text-brand-amber-400 font-mono tabular-nums">{state.errorRate.toFixed(1)}%</span>
                       </Label>
-                      <Slider
-                        value={[state.errorRate]}
-                        onValueChange={handleSliderChange('errorRate')}
-                        min={0}
-                        max={10}
-                        step={0.1}
-                        className="accent-brand-amber-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">Percentage of invoices requiring rework</p>
+                      <Slider value={[state.errorRate]} onValueChange={handleSliderChange('errorRate')} min={0} max={10} step={0.1} className="accent-brand-amber-500" />
                     </div>
 
-                    {/* Current Automation Slider */}
-                    <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Current Automation Level (%)</span>
-                        <span className="text-brand-cyan-400 font-mono tabular-nums">{state.currentAutomation}%</span>
-                      </Label>
-                      <Slider
-                        value={[state.currentAutomation]}
-                        onValueChange={handleSliderChange('currentAutomation')}
-                        min={0}
-                        max={90}
-                        step={5}
-                        className="accent-brand-cyan-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">Existing OCR/RPA/automation coverage</p>
+                    <div className="pt-4 border-t border-white/10">
+                      <Label className="text-body-sm font-semibold text-brand-purple-400 mb-4 block">Advanced Domain Pain Points</Label>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                            <span>Team Attrition Rate (%)</span>
+                            <span className="text-brand-purple-400 font-mono tabular-nums">{state.attritionRate}%</span>
+                          </Label>
+                          <Slider value={[state.attritionRate]} onValueChange={handleSliderChange('attritionRate')} min={0} max={50} step={1} className="accent-brand-purple-500" />
+                        </div>
+
+                        <div>
+                          <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                            <span>Avg Recruitment Cost ($)</span>
+                            <span className="text-brand-purple-400 font-mono tabular-nums">${state.avgRecruitmentCost.toLocaleString()}</span>
+                          </Label>
+                          <Slider value={[state.avgRecruitmentCost]} onValueChange={handleSliderChange('avgRecruitmentCost')} min={0} max={100000} step={1000} className="accent-brand-purple-500" />
+                        </div>
+                        
+                        <div>
+                          <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                            <span>Annual Compliance Fines ($)</span>
+                            <span className="text-brand-purple-400 font-mono tabular-nums">${state.complianceFinesPerYear.toLocaleString()}</span>
+                          </Label>
+                          <Slider value={[state.complianceFinesPerYear]} onValueChange={handleSliderChange('complianceFinesPerYear')} min={0} max={500000} step={5000} className="accent-brand-purple-500" />
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Pre-fill notice */}
-                    <div className="glass rounded-xl p-4 border border-brand-amber-500/20">
-                      <p className="text-body-sm text-brand-amber-300 flex items-center gap-2">
-                        <Zap className="h-4 w-4" />
-                        <span>Pre-filled from Assessment? <a href="#" className="underline hover:text-brand-amber-200">Use URL params</a></span>
-                      </p>
-                    </div>
-
-                    {/* Calculate Button */}
-                    <Button
-                      onClick={handleCalculate}
-                      disabled={isCalculating}
-                      className="glass-strong w-full py-3"
-                      size="lg"
-                    >
-                      {isCalculating ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Calculating...
-                        </>
-                      ) : (
-                        <>
-                          <Calculator className="mr-2 h-4 w-4" />
-                          Calculate & Save ROI
-                        </>
-                      )}
+                    <Button onClick={handleCalculate} disabled={isCalculating} className="glass-strong w-full py-3 mt-4" size="lg">
+                      {isCalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calculator className="mr-2 h-4 w-4" />}
+                      {hasInteracted ? 'Update ROI' : 'Calculate ROI'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -498,205 +424,99 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
 
               {/* Live Visualization Panel */}
               <div className="lg:col-span-2 space-y-8">
-                {/* Before/After Visualization using shared component */}
-                <Card className="glass-card">
-                  <CardHeader>
-                    <CardTitle className="text-headline-lg flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-brand-cyan-400" />
-                      Live Impact Visualization
-                    </CardTitle>
-                    <p className="text-body-md text-neutral-400">Before vs After AI Automation</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-8">
-                      <BeforeAfterBar
-                        before={derived.manualCost}
-                        after={derived.autoCost}
-                        beforeLabel="Current Manual Cost (Annual)"
-                        afterLabel="Projected Automated Cost (Annual)"
-                        unit="$"
-                        unitPosition="prefix"
-                        variant="savings"
-                        size="md"
-                        showChange={true}
-                      />
+                {!hasInteracted ? (
+                  <div className="h-full min-h-[500px] glass-card rounded-2xl flex flex-col items-center justify-center p-12 text-center border border-white/10">
+                    <div className="h-20 w-20 bg-brand-cyan-500/10 rounded-full flex items-center justify-center mb-6">
+                      <Calculator className="h-10 w-10 text-brand-cyan-400" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <h3 className="text-headline-lg text-white mb-2">Ready to see your ROI?</h3>
+                    <p className="text-neutral-400 max-w-md">Adjust the baseline metrics in the left panel to instantly generate your Enterprise AI automation ROI projection.</p>
+                  </div>
+                ) : (
+                  <>
+                    <Card className="glass-card animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <CardHeader>
+                        <CardTitle className="text-headline-lg flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5 text-brand-cyan-400" />
+                          Live Impact Visualization
+                        </CardTitle>
+                        <p className="text-body-md text-neutral-400">Before vs After AI Automation</p>
+                      </CardHeader>
+                      <CardContent>
+                        <BeforeAfterBar
+                          before={derived.manualCost}
+                          after={derived.autoCost}
+                          beforeLabel="Current Cost (Annual)"
+                          afterLabel="Projected Cost (Annual)"
+                          unit="$"
+                          unitPosition="prefix"
+                          variant="savings"
+                          size="md"
+                          showChange={true}
+                        />
+                      </CardContent>
+                    </Card>
 
-                {/* Key Metrics using shared StatTile components */}
-                <div className="grid gap-4 md:grid-cols-3">
-                  <StatTile
-                    label="Annual Savings"
-                    value={formatCurrency(derived.annualSavings)}
-                    variant="primary"
-                    icon={<DollarSign className="h-6 w-6" />}
-                    iconBg="bg-brand-cyan-500/20"
-                  />
-                  <StatTile
-                    label="Payback Period"
-                    value={`${derived.payback.toFixed(1)} mo`}
-                    variant="success"
-                    icon={<TrendingUp className="h-6 w-6" />}
-                    iconBg="bg-brand-green-500/20"
-                  />
-                  <StatTile
-                    label="FTE Freed"
-                    value={formatNumber(derived.fteFreed)}
-                    variant="gradient"
-                    icon={<Zap className="h-6 w-6" />}
-                    iconBg="bg-brand-purple-500/20"
-                  />
-                </div>
+                    <div className="grid gap-4 md:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+                      <StatTile label="Annual Savings" value={formatCurrency(derived.annualSavings)} variant="primary" icon={<DollarSign className="h-6 w-6" />} iconBg="bg-brand-cyan-500/20" />
+                      <StatTile label="Payback Period" value={`${derived.payback.toFixed(1)} mo`} variant="success" icon={<TrendingUp className="h-6 w-6" />} iconBg="bg-brand-green-500/20" />
+                      <StatTile label="FTE Freed" value={formatNumber(derived.fteFreed)} variant="gradient" icon={<Zap className="h-6 w-6" />} iconBg="bg-brand-purple-500/20" />
+                    </div>
 
-                {/* Detailed Results */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card className="glass-card">
-                    <CardHeader>
-                      <CardTitle className="text-headline-sm flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-brand-green-400" />
-                        Cost Breakdown
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex justify-between text-body-md">
-                        <span className="text-neutral-300">Annual Manual Cost</span>
-                        <span className="text-brand-red-400 font-mono tabular-nums">{formatCurrency(derived.breakdownManual)}</span>
-                      </div>
-                      <div className="flex justify-between text-body-md">
-                        <span className="text-neutral-300">Implementation Cost (12 wks)</span>
-                        <span className="text-brand-amber-400 font-mono tabular-nums">{formatCurrency(derived.breakdownImpl)}</span>
-                      </div>
-                      <div className="flex justify-between text-body-md">
-                        <span className="text-neutral-300">Year 1 Net Savings</span>
-                        <span className="text-brand-green-400 font-mono tabular-nums">{formatCurrency(derived.breakdownYear1)}</span>
-                      </div>
-                      <div className="flex justify-between text-body-md font-medium border-t border-white/10 pt-4">
-                        <span className="text-white">3-Year NPV (10% discount)</span>
-                        <span className="text-brand-cyan-400 font-mono tabular-nums">{formatCurrency(derived.breakdownNpv)}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <div className="grid gap-6 md:grid-cols-2 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+                      <Card className="glass-card">
+                        <CardHeader><CardTitle className="text-headline-sm flex items-center gap-2"><DollarSign className="h-5 w-5 text-brand-green-400" /> Cost Breakdown</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex justify-between text-body-md"><span className="text-neutral-300">Annual Manual Cost</span><span className="text-brand-red-400 font-mono">{formatCurrency(derived.breakdownManual)}</span></div>
+                          <div className="flex justify-between text-body-md"><span className="text-neutral-300">Implementation Cost</span><span className="text-brand-amber-400 font-mono">{formatCurrency(derived.breakdownImpl)}</span></div>
+                          <div className="flex justify-between text-body-md"><span className="text-neutral-300">Year 1 Net Savings</span><span className="text-brand-green-400 font-mono">{formatCurrency(derived.breakdownYear1)}</span></div>
+                          <div className="flex justify-between text-body-md font-medium border-t border-white/10 pt-4"><span className="text-white">3-Year NPV</span><span className="text-brand-cyan-400 font-mono">{formatCurrency(derived.breakdownNpv)}</span></div>
+                        </CardContent>
+                      </Card>
 
-                  <Card className="glass-card">
-                    <CardHeader>
-                      <CardTitle className="text-headline-sm flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-brand-amber-400" />
-                        Sensitivity Analysis
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="glass rounded-xl p-4">
-                        <p className="text-body-sm text-neutral-400 mb-3">Best Case (+20% volume, +10% automation)</p>
-                        <div className="flex justify-between">
-                          <span className="text-body-md text-neutral-300">Annual Savings</span>
-                          <span className="text-number-lg text-brand-green-400 font-display tabular-nums">{formatCurrency(derived.sensBest)}</span>
-                        </div>
-                      </div>
-                      <div className="glass rounded-xl p-4">
-                        <p className="text-body-sm text-neutral-400 mb-3">Expected Case (current inputs)</p>
-                        <div className="flex justify-between">
-                          <span className="text-body-md text-neutral-300">Annual Savings</span>
-                          <span className="text-number-lg text-brand-cyan-400 font-display tabular-nums">{formatCurrency(derived.sensExpected)}</span>
-                        </div>
-                      </div>
-                      <div className="glass rounded-xl p-4">
-                        <p className="text-body-sm text-neutral-400 mb-3">Conservative (-20% volume, -10% automation)</p>
-                        <div className="flex justify-between">
-                          <span className="text-body-md text-neutral-300">Annual Savings</span>
-                          <span className="text-number-lg text-brand-amber-400 font-display tabular-nums">{formatCurrency(derived.sensConservative)}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                      <Card className="glass-card">
+                        <CardHeader><CardTitle className="text-headline-sm flex items-center gap-2"><TrendingUp className="h-5 w-5 text-brand-amber-400" /> Sensitivity Analysis</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="glass rounded-xl p-4 flex justify-between">
+                            <span className="text-body-sm text-neutral-300">Best Case</span>
+                            <span className="text-brand-green-400 font-display">{formatCurrency(derived.sensBest)}</span>
+                          </div>
+                          <div className="glass rounded-xl p-4 flex justify-between">
+                            <span className="text-body-sm text-neutral-300">Expected</span>
+                            <span className="text-brand-cyan-400 font-display">{formatCurrency(derived.sensExpected)}</span>
+                          </div>
+                          <div className="glass rounded-xl p-4 flex justify-between">
+                            <span className="text-body-sm text-neutral-300">Conservative</span>
+                            <span className="text-brand-amber-400 font-display">{formatCurrency(derived.sensConservative)}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Email Capture & Next Steps */}
-            <div className="mt-12">
-              <Card className="glass-strong border border-brand-cyan-500/30">
-                <CardContent className="p-8 md:p-12 text-center">
-                  <h3 className="text-display-md text-gradient-brand mb-4 text-balance">
-                    Get Your Detailed ROI Report
-                  </h3>
-                  <p className="text-headline-md text-neutral-300 mb-8 max-w-2xl mx-auto text-balance">
-                    Receive a PDF with full calculations, sensitivity analysis, implementation timeline, and capability-specific projections.
-                  </p>
-
-                  <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@company.com"
-                      className="flex-1 glass max-w-md"
-                      disabled={emailSent || isSubmitting}
-                      required
-                    />
-                    <Button type="submit" size="lg" className="glass-strong px-10 py-4" disabled={emailSent || isSubmitting || !email}>
-                      {emailSent ? (
-                        <>
-                          <CheckCircle className="mr-2 h-5 w-5" />
-                          Sent
-                        </>
-                      ) : isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          Send My ROI Report
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </>
-                      )}
-                    </Button>
-                  </form>
-
-                  <p className="text-body-xs text-neutral-500 mb-8">{emailSent ? 'Check your inbox! We\'ll never share your email.' : "We'll never share your email. Includes pre-filled Cost of Inaction analysis."}</p>
-
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="glass px-10 py-4"
-                      asChild
-                      onClick={() => analytics.roi.inputsChange({ field: 'cta_click', value: 'cost_of_inaction' })}
-                    >
-                      <a href="/cost-of-inaction">
-                        <Shield className="mr-2 h-5 w-5" />
-                        What If I Wait? → Cost of Inaction
-                      </a>
-                    </Button>
-                    <Button variant="ghost" size="lg" className="px-10 py-4" asChild>
-                      <a href="/assessment">
-                        <Calculator className="mr-2 h-5 w-5" />
-                        Back to Assessment
-                      </a>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {hasInteracted && (
+              <div className="mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <Card className="glass-strong border border-brand-cyan-500/30">
+                  <CardContent className="p-8 md:p-12 text-center">
+                    <h3 className="text-display-md text-gradient-brand mb-4 text-balance">Get Your Detailed ROI Report</h3>
+                    <p className="text-headline-md text-neutral-300 mb-8 max-w-2xl mx-auto text-balance">Receive a PDF with full calculations, attrition savings, compliance risk reduction, and capability-specific projections.</p>
+                    <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" className="flex-1 glass max-w-md" disabled={emailSent || isSubmitting} required />
+                      <Button type="submit" size="lg" className="glass-strong px-10 py-4" disabled={emailSent || isSubmitting || !email}>
+                        {emailSent ? <><CheckCircle className="mr-2 h-5 w-5" /> Sent</> : isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Sending...</> : <>Send My ROI Report <ArrowRight className="ml-2 h-5 w-5" /></>}
+                      </Button>
+                    </form>
+                    <p className="text-body-xs text-neutral-500 mb-8">We'll never share your email.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </Container>
         </section>
       </main>
-
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/roi-calculator" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">ROI Calculator</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-              <a href="/cost-of-inaction" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Cost of Inaction</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
     </div>
   )
 }

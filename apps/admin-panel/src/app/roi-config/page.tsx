@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { react }'
+import React from 'react'
 import { Link } from 'next/link'
 import { getRoiConfigs } from '@/lib/supabase'
 
