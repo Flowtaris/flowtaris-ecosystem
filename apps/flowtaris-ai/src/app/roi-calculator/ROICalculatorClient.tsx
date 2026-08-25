@@ -3,10 +3,29 @@
 import { useState, useEffect, useRef, FormEvent, useMemo } from 'react'
 import { HeroPattern } from '@repo/ui'
 import { Section, Container, Stack, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Label, Slider, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, BeforeAfterBar, StatTile } from '@repo/ui'
-import { ArrowRight, ChevronRight, BarChart3, DollarSign, Shield, TrendingUp, Calculator, Zap, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { ArrowRight, ChevronRight, BarChart3, DollarSign, Shield, TrendingUp, Calculator, Zap, Loader2, CheckCircle, AlertCircle, Globe } from 'lucide-react'
 import { calculateROI, type ROIInputs, sensitivityAnalysis } from '@flowtaris/roi-engine'
 import { insertROICalculation } from '@flowtaris/supabase-client'
 import { analytics } from '@flowtaris/analytics'
+
+// Global currency options
+const CURRENCIES = [
+  { code: 'USD', symbol: '$',  label: 'USD – US Dollar',         locale: 'en-US',  rate: 1 },
+  { code: 'EUR', symbol: '€',  label: 'EUR – Euro',               locale: 'de-DE',  rate: 0.93 },
+  { code: 'GBP', symbol: '£',  label: 'GBP – British Pound',      locale: 'en-GB',  rate: 0.79 },
+  { code: 'INR', symbol: '₹',  label: 'INR – Indian Rupee',       locale: 'en-IN',  rate: 83.5 },
+  { code: 'AED', symbol: 'د.إ', label: 'AED – UAE Dirham',        locale: 'ar-AE',  rate: 3.67 },
+  { code: 'SGD', symbol: 'S$', label: 'SGD – Singapore Dollar',   locale: 'en-SG',  rate: 1.35 },
+  { code: 'AUD', symbol: 'A$', label: 'AUD – Australian Dollar',  locale: 'en-AU',  rate: 1.53 },
+  { code: 'CAD', symbol: 'C$', label: 'CAD – Canadian Dollar',    locale: 'en-CA',  rate: 1.36 },
+  { code: 'JPY', symbol: '¥',  label: 'JPY – Japanese Yen',       locale: 'ja-JP',  rate: 149 },
+  { code: 'SAR', symbol: '﷼',  label: 'SAR – Saudi Riyal',        locale: 'ar-SA',  rate: 3.75 },
+  { code: 'MYR', symbol: 'RM', label: 'MYR – Malaysian Ringgit',  locale: 'ms-MY',  rate: 4.72 },
+  { code: 'CHF', symbol: 'Fr', label: 'CHF – Swiss Franc',        locale: 'de-CH',  rate: 0.90 },
+  { code: 'BRL', symbol: 'R$', label: 'BRL – Brazilian Real',     locale: 'pt-BR',  rate: 5.0 },
+  { code: 'ZAR', symbol: 'R',  label: 'ZAR – South African Rand', locale: 'en-ZA',  rate: 18.8 },
+  { code: 'NZD', symbol: 'NZ$', label: 'NZD – New Zealand Dollar', locale: 'en-NZ', rate: 1.63 },
+]
 
 // Sanity ROI Config types
 interface SanityROIConfig {
@@ -144,6 +163,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
     sensBest: 0, sensExpected: 0, sensConservative: 0,
   })
   
+  const [selectedCurrency, setSelectedCurrency] = useState(CURRENCIES[0])
   const [hasInteracted, setHasInteracted] = useState(false)
   const [roiCalculationId, setRoiCalculationId] = useState<string | null>(null)
   const [email, setEmail] = useState('')
@@ -290,7 +310,21 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
     }
   }
 
-  const formatCurrency = (val: number) => '$' + val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+  // Convert a USD base value to selected currency
+  const toLocalCurrency = (usdValue: number) => Math.round(usdValue * selectedCurrency.rate)
+
+  const formatCurrency = (val: number) => {
+    const converted = toLocalCurrency(val)
+    try {
+      return new Intl.NumberFormat(selectedCurrency.locale, {
+        style: 'currency',
+        currency: selectedCurrency.code,
+        maximumFractionDigits: 0,
+      }).format(converted)
+    } catch {
+      return `${selectedCurrency.symbol}${converted.toLocaleString()}`
+    }
+  }
   const formatNumber = (val: number) => val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })
 
   return (
@@ -340,6 +374,32 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                     <p className="text-body-md text-neutral-400">Enter your baseline metrics</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Currency Selector */}
+                    <div className="pb-2 border-b border-white/10">
+                      <Label className="flex items-center gap-2 text-body-sm text-brand-cyan-300 mb-2 font-semibold">
+                        <Globe className="h-3.5 w-3.5" /> Currency
+                      </Label>
+                      <Select
+                        value={selectedCurrency.code}
+                        onValueChange={(code) => {
+                          const c = CURRENCIES.find(c => c.code === code)
+                          if (c) setSelectedCurrency(c)
+                        }}
+                      >
+                        <SelectTrigger className="glass text-white">
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map(c => (
+                            <SelectItem key={c.code} value={c.code}>
+                              <span className="font-mono text-brand-cyan-400 mr-2">{c.symbol}</span>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div>
                       <Label className="block text-body-sm text-neutral-300 mb-2">ERP Platform</Label>
                       <Select value={state.platform} onValueChange={handleSelectChange('platform')}>
@@ -386,8 +446,8 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
 
                     <div>
                       <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
-                        <span>Fully Loaded Hourly Cost ($)</span>
-                        <span className="text-brand-cyan-400 font-mono tabular-nums">${state.hourlyCost}</span>
+                        <span>Fully Loaded Hourly Cost ({selectedCurrency.symbol})</span>
+                        <span className="text-brand-cyan-400 font-mono tabular-nums">{selectedCurrency.symbol}{toLocalCurrency(state.hourlyCost)}</span>
                       </Label>
                       <Slider value={[state.hourlyCost]} onValueChange={handleSliderChange('hourlyCost')} min={0} max={150} step={5} className="accent-brand-cyan-500" />
                     </div>
@@ -414,16 +474,16 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
 
                         <div>
                           <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
-                            <span>Avg Recruitment Cost ($)</span>
-                            <span className="text-brand-purple-400 font-mono tabular-nums">${state.avgRecruitmentCost.toLocaleString()}</span>
+                            <span>Avg Recruitment Cost ({selectedCurrency.symbol})</span>
+                            <span className="text-brand-purple-400 font-mono tabular-nums">{selectedCurrency.symbol}{toLocalCurrency(state.avgRecruitmentCost).toLocaleString()}</span>
                           </Label>
                           <Slider value={[state.avgRecruitmentCost]} onValueChange={handleSliderChange('avgRecruitmentCost')} min={0} max={100000} step={1000} className="accent-brand-purple-500" />
                         </div>
                         
                         <div>
                           <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
-                            <span>Annual Compliance Fines ($)</span>
-                            <span className="text-brand-purple-400 font-mono tabular-nums">${state.complianceFinesPerYear.toLocaleString()}</span>
+                            <span>Annual Compliance Fines ({selectedCurrency.symbol})</span>
+                            <span className="text-brand-purple-400 font-mono tabular-nums">{selectedCurrency.symbol}{toLocalCurrency(state.complianceFinesPerYear).toLocaleString()}</span>
                           </Label>
                           <Slider value={[state.complianceFinesPerYear]} onValueChange={handleSliderChange('complianceFinesPerYear')} min={0} max={500000} step={5000} className="accent-brand-purple-500" />
                         </div>
