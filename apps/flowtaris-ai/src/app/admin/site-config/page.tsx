@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
-import { getSiteConfig, updateSiteConfig } from '@/lib/supabase'
+import { getSiteConfig, updateSiteConfig, supabase } from '@/lib/supabase'
 import { Upload, X, Eye, EyeOff, RefreshCw, CheckCircle2, AlertCircle, ImageIcon, Type, Tag } from 'lucide-react'
 
 // ── Shared UI primitives ─────────────────────────────────────────────────────
@@ -151,9 +151,51 @@ function LogoManager({
   const [urlInput, setUrlInput] = useState(logoUrl)
   const [previewError, setPreviewError] = useState(false)
   const [inputMode, setInputMode] = useState<'preview' | 'url'>('preview')
+  const [uploading, setUploading] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
 
   const currentLogo = logoUrl || DEFAULT_LOGO
   const isDefault = !logoUrl || logoUrl === DEFAULT_LOGO
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return
+    setUploading(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `logo-${Date.now()}.${fileExt}`
+      const { data, error } = await supabase.storage
+        .from('assets')
+        .upload(fileName, file)
+      
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('assets')
+        .getPublicUrl(fileName)
+        
+      onLogoChange(publicUrl)
+      setUrlInput(publicUrl)
+      setInputMode('preview')
+    } catch (err) {
+      console.error(err)
+      alert('Failed to upload image. Make sure it is a valid image file.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+  const onDragLeave = () => setIsDragOver(false)
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0])
+    }
+  }
 
   const handleUrlCommit = () => {
     onLogoChange(urlInput.trim())
@@ -178,20 +220,48 @@ function LogoManager({
       {/* Preview card */}
       <div className="flex items-start gap-5">
         {/* Logo preview box */}
-        <div className="relative flex-shrink-0">
-          <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600
-            bg-gray-50 dark:bg-gray-700/50 flex items-center justify-center overflow-hidden
-            shadow-inner">
-            {showLogo && !previewError ? (
-              <Image
-                src={currentLogo.startsWith('/') ? currentLogo : (currentLogo || DEFAULT_LOGO)}
-                alt="Current logo preview"
-                width={64}
-                height={64}
-                className="object-contain w-16 h-16"
-                onError={() => setPreviewError(true)}
-                unoptimized={currentLogo.startsWith('http')}
-              />
+        <div className="relative flex-shrink-0 group/upload cursor-pointer"
+             onDragOver={onDragOver}
+             onDragLeave={onDragLeave}
+             onDrop={onDrop}
+             onClick={() => fileRef.current?.click()}
+        >
+          <input
+            type="file"
+            ref={fileRef}
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                handleFileUpload(e.target.files[0])
+              }
+            }}
+          />
+          <div className={`w-24 h-24 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden shadow-inner transition-colors
+            ${isDragOver ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50'}`}>
+            
+            {uploading ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                <span className="text-[10px] text-gray-500 font-medium">Uploading</span>
+              </div>
+            ) : showLogo && !previewError ? (
+              <>
+                <Image
+                  src={currentLogo.startsWith('/') ? currentLogo : (currentLogo || DEFAULT_LOGO)}
+                  alt="Current logo preview"
+                  width={64}
+                  height={64}
+                  className={`object-contain w-16 h-16 transition-opacity ${isDragOver ? 'opacity-30' : 'opacity-100 group-hover/upload:opacity-30'}`}
+                  onError={() => setPreviewError(true)}
+                  unoptimized={currentLogo.startsWith('http')}
+                />
+                <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity
+                  ${isDragOver ? 'opacity-100' : 'opacity-0 group-hover/upload:opacity-100'}`}>
+                  <Upload className="w-6 h-6 text-blue-500 mb-1 drop-shadow-md" />
+                  <span className="text-[10px] font-bold text-blue-600 bg-white/80 px-2 py-0.5 rounded shadow-sm">Upload</span>
+                </div>
+              </>
             ) : (
               <div className="flex flex-col items-center gap-1 text-gray-300">
                 <ImageIcon className="w-8 h-8" />
