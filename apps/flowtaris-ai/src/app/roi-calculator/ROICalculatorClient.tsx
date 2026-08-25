@@ -357,7 +357,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                     </div>
 
                     <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                      <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
                         <span>Annual Volume</span>
                         <span className="text-brand-cyan-400 font-mono tabular-nums">{state.annualVolume.toLocaleString()}</span>
                       </Label>
@@ -365,7 +365,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                     </div>
 
                     <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                      <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
                         <span>Avg Manual Minutes/Unit</span>
                         <span className="text-brand-cyan-400 font-mono tabular-nums">{state.avgManualHours}</span>
                       </Label>
@@ -373,7 +373,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                     </div>
 
                     <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                      <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
                         <span>Fully Loaded Hourly Cost ($)</span>
                         <span className="text-brand-cyan-400 font-mono tabular-nums">${state.hourlyCost}</span>
                       </Label>
@@ -381,7 +381,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                     </div>
                     
                     <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                      <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
                         <span>Current Error Rate (%)</span>
                         <span className="text-brand-amber-400 font-mono tabular-nums">{state.errorRate.toFixed(1)}%</span>
                       </Label>
@@ -393,7 +393,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                       
                       <div className="space-y-4">
                         <div>
-                          <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                          <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
                             <span>Team Attrition Rate (%)</span>
                             <span className="text-brand-purple-400 font-mono tabular-nums">{state.attritionRate}%</span>
                           </Label>
@@ -401,7 +401,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                         </div>
 
                         <div>
-                          <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                          <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
                             <span>Avg Recruitment Cost ($)</span>
                             <span className="text-brand-purple-400 font-mono tabular-nums">${state.avgRecruitmentCost.toLocaleString()}</span>
                           </Label>
@@ -409,7 +409,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                         </div>
                         
                         <div>
-                          <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
+                          <Label className="flex flex-wrap items-center justify-between gap-x-2 text-body-sm text-neutral-300 mb-2">
                             <span>Annual Compliance Fines ($)</span>
                             <span className="text-brand-purple-400 font-mono tabular-nums">${state.complianceFinesPerYear.toLocaleString()}</span>
                           </Label>
@@ -471,25 +471,25 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                       <Card className="glass-card">
                         <CardHeader><CardTitle className="text-headline-sm flex items-center gap-2"><DollarSign className="h-5 w-5 text-brand-green-400" /> Cost Breakdown</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="flex justify-between text-body-md"><span className="text-neutral-300">Annual Manual Cost</span><span className="text-brand-red-400 font-mono">{formatCurrency(derived.breakdownManual)}</span></div>
-                          <div className="flex justify-between text-body-md"><span className="text-neutral-300">Implementation Cost</span><span className="text-brand-amber-400 font-mono">{formatCurrency(derived.breakdownImpl)}</span></div>
-                          <div className="flex justify-between text-body-md"><span className="text-neutral-300">Year 1 Net Savings</span><span className="text-brand-green-400 font-mono">{formatCurrency(derived.breakdownYear1)}</span></div>
-                          <div className="flex justify-between text-body-md font-medium border-t border-white/10 pt-4"><span className="text-white">3-Year NPV</span><span className="text-brand-cyan-400 font-mono">{formatCurrency(derived.breakdownNpv)}</span></div>
+                          <div className="flex flex-wrap items-center justify-between gap-x-2 text-body-md"><span className="text-neutral-300">Annual Manual Cost</span><span className="text-brand-red-400 font-mono">{formatCurrency(derived.breakdownManual)}</span></div>
+                          <div className="flex flex-wrap items-center justify-between gap-x-2 text-body-md"><span className="text-neutral-300">Implementation Cost</span><span className="text-brand-amber-400 font-mono">{formatCurrency(derived.breakdownImpl)}</span></div>
+                          <div className="flex flex-wrap items-center justify-between gap-x-2 text-body-md"><span className="text-neutral-300">Year 1 Net Savings</span><span className="text-brand-green-400 font-mono">{formatCurrency(derived.breakdownYear1)}</span></div>
+                          <div className="flex flex-wrap items-center justify-between gap-x-2 text-body-md font-medium border-t border-white/10 pt-4"><span className="text-white">3-Year NPV</span><span className="text-brand-cyan-400 font-mono">{formatCurrency(derived.breakdownNpv)}</span></div>
                         </CardContent>
                       </Card>
 
                       <Card className="glass-card">
                         <CardHeader><CardTitle className="text-headline-sm flex items-center gap-2"><TrendingUp className="h-5 w-5 text-brand-amber-400" /> Sensitivity Analysis</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="glass rounded-xl p-4 flex justify-between">
+                          <div className="glass rounded-xl p-4 flex flex-wrap items-center justify-between gap-x-2">
                             <span className="text-body-sm text-neutral-300">Best Case</span>
                             <span className="text-brand-green-400 font-display">{formatCurrency(derived.sensBest)}</span>
                           </div>
-                          <div className="glass rounded-xl p-4 flex justify-between">
+                          <div className="glass rounded-xl p-4 flex flex-wrap items-center justify-between gap-x-2">
                             <span className="text-body-sm text-neutral-300">Expected</span>
                             <span className="text-brand-cyan-400 font-display">{formatCurrency(derived.sensExpected)}</span>
                           </div>
-                          <div className="glass rounded-xl p-4 flex justify-between">
+                          <div className="glass rounded-xl p-4 flex flex-wrap items-center justify-between gap-x-2">
                             <span className="text-body-sm text-neutral-300">Conservative</span>
                             <span className="text-brand-amber-400 font-display">{formatCurrency(derived.sensConservative)}</span>
                           </div>
