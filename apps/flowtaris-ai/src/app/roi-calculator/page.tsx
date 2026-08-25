@@ -18,8 +18,16 @@ export const metadata: Metadata = {
   }
 }
 
+import { getROICConfig } from '@flowtaris/supabase-client'
+
 export default async function ROICalculatorPage() {
-  
+  let roiConfig = null;
+  try {
+    roiConfig = await getROICConfig();
+  } catch (e) {
+    console.error("Failed to load ROI config:", e);
+  }
+
   // SoftwareApplication Schema for the Calculator
   const softwareSchema = {
     "@context": "https://schema.org",
@@ -72,7 +80,7 @@ export default async function ROICalculatorPage() {
       <Script id="software-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
       <Script id="faq-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       
-      <ROICalculatorClient initialConfig={null} />
+      <ROICalculatorClient initialConfig={roiConfig} />
 
       {/* AEO / Semantic HTML Section for Web Crawlers */}
       <section className="sr-only">

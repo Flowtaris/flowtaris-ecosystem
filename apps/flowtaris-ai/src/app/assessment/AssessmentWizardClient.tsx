@@ -80,8 +80,10 @@ interface SanityAssessmentConfig {
     keyClaims?: string[]
     faqItems?: Array<{ question: string; answer: string }>
     entityAssociations?: string[]
+    entityAssociations?: string[]
     topicClusters?: string[]
   }
+  uiContent?: Record<string, string>
 }
 
 // Default steps fallback (when no Sanity config)
@@ -229,6 +231,8 @@ function getCategoryLabel(category: Recommendation['category']) {
 }
 
 export default function AssessmentWizardClient({ initialConfig }: AssessmentWizardClientProps) {
+  // Extract ui content with safe defaults
+  const ui = initialConfig?.uiContent || {}
   const [currentStep, setCurrentStep] = useState(1)
   const [answers, setAnswers] = useState<AssessmentAnswers>(initialAnswers)
   const [result, setResult] = useState<AssessmentResult | null>(null)
@@ -792,13 +796,10 @@ export default function AssessmentWizardClient({ initialConfig }: AssessmentWiza
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
-              AI Readiness{' '}
-              <span className="bg-gradient-to-r from-brand-cyan-400 to-brand-purple-400 bg-clip-text text-transparent">
-                Assessment
-              </span>
+              {ui.heroTitle || 'AI Readiness Assessment'}
             </h1>
             <p className="text-lg text-neutral-400 max-w-2xl mx-auto mb-10">
-              Free 3-minute diagnostic → Get a personalized roadmap with Quick Wins (0–3mo), Strategic initiatives (3–9mo), and Innovation opportunities (9–18mo).
+              {ui.heroSubtitle || 'Free 3-minute diagnostic → Get a personalized roadmap with Quick Wins (0–3mo), Strategic initiatives (3–9mo), and Innovation opportunities (9–18mo).'}
             </p>
 
             {/* Stats row */}

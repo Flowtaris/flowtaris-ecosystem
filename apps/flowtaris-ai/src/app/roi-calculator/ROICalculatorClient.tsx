@@ -68,8 +68,10 @@ interface SanityROIConfig {
     keyClaims?: string[]
     faqItems?: Array<{ question: string; answer: string }>
     entityAssociations?: string[]
+    entityAssociations?: string[]
     topicClusters?: string[]
   }
+  uiContent?: Record<string, string>
 }
 
 // Default platforms fallback
@@ -136,7 +138,9 @@ interface ROICalculatorClientProps {
   initialConfig: SanityROIConfig | null
 }
 
-export default function ROICalculatorClient({ initialConfig }: ROICalculatorClientProps) {
+export default function ROICalculatorClient({ initialConfig }: { initialConfig: SanityROIConfig | null }) {
+  // Extract ui content with safe defaults
+  const ui = initialConfig?.uiContent || {}
   const platforms = useMemo(() => {
     if (initialConfig?.assumptions?.platformMultipliers) {
       return Object.entries(initialConfig.assumptions.platformMultipliers).map(([value, multiplier]) => ({
@@ -370,7 +374,7 @@ export default function ROICalculatorClient({ initialConfig }: ROICalculatorClie
                         Inputs
                       </span>
                     </div>
-                    <CardTitle className="text-headline-lg">Configure Your Scenario</CardTitle>
+                    <CardTitle className="text-headline-lg">{ui.configureHeading || 'Configure Your Scenario'}</CardTitle>
                     <p className="text-body-md text-neutral-400">Enter your baseline metrics</p>
                   </CardHeader>
                   <CardContent className="space-y-6">

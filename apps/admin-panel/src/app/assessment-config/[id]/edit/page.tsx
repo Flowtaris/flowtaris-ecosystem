@@ -38,6 +38,7 @@ type AssessmentConfigFormData = {
   questions: string // JSON string
   recommendation_rules: string // JSON string
   capability_mapping: string // JSON string
+  ui_content: string // JSON string
 }
 
 export default function EditAssessmentConfigPage() {
@@ -61,7 +62,8 @@ export default function EditAssessmentConfigPage() {
             id: data.id,
             questions: JSON.stringify(data.questions, null, 2),
             recommendation_rules: JSON.stringify(data.recommendation_rules, null, 2),
-            capability_mapping: JSON.stringify(data.capability_mapping, null, 2)
+            capability_mapping: JSON.stringify(data.capability_mapping, null, 2),
+            ui_content: JSON.stringify(data.ui_content || {}, null, 2)
           }
           setFormData(formData)
         } else {
@@ -97,7 +99,8 @@ export default function EditAssessmentConfigPage() {
       const assessmentConfigData = {
         questions: JSON.parse(formData.questions),
         recommendation_rules: JSON.parse(formData.recommendation_rules),
-        capability_mapping: JSON.parse(formData.capability_mapping)
+        capability_mapping: JSON.parse(formData.capability_mapping),
+        ui_content: JSON.parse(formData.ui_content)
       }
 
       // Update the assessment config
@@ -155,6 +158,13 @@ export default function EditAssessmentConfigPage() {
           onChange={(e) => handleChange('capability_mapping', e.target.value)}
           rows={6}
           placeholder='{"capability-uuid-1": ["q1", "q2"], "capability-uuid-2": ["q3"]}'
+        />
+        <SimpleTextarea
+          label="UI Content Strings (JSON Object)"
+          value={formData.ui_content}
+          onChange={(e) => handleChange('ui_content', e.target.value)}
+          rows={10}
+          placeholder='{"heroTitle": "AI Readiness Assessment", "progressText": "Complete"}'
         />
         <div className="flex justify-end">
           <SimpleButton type="submit" disabled={loading}>

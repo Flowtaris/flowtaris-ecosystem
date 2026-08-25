@@ -39,6 +39,7 @@ type RoiConfigFormData = {
   formulas: string // JSON string
   benchmarks: string // JSON string
   platform_multipliers: string // JSON string
+  ui_content: string // JSON string
 }
 
 export default function EditRoiConfigPage() {
@@ -63,7 +64,8 @@ export default function EditRoiConfigPage() {
             assumptions: JSON.stringify(data.assumptions, null, 2),
             formulas: JSON.stringify(data.formulas, null, 2),
             benchmarks: JSON.stringify(data.benchmarks, null, 2),
-            platform_multipliers: JSON.stringify(data.platform_multipliers, null, 2)
+            platform_multipliers: JSON.stringify(data.platform_multipliers, null, 2),
+            ui_content: JSON.stringify(data.ui_content || {}, null, 2)
           }
           setFormData(formData)
         } else {
@@ -100,7 +102,8 @@ export default function EditRoiConfigPage() {
         assumptions: JSON.parse(formData.assumptions),
         formulas: JSON.parse(formData.formulas),
         benchmarks: JSON.parse(formData.benchmarks),
-        platform_multipliers: JSON.parse(formData.platform_multipliers)
+        platform_multipliers: JSON.parse(formData.platform_multipliers),
+        ui_content: JSON.parse(formData.ui_content)
       }
 
       // Update the ROI config
@@ -165,6 +168,13 @@ export default function EditRoiConfigPage() {
           onChange={(e) => handleChange('platform_multipliers', e.target.value)}
           rows={6}
           placeholder='{"ERP": 1.2, "BSM": 1.0, "Hybrid": 1.1}'
+        />
+        <SimpleTextarea
+          label="UI Content Strings (JSON Object)"
+          value={formData.ui_content}
+          onChange={(e) => handleChange('ui_content', e.target.value)}
+          rows={10}
+          placeholder='{"heroTitle": "Configure Your Scenario", "buttonCalculate": "Calculate ROI"}'
         />
         <div className="flex justify-end">
           <SimpleButton type="submit" disabled={loading}>

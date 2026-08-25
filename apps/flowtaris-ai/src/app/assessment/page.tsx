@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   },
 }
 
+import { getAssessmentConfig } from '@flowtaris/supabase-client'
+
 export default async function AssessmentPage() {
-  return <AssessmentWizardClient initialConfig={null} />
+  let config = null;
+  try {
+    config = await getAssessmentConfig();
+  } catch (e) {
+    console.error("Failed to load Assessment config:", e);
+  }
+  return <AssessmentWizardClient initialConfig={config} />
 }

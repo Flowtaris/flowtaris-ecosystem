@@ -50,6 +50,7 @@ export interface SiteConfig {
   cookie_policy_url: string | null
   analytics: any // JSONB
   seo: any // JSONB
+  ui_content?: any // JSONB
   created_at: string
   updated_at: string
 }
@@ -127,6 +128,7 @@ export interface AssessmentConfig {
   questions: any // JSONB
   recommendation_rules: any // JSONB
   capability_mapping: any // JSONB
+  ui_content?: any // JSONB
   created_at: string
   updated_at: string
 }
@@ -155,6 +157,7 @@ export interface ROICConfig {
   formulas: any // JSONB
   benchmarks: any // JSONB
   platform_multipliers: any // JSONB
+  ui_content?: any // JSONB
   created_at: string
   updated_at: string
 }

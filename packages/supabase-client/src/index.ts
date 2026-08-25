@@ -102,3 +102,22 @@ export async function getROICalculation(id: string) {
 export async function getInactionCalculation(id: string) {
   return supabase.from('inaction_calculations').select('*').eq('id', id).single()
 }
+
+// Config/CMS helpers (public read)
+export async function getROICConfig() {
+  const { data, error } = await supabase.from('roi_config').select('*').single()
+  if (error) {
+    console.error("Error fetching ROI Config:", error)
+    return null
+  }
+  return data
+}
+
+export async function getAssessmentConfig() {
+  const { data, error } = await supabase.from('assessment_config').select('*').single()
+  if (error) {
+    console.error("Error fetching Assessment Config:", error)
+    return null
+  }
+  return data
+}
