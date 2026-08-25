@@ -281,20 +281,21 @@ function LogoManager({
           {/* Header preview */}
           <div className="mb-3 px-3 py-2.5 bg-[#05050a] rounded-lg flex items-center gap-2 w-fit">
             {showLogo && !previewError && (
-              <div className="w-6 h-6 rounded-full overflow-hidden ring-1 ring-white/20 flex-shrink-0">
-                <Image
-                  src={currentLogo.startsWith('/') ? currentLogo : (currentLogo || DEFAULT_LOGO)}
+              <div className="w-6 h-6 rounded-full overflow-hidden bg-white ring-1 ring-white/20 flex-shrink-0 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentLogo}
                   alt="Logo in header"
-                  width={24}
-                  height={24}
-                  className="object-contain"
+                  className="object-contain w-5 h-5"
                   onError={() => setPreviewError(true)}
-                  unoptimized={currentLogo.startsWith('http')}
                 />
               </div>
             )}
             <span className="text-white text-xs font-bold">Flowtaris</span>
-            <span className="text-[#00b8db] text-[10px] font-bold px-1 py-0.5 rounded bg-[#00b8db]/10 border border-[#00b8db]/25">.ai</span>
+            <span className="inline-flex items-center gap-[3px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#D4A847]/20 to-[#D4A847]/20 border border-[#D4A847]/40 text-[#f0c97a] text-[9px] font-bold tracking-widest uppercase">
+              <span className="w-[3px] h-[3px] rounded-full bg-[#f0c97a] flex-shrink-0" />
+              .ai
+            </span>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 truncate max-w-xs">
             {isDefault ? 'Using default Flowtaris logo' : (logoUrl || 'No logo set')}
