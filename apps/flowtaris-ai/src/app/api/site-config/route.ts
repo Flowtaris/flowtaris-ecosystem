@@ -16,7 +16,7 @@ export async function GET() {
 
     // Only expose the fields needed for public header rendering
     const publicConfig = {
-      logoUrl:    data?.logo_url    ?? 'https://www.flowtaris.com/logo.svg',
+      logoUrl:    data?.logo_url    ?? '/images/flowtaris-logo.png',
       brandName:  (data as any)?.header_brand_name ?? 'Flowtaris',
       badgeText:  (data as any)?.header_badge_text  ?? '.ai',
       showLogo:   (data as any)?.header_show_logo   !== false,
@@ -36,7 +36,7 @@ export async function GET() {
     // Return safe defaults — never fail the header render
     return NextResponse.json(
       {
-        logoUrl:   'https://www.flowtaris.com/logo.svg',
+        logoUrl:   '/images/flowtaris-logo.png',
         brandName: 'Flowtaris',
         badgeText: '.ai',
         showLogo:  true,
