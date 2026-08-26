@@ -1,228 +1,148 @@
-﻿'use client'
+'use client'
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { runAssessment, type AssessmentAnswers, type AssessmentResult } from '@flowtaris/assessment-engine'
+import { runAssessment, type AssessmentAnswers, type AssessmentResult, type Recommendation } from '@flowtaris/assessment-engine'
 import { insertAssessmentLead } from '@flowtaris/supabase-client'
 import { analytics } from '@flowtaris/analytics'
-import {
-  ArrowRight, ChevronLeft, CheckCircle2, Zap, Target, Rocket,
-  Activity, Mail, BarChart3, Shield, TrendingUp, Users,
-  FileText, AlertTriangle, Link2, Clock, DollarSign
-} from 'lucide-react'
+import { ArrowRight, ChevronLeft, Activity, Mail, TrendingUp, CheckCircle2, Zap, Target, Rocket } from 'lucide-react'
 
-// ─── TYPES ──────────────────────────────────────────────────────────────────
+// ─── TYPES ───────────────────────────────────────────────────────────────────
 interface SanityAssessmentConfig {
-  questions?: Array<{
-    id: string; step: number; title: string; description: string
-    type: 'radio' | 'checkbox' | 'number' | 'select'
-    options?: Array<{ value: string; label: string; description: string; icon?: string; weight?: number }>
-    fields?: Array<{ id: string; label: string; placeholder: string; min: number }>
-    validation?: { required?: boolean; min?: number; max?: number; maxSelections?: number }
-  }>
+  questions?: Array<{ id: string; step: number; title: string; description: string; type: string }>
   uiContent?: Record<string, string>
 }
 
-// ─── CONSTANTS ───────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'flowtaris-assessment-v2'
-
+const STORAGE_KEY = 'flowtaris-assessment-v3'
 const initialAnswers: AssessmentAnswers = {
   erp: '', painPoints: [],
   volume: { invoicesPerMonth: 0, employees: 1, transactions: 0, poLines: 0 },
   currentState: '', techMaturity: '', urgency: '',
 }
 
-// ERP platform brand configs
-const ERP_CONFIG = [
-  { value: 'NetSuite', label: 'NetSuite', color: '#0d9488', bg: 'bg-teal-500/10 border-teal-500/30', active: 'border-teal-400 bg-teal-500/20 shadow-teal-500/20', desc: 'Oracle NetSuite ERP' },
-  { value: 'SAP', label: 'SAP S/4HANA', color: '#3b82f6', bg: 'bg-blue-500/10 border-blue-500/30', active: 'border-blue-400 bg-blue-500/20 shadow-blue-500/20', desc: 'SAP S/4HANA or ECC' },
-  { value: 'Coupa', label: 'Coupa', color: '#f97316', bg: 'bg-orange-500/10 border-orange-500/30', active: 'border-orange-400 bg-orange-500/20 shadow-orange-500/20', desc: 'Business Spend Management' },
-  { value: 'Workday', label: 'Workday', color: '#22c55e', bg: 'bg-green-500/10 border-green-500/30', active: 'border-green-400 bg-green-500/20 shadow-green-500/20', desc: 'Financial Management' },
-  { value: 'Multiple', label: 'Multiple ERPs', color: '#a855f7', bg: 'bg-purple-500/10 border-purple-500/30', active: 'border-purple-400 bg-purple-500/20 shadow-purple-500/20', desc: 'Multi-platform landscape' },
+// ─── ERP DATA ─────────────────────────────────────────────────────────────────
+const ERP_LIST = [
+  { value: 'NetSuite', abbr: 'NS', label: 'Oracle NetSuite', sub: 'ERP · Cloud', accent: '#00b4a0' },
+  { value: 'SAP', abbr: 'SAP', label: 'SAP S/4HANA', sub: 'ERP · Hybrid', accent: '#0070f3' },
+  { value: 'Coupa', abbr: 'CPA', label: 'Coupa BSM', sub: 'Procurement · Cloud', accent: '#f76b15' },
+  { value: 'Workday', abbr: 'WD', label: 'Workday Finance', sub: 'HCM · Cloud', accent: '#00c86e' },
+  { value: 'Multiple', abbr: '···', label: 'Multiple Systems', sub: 'Multi-platform', accent: '#9b6fff' },
 ]
 
-const PAIN_POINTS = [
-  { value: 'Manual data entry', label: 'Manual Invoice Processing', icon: FileText, cost: '$14.20/invoice avg', color: 'text-red-400', desc: 'High-volume manual data entry across invoices, POs, and receipts' },
-  { value: 'Invoice processing delays', label: 'Cash Flow Visibility', icon: DollarSign, cost: '8-12 day DSO gap', color: 'text-amber-400', desc: 'Poor forecasting visibility leads to working capital inefficiencies' },
-  { value: 'Integration Failures', label: 'Integration Failures', icon: Link2, cost: '4.3hrs downtime/mo', color: 'text-orange-400', desc: 'Frequent iPaaS/API breakages disrupting critical financial workflows' },
-  { value: 'Compliance risks', label: 'Compliance & Audit Risk', icon: Shield, cost: '$82K avg fine exposure', color: 'text-red-500', desc: 'Regulatory pressure, audit findings, and manual compliance tracking' },
-  { value: 'Slow decision making', label: 'Slow Financial Close', icon: Clock, cost: '7.5 day avg close', color: 'text-yellow-400', desc: 'Month-end close cycle extends due to manual reconciliation' },
-  { value: 'High error rates', label: 'Vendor Disputes & Errors', icon: AlertTriangle, cost: '4.8% error rate avg', color: 'text-rose-400', desc: 'Payment delays, duplicate invoices, and dispute resolution overhead' },
+// ─── PAIN POINTS ──────────────────────────────────────────────────────────────
+const PAIN_LIST = [
+  { value: 'Manual data entry', label: 'Manual Invoice Processing', metric: '$14.20', unit: 'per invoice', severity: 92, color: '#ff4d4f' },
+  { value: 'Invoice processing delays', label: 'Cash Flow Blind Spots', metric: '11 days', unit: 'avg DSO gap', severity: 78, color: '#fa8c16' },
+  { value: 'Integration Failures', label: 'Integration Failures', metric: '4.3 hrs', unit: 'downtime/month', severity: 84, color: '#ff7a45' },
+  { value: 'Compliance risks', label: 'Compliance Exposure', metric: '$82K', unit: 'avg fine risk', severity: 89, color: '#f5222d' },
+  { value: 'Slow decision making', label: 'Slow Financial Close', metric: '7.5 days', unit: 'avg cycle', severity: 71, color: '#faad14' },
+  { value: 'High error rates', label: 'Error Rates & Disputes', metric: '4.8%', unit: 'error rate avg', severity: 76, color: '#ff4d4f' },
 ]
 
-const CURRENT_STATE = [
-  { value: 'Manual', label: 'Fully Manual', icon: '✋', maturity: 10, desc: 'Spreadsheets, email, paper-based processes' },
-  { value: 'Partial', label: 'Partial Automation', icon: '⚙️', maturity: 35, desc: 'Some OCR/RPA tools but heavy exception handling' },
-  { value: 'iPaaS', label: 'iPaaS Connected', icon: '☁️', maturity: 60, desc: 'MuleSoft, Boomi, Celigo or similar integration layer' },
-  { value: 'Custom', label: 'Custom Built', icon: '💻', maturity: 50, desc: 'In-house developed automation and integrations' },
-  { value: "Don't know", label: 'Unsure', icon: '❓', maturity: 20, desc: 'Not sure about current tech stack' },
+const STATE_LIST = [
+  { value: 'Manual', label: 'Fully Manual', tag: 'Spreadsheets · Email · Paper', level: 1 },
+  { value: 'Partial', label: 'Partially Automated', tag: 'Some OCR/RPA · Heavy exceptions', level: 2 },
+  { value: 'iPaaS', label: 'iPaaS Connected', tag: 'MuleSoft · Boomi · Celigo', level: 3 },
+  { value: 'Custom', label: 'Custom Built', tag: 'In-house automation', level: 3 },
+  { value: "Don't know", label: 'Unsure', tag: 'Unknown tech stack', level: 0 },
 ]
 
-const TECH_MATURITY = [
-  { value: 'Legacy', label: 'Legacy Systems', icon: '🏛️', desc: 'On-premise, older ERP versions pre-2018' },
-  { value: 'Hybrid', label: 'Hybrid Environment', icon: '🔀', desc: 'Mix of legacy on-prem and modern cloud systems' },
-  { value: 'Modern', label: 'Cloud-Native', icon: '☁️', desc: 'Fully cloud, implemented 2020 or later' },
-  { value: 'AI Pilot', label: 'AI Pilot Active', icon: '🧪', desc: 'Already experimenting with AI/ML in finance workflows' },
+const MATURITY_LIST = [
+  { value: 'Legacy', label: 'Legacy Core', tag: 'On-premise · Pre-2018 ERP', year: '< 2018' },
+  { value: 'Hybrid', label: 'Hybrid Landscape', tag: 'Legacy + Cloud mix', year: '2018–2022' },
+  { value: 'Modern', label: 'Cloud-Native', tag: 'SaaS-first · API-driven', year: '2022+' },
+  { value: 'AI Pilot', label: 'AI Pilot Running', tag: 'Active ML/AI experiments', year: 'Now' },
 ]
 
-const URGENCY = [
-  { value: 'Exploring', label: 'Research Phase', icon: '🔍', signal: 'LOW', color: 'text-slate-400', desc: 'Exploring options, building business case' },
-  { value: 'Budget Approved', label: 'Budget Approved', icon: '✅', signal: 'MEDIUM', color: 'text-blue-400', desc: 'Funding secured and ready to evaluate vendors' },
-  { value: 'Audit-Driven', label: 'Audit/Compliance', icon: '📋', signal: 'HIGH', color: 'text-amber-400', desc: 'Regulatory or audit requirement with deadline' },
-  { value: 'Board Mandate', label: 'Board Mandate', icon: '🎯', signal: 'CRITICAL', color: 'text-red-400', desc: 'Strategic directive from C-suite or board' },
+const URGENCY_LIST = [
+  { value: 'Exploring', label: 'Research Phase', tag: 'Building business case', signal: 'L', signalColor: '#64748b', priority: 1 },
+  { value: 'Budget Approved', label: 'Budget Approved', tag: 'Funding secured', signal: 'M', signalColor: '#3b82f6', priority: 2 },
+  { value: 'Audit-Driven', label: 'Audit Deadline', tag: 'Regulatory requirement', signal: 'H', signalColor: '#f59e0b', priority: 3 },
+  { value: 'Board Mandate', label: 'Board Mandate', tag: 'Executive directive', signal: '!', signalColor: '#ef4444', priority: 4 },
 ]
 
-// ─── SCORE HELPER ────────────────────────────────────────────────────────────
-function computeLiveScore(answers: AssessmentAnswers, step: number): number {
-  let score = 0
-  if (step >= 1 && answers.erp) score += 12
-  if (step >= 2 && answers.painPoints.length > 0) score += answers.painPoints.length * 8
-  if (step >= 3 && answers.volume.invoicesPerMonth > 0) {
-    const vol = answers.volume.invoicesPerMonth + answers.volume.transactions + answers.volume.poLines
-    score += vol > 5000 ? 20 : vol > 1000 ? 15 : 10
-  }
-  if (step >= 4 && answers.currentState) score += answers.currentState === 'Manual' ? 15 : 10
-  if (step >= 5 && answers.techMaturity) score += answers.techMaturity === 'AI Pilot' ? 20 : 12
-  if (step >= 6 && answers.urgency) {
-    const urgencyBonus: Record<string, number> = { 'Board Mandate': 25, 'Audit-Driven': 20, 'Budget Approved': 15, 'Exploring': 8 }
-    score += urgencyBonus[answers.urgency] || 8
-  }
-  return Math.min(score, 100)
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const fmtK = (v: number) => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}K` : `$${Math.round(v)}`
+
+function livePainCost(vol: AssessmentAnswers['volume']) {
+  return (vol.invoicesPerMonth * 12 * 14.20) + (vol.transactions * 12 * 3.50)
 }
 
-const fmt = (v: number) => `$${Math.round(v).toLocaleString()}`
-const fmtK = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : fmt(v)
+// ─── SCORE ────────────────────────────────────────────────────────────────────
+function calcScore(answers: AssessmentAnswers, step: number) {
+  let s = 0
+  if (answers.erp) s += 12
+  s += Math.min(answers.painPoints.length * 8, 24)
+  const vol = answers.volume.invoicesPerMonth + answers.volume.transactions + answers.volume.poLines
+  if (vol > 5000) s += 20; else if (vol > 1000) s += 14; else if (vol > 0) s += 8
+  if (answers.currentState === 'Manual') s += 15; else if (answers.currentState) s += 9
+  if (answers.techMaturity === 'AI Pilot') s += 20; else if (answers.techMaturity) s += 12
+  const ub: Record<string,number> = { 'Board Mandate': 25, 'Audit-Driven': 20, 'Budget Approved': 15, 'Exploring': 8 }
+  s += ub[answers.urgency] || 0
+  return Math.min(s, 100)
+}
 
-// ─── SCORE GAUGE SVG ─────────────────────────────────────────────────────────
-function ScoreGauge({ score, size = 160 }: { score: number; size?: number }) {
-  const r = (size / 2) - 14
-  const circ = 2 * Math.PI * r
-  // Arc: 270 degrees (from 135° to 405°)
-  const arc = (circ * 0.75)
-  const filled = arc * (score / 100)
-  const dashOffset = arc - filled
-
+// ─── GAUGE ────────────────────────────────────────────────────────────────────
+function Gauge({ score }: { score: number }) {
+  const sz = 120, r = 44, circ = 2 * Math.PI * r
+  const arc = circ * 0.75
+  const fill = arc * (score / 100)
   const color = score >= 70 ? '#10b981' : score >= 45 ? '#f59e0b' : '#ef4444'
-  const label = score >= 70 ? 'HIGH READINESS' : score >= 45 ? 'MODERATE' : 'DEVELOPING'
-
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(135deg)' }}>
-        {/* Track */}
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={10}
-          strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" />
-        {/* Fill */}
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={10}
-          strokeDasharray={`${filled} ${circ}`} strokeDashoffset={0} strokeLinecap="round"
-          style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)', filter: `drop-shadow(0 0 6px ${color})` }} />
+    <div className="relative" style={{ width: sz, height: sz }}>
+      <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{ transform: 'rotate(135deg)' }}>
+        <circle cx={sz/2} cy={sz/2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={8} strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" />
+        <circle cx={sz/2} cy={sz/2} r={r} fill="none" stroke={color} strokeWidth={8} strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 1s ease', filter: `drop-shadow(0 0 5px ${color})` }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-4xl font-black font-mono" style={{ color }}>{score}</div>
-        <div className="text-[9px] tracking-widest font-bold uppercase opacity-60 mt-1">{label}</div>
+        <div className="text-2xl font-black font-mono leading-none" style={{ color }}>{score}</div>
+        <div className="text-[8px] tracking-widest text-white/30 uppercase mt-0.5">/ 100</div>
       </div>
     </div>
   )
 }
 
-// ─── ANIMATED COUNTER ────────────────────────────────────────────────────────
-function AnimatedNumber({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
-  const [displayed, setDisplayed] = useState(0)
-  useEffect(() => {
-    const start = displayed
-    const diff = value - start
-    const duration = 600
-    const startTime = performance.now()
-    const tick = (now: number) => {
-      const progress = Math.min((now - startTime) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplayed(Math.round(start + diff * eased))
-      if (progress < 1) requestAnimationFrame(tick)
-    }
-    requestAnimationFrame(tick)
-  }, [value])
-  return <span>{prefix}{displayed.toLocaleString()}{suffix}</span>
-}
-
-// ─── SIDEBAR LIVE SCORE ──────────────────────────────────────────────────────
-function LiveScoreSidebar({ answers, step }: { answers: AssessmentAnswers; step: number }) {
-  const score = computeLiveScore(answers, step)
-
-  const bars = [
-    { label: 'ERP Complexity', value: answers.erp ? (answers.erp === 'SAP' ? 90 : answers.erp === 'Multiple' ? 85 : 70) : 0, color: '#0891b2' },
-    { label: 'Pain Severity', value: Math.min(answers.painPoints.length * 33, 100), color: '#ef4444' },
-    { label: 'Volume Scale', value: answers.volume.invoicesPerMonth > 5000 ? 90 : answers.volume.invoicesPerMonth > 1000 ? 65 : answers.volume.invoicesPerMonth > 0 ? 35 : 0, color: '#f59e0b' },
-    { label: 'AI Readiness', value: { 'AI Pilot': 95, 'Modern': 70, 'Hybrid': 45, 'Legacy': 25 }[answers.techMaturity] || 0, color: '#10b981' },
-  ]
-
-  const tier = score >= 70 ? 'Enterprise' : score >= 45 ? 'Mid-Market' : 'Growth'
-  const tierColor = score >= 70 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : score >= 45 ? 'text-blue-400 bg-blue-500/10 border-blue-500/20' : 'text-slate-400 bg-slate-500/10 border-slate-500/20'
-
-  return (
-    <div className="hidden xl:flex flex-col gap-6 sticky top-24 w-72">
-      <div className="bg-black/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-        <div className="text-[10px] text-white/40 uppercase tracking-widest font-semibold mb-4">AI Readiness Score</div>
-        <div className="flex justify-center mb-4">
-          <ScoreGauge score={score} size={140} />
-        </div>
-        <div className={`text-center text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border ${tierColor} mb-6`}>
-          {tier} Profile
-        </div>
-        <div className="space-y-3">
-          {bars.map(bar => (
-            <div key={bar.label}>
-              <div className="flex justify-between text-[10px] text-white/40 mb-1">
-                <span>{bar.label}</span>
-                <span>{bar.value}%</span>
-              </div>
-              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-700 ease-out"
-                  style={{ width: `${bar.value}%`, backgroundColor: bar.color, boxShadow: `0 0 6px ${bar.color}` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="bg-black/60 border border-white/10 rounded-2xl p-5 backdrop-blur-xl">
-        <div className="text-[10px] text-white/40 uppercase tracking-widest font-semibold mb-3">What You Will Get</div>
-        <div className="space-y-2">
-          {['Personalized AI roadmap', 'Quantified $ savings estimates', '3-tier implementation plan', 'Peer benchmark comparison'].map(item => (
-            <div key={item} className="flex items-center gap-2 text-xs text-white/60">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              {item}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── STEP COMPONENTS ─────────────────────────────────────────────────────────
+// ─── STEP 1: ERP — Full-width horizontal slots ───────────────────────────────
 function StepERP({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div>
-      <div className="mb-8">
-        <div className="text-[11px] text-cyan-400 uppercase tracking-widest font-bold mb-2">Step 1 of 6 · Platform</div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">Which ERP platform powers your finance operations?</h2>
-        <p className="text-white/50 mt-3 text-base">We use this to calibrate our recommendations to your specific environment.</p>
+    <div className="w-full">
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="font-mono text-[11px] text-white/20 tracking-widest">01 / 06</span>
+          <div className="h-px flex-1 bg-white/5" />
+          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">ERP Platform</span>
+        </div>
+        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+          Which ERP powers<br />your finance stack?
+        </h2>
+        <p className="text-white/30 mt-3 text-sm max-w-md">We calibrate every recommendation to your specific platform and its known automation constraints.</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {ERP_CONFIG.map(erp => {
+
+      <div className="flex flex-col gap-2.5">
+        {ERP_LIST.map((erp) => {
           const selected = value === erp.value
           return (
             <button key={erp.value} onClick={() => onChange(erp.value)}
-              className={`group relative p-5 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer
-                ${selected ? erp.active + ' shadow-lg scale-[1.02]' : erp.bg + ' hover:border-white/20 hover:scale-[1.01]'}`}>
-              {selected && (
-                <div className="absolute top-3 right-3">
-                  <CheckCircle2 className="w-5 h-5 text-white" style={{ color: erp.color }} />
-                </div>
-              )}
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 font-bold text-sm"
-                style={{ backgroundColor: erp.color + '22', color: erp.color, border: `1px solid ${erp.color}44` }}>
-                {erp.label.slice(0, 2).toUpperCase()}
+              className="group w-full flex items-center gap-5 px-5 py-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden"
+              style={{
+                borderColor: selected ? erp.accent + '60' : 'rgba(255,255,255,0.06)',
+                background: selected ? erp.accent + '12' : 'rgba(255,255,255,0.02)',
+              }}>
+              {selected && <div className="absolute inset-0 opacity-5" style={{ background: `linear-gradient(90deg, ${erp.accent}, transparent)` }} />}
+              <div className="w-12 h-10 rounded-lg flex items-center justify-center font-mono text-xs font-bold flex-shrink-0 relative z-10"
+                style={{ background: erp.accent + '18', color: erp.accent, border: `1px solid ${erp.accent}30` }}>
+                {erp.abbr}
               </div>
-              <div className="font-semibold text-white text-base">{erp.label}</div>
-              <div className="text-white/40 text-xs mt-1">{erp.desc}</div>
+              <div className="flex-1 min-w-0 relative z-10">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-white text-sm">{erp.label}</span>
+                  <span className="text-[10px] font-mono text-white/20 bg-white/5 px-2 py-0.5 rounded">{erp.sub}</span>
+                </div>
+              </div>
+              <div className="relative z-10 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: selected ? erp.accent : 'rgba(255,255,255,0.3)' }}>
+                {selected ? <CheckCircle2 className="w-5 h-5" style={{ color: erp.accent }} /> : <ArrowRight className="w-4 h-4" />}
+              </div>
+              {selected && <CheckCircle2 className="w-5 h-5 flex-shrink-0 relative z-10" style={{ color: erp.accent }} />}
             </button>
           )
         })}
@@ -231,105 +151,134 @@ function StepERP({ value, onChange }: { value: string; onChange: (v: string) => 
   )
 }
 
-function StepPainPoints({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+// ─── STEP 2: PAIN POINTS — Severity-ranked selection ─────────────────────────
+function StepPain({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const MAX = 3
   const toggle = (v: string) => {
-    if (value.includes(v)) { onChange(value.filter(x => x !== v)) }
-    else if (value.length < MAX) { onChange([...value, v]) }
+    if (value.includes(v)) onChange(value.filter(x => x !== v))
+    else if (value.length < MAX) onChange([...value, v])
   }
+
   return (
-    <div>
-      <div className="mb-8">
-        <div className="text-[11px] text-cyan-400 uppercase tracking-widest font-bold mb-2">Step 2 of 6 · Pain Points</div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">Where is your team losing the most time and money?</h2>
-        <p className="text-white/50 mt-3 text-base">Select your top 3 operational challenges. Industry benchmarks shown.</p>
+    <div className="w-full">
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="font-mono text-[11px] text-white/20 tracking-widest">02 / 06</span>
+          <div className="h-px flex-1 bg-white/5" />
+          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Pain Points</span>
+        </div>
+        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+          Where is your team<br />bleeding money?
+        </h2>
+        <p className="text-white/30 mt-3 text-sm max-w-md">
+          Select your top <span className="text-white/60 font-semibold">{MAX}</span> operational pain points. Industry cost benchmarks shown.
+        </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {PAIN_POINTS.map(pain => {
-          const selected = value.includes(pain.value)
+
+      <div className="flex flex-col gap-2">
+        {PAIN_LIST.map(p => {
+          const selected = value.includes(p.value)
           const disabled = !selected && value.length >= MAX
-          const Icon = pain.icon
+          const rank = value.indexOf(p.value)
+
           return (
-            <button key={pain.value} onClick={() => !disabled && toggle(pain.value)}
-              disabled={disabled}
-              className={`group relative p-5 rounded-2xl border text-left transition-all duration-200 cursor-pointer
-                ${selected ? 'border-cyan-500/60 bg-cyan-500/10 scale-[1.01]' : disabled ? 'border-white/5 bg-white/2 opacity-40 cursor-not-allowed' : 'border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5'}`}>
-              {selected && (
-                <div className="absolute top-3 right-3">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                </div>
-              )}
-              <div className="flex items-start gap-3">
-                <div className={`mt-0.5 p-2 rounded-lg bg-white/5 ${selected ? 'bg-cyan-500/20' : ''}`}>
-                  <Icon className={`w-4 h-4 ${selected ? 'text-cyan-400' : pain.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-white text-sm">{pain.label}</div>
-                  <div className="text-white/40 text-xs mt-0.5 leading-relaxed">{pain.desc}</div>
-                  <div className={`text-xs font-mono font-bold mt-2 ${pain.color}`}>{pain.cost}</div>
+            <button key={p.value} onClick={() => !disabled && toggle(p.value)} disabled={disabled}
+              className="group w-full flex items-center gap-4 px-5 py-4 rounded-xl border transition-all duration-150 text-left relative overflow-hidden"
+              style={{
+                borderColor: selected ? p.color + '50' : disabled ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.07)',
+                background: selected ? p.color + '0a' : 'rgba(255,255,255,0.015)',
+                opacity: disabled ? 0.35 : 1,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+              }}>
+              {/* Severity bar - left border accent */}
+              <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l" style={{ background: selected ? p.color : 'transparent', boxShadow: selected ? `0 0 8px ${p.color}` : 'none' }} />
+
+              {/* Rank badge */}
+              <div className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold flex-shrink-0"
+                style={selected ? { background: p.color + '25', color: p.color, border: `1px solid ${p.color}60` } : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}>
+                {selected ? rank + 1 : '·'}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-white text-sm">{p.label}</div>
+                {/* Severity strip */}
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className="flex-1 h-1 bg-white/5 rounded-full max-w-[80px]">
+                    <div className="h-full rounded-full" style={{ width: `${p.severity}%`, background: p.color, opacity: selected ? 0.9 : 0.3 }} />
+                  </div>
+                  <span className="text-[10px] font-mono" style={{ color: selected ? p.color : 'rgba(255,255,255,0.2)' }}>
+                    {p.metric} {p.unit}
+                  </span>
                 </div>
               </div>
+
+              {selected && <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: p.color }} />}
             </button>
           )
         })}
       </div>
-      <div className="mt-4 text-center text-xs text-white/30">
-        {value.length}/{MAX} selected · {MAX - value.length} remaining
-      </div>
+      <div className="mt-4 text-xs font-mono text-white/20 text-right">{value.length} / {MAX} selected</div>
     </div>
   )
 }
 
+// ─── STEP 3: VOLUME — Trading terminal inputs ─────────────────────────────────
 function StepVolume({ value, onChange }: { value: AssessmentAnswers['volume']; onChange: (v: AssessmentAnswers['volume']) => void }) {
-  const annualCost = (value.invoicesPerMonth * 12 * 14.20) + (value.transactions * 12 * 3.50)
-  const flowtarisCost = annualCost * 0.08
+  const cost = livePainCost(value)
+  const savings = cost * 0.78
+
+  const fields = [
+    { id: 'invoicesPerMonth' as const, label: 'Invoices / Month', bench: '$14.20 ea avg' },
+    { id: 'employees' as const, label: 'Finance FTE', bench: '$72K/yr fully-loaded' },
+    { id: 'transactions' as const, label: 'Transactions / Month', bench: '$3.50 ea avg' },
+    { id: 'poLines' as const, label: 'PO Lines / Month', bench: '8 min manual each' },
+  ]
 
   return (
-    <div>
-      <div className="mb-8">
-        <div className="text-[11px] text-cyan-400 uppercase tracking-widest font-bold mb-2">Step 3 of 6 · Volume</div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">What volumes does your finance team handle?</h2>
-        <p className="text-white/50 mt-3 text-base">Used to quantify your exact savings potential. Approximate numbers are fine.</p>
+    <div className="w-full">
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="font-mono text-[11px] text-white/20 tracking-widest">03 / 06</span>
+          <div className="h-px flex-1 bg-white/5" />
+          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Volume</span>
+        </div>
+        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+          What scale are<br />we dealing with?
+        </h2>
+        <p className="text-white/30 mt-3 text-sm max-w-md">Approximate numbers are fine. We use industry benchmarks to compute your real dollar exposure.</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
-        {[
-          { id: 'invoicesPerMonth' as const, label: 'Invoices / Month', placeholder: 'e.g. 5,000', icon: FileText, benchmark: 'Industry avg: $14.20/invoice' },
-          { id: 'employees' as const, label: 'Finance Team (FTE)', placeholder: 'e.g. 15', icon: Users, benchmark: 'Fully-loaded: ~$72K/yr' },
-          { id: 'transactions' as const, label: 'Transactions / Month', placeholder: 'e.g. 25,000', icon: Activity, benchmark: 'Avg 5 min manual handling' },
-          { id: 'poLines' as const, label: 'PO Lines / Month', placeholder: 'e.g. 3,000', icon: BarChart3, benchmark: 'Avg 8 min per line' },
-        ].map(f => {
-          const Icon = f.icon
-          return (
-            <div key={f.id} className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Icon className="w-4 h-4 text-cyan-400" />
-                <label className="text-sm font-semibold text-white/80">{f.label}</label>
-              </div>
-              <input type="number" min="0" placeholder={f.placeholder}
-                value={value[f.id] || ''}
-                onChange={e => onChange({ ...value, [f.id]: parseInt(e.target.value) || 0 })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-lg focus:border-cyan-500 outline-none transition-colors"
-              />
-              <div className="text-xs text-white/30 mt-2 font-mono">{f.benchmark}</div>
-            </div>
-          )
-        })}
+
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {fields.map(f => (
+          <div key={f.id} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-4">
+            <div className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-3">{f.label}</div>
+            <input type="number" min="0" value={value[f.id] || ''}
+              onChange={e => onChange({ ...value, [f.id]: parseInt(e.target.value) || 0 })}
+              placeholder="0"
+              className="w-full bg-transparent text-2xl font-black font-mono text-white outline-none border-b border-white/10 focus:border-white/30 pb-2 transition-colors"
+            />
+            <div className="text-[10px] font-mono text-white/20 mt-2">{f.bench}</div>
+          </div>
+        ))}
       </div>
-      {annualCost > 0 && (
-        <div className="bg-gradient-to-r from-red-500/10 to-amber-500/10 border border-red-500/20 rounded-2xl p-5">
-          <div className="text-xs text-white/50 uppercase tracking-wider mb-3 font-semibold">Live Cost Estimate (Based On Industry Benchmarks)</div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="text-xs text-red-400 mb-1">Current Annual Cost</div>
-              <div className="text-2xl font-black font-mono text-red-300">{fmtK(annualCost)}</div>
+
+      {cost > 0 && (
+        <div className="border border-white/10 rounded-xl overflow-hidden">
+          <div className="bg-white/[0.03] px-5 py-3 border-b border-white/5">
+            <span className="text-[10px] uppercase tracking-widest text-white/30 font-semibold">Live Cost Estimate · Industry Benchmarks</span>
+          </div>
+          <div className="grid grid-cols-3 divide-x divide-white/5">
+            <div className="px-5 py-4">
+              <div className="text-[10px] text-red-400/70 uppercase tracking-wider mb-1">Annual Bleed</div>
+              <div className="text-xl font-black font-mono text-red-400">{fmtK(cost)}</div>
             </div>
-            <div className="flex-1">
-              <div className="text-xs text-emerald-400 mb-1">With Flowtaris AI</div>
-              <div className="text-2xl font-black font-mono text-emerald-300">{fmtK(flowtarisCost)}</div>
+            <div className="px-5 py-4">
+              <div className="text-[10px] text-emerald-400/70 uppercase tracking-wider mb-1">With Flowtaris</div>
+              <div className="text-xl font-black font-mono text-emerald-400">{fmtK(cost - savings)}</div>
             </div>
-            <div className="flex-1">
-              <div className="text-xs text-cyan-400 mb-1">Estimated Savings</div>
-              <div className="text-2xl font-black font-mono text-cyan-300">{fmtK(annualCost - flowtarisCost)}/yr</div>
+            <div className="px-5 py-4">
+              <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Net Savings</div>
+              <div className="text-xl font-black font-mono text-white">{fmtK(savings)} / yr</div>
             </div>
           </div>
         </div>
@@ -338,35 +287,55 @@ function StepVolume({ value, onChange }: { value: AssessmentAnswers['volume']; o
   )
 }
 
-function StepCurrentState({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+// ─── STEP 4: CURRENT STATE — Maturity spectrum ────────────────────────────────
+function StepState({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div>
-      <div className="mb-8">
-        <div className="text-[11px] text-cyan-400 uppercase tracking-widest font-bold mb-2">Step 4 of 6 · Current State</div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">How are your finance processes currently handled?</h2>
-        <p className="text-white/50 mt-3 text-base">This determines your automation uplift potential and implementation complexity.</p>
+    <div className="w-full">
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="font-mono text-[11px] text-white/20 tracking-widest">04 / 06</span>
+          <div className="h-px flex-1 bg-white/5" />
+          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Current State</span>
+        </div>
+        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+          How do these processes<br />run today?
+        </h2>
+        <p className="text-white/30 mt-3 text-sm max-w-md">This determines your automation uplift ceiling — how much Flowtaris can realistically shift.</p>
       </div>
-      <div className="space-y-3">
-        {CURRENT_STATE.map(cs => {
-          const selected = value === cs.value
+
+      {/* Maturity spectrum bar */}
+      <div className="flex items-end gap-1 mb-8 h-8">
+        {[...Array(5)].map((_, i) => {
+          const level = STATE_LIST.find(s => s.value === value)?.level ?? -1
+          const active = level >= 0 && i <= level
           return (
-            <button key={cs.value} onClick={() => onChange(cs.value)}
-              className={`w-full group p-5 rounded-2xl border text-left transition-all duration-200 flex items-center gap-5
-                ${selected ? 'border-cyan-500/60 bg-cyan-500/10' : 'border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5'}`}>
-              <div className={`w-14 h-10 flex-shrink-0 rounded-xl flex items-center justify-center text-xl bg-white/5 ${selected ? 'bg-cyan-500/20' : ''}`}>
-                {cs.icon}
+            <div key={i} className="flex-1 rounded-sm transition-all duration-500"
+              style={{
+                height: `${(i + 1) * 20}%`,
+                background: active ? '#06b6d4' : 'rgba(255,255,255,0.06)',
+                boxShadow: active ? '0 0 8px #06b6d440' : 'none',
+              }} />
+          )
+        })}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {STATE_LIST.map(s => {
+          const selected = value === s.value
+          return (
+            <button key={s.value} onClick={() => onChange(s.value)}
+              className="group w-full flex items-center gap-4 px-5 py-4 rounded-xl border transition-all duration-150 text-left"
+              style={{
+                borderColor: selected ? '#06b6d4' : 'rgba(255,255,255,0.06)',
+                background: selected ? 'rgba(6,182,212,0.08)' : 'rgba(255,255,255,0.02)',
+              }}>
+              <div className="w-6 h-6 rounded-full flex-shrink-0 border transition-all"
+                style={selected ? { background: '#06b6d4', borderColor: '#06b6d4', boxShadow: '0 0 8px #06b6d440' } : { borderColor: 'rgba(255,255,255,0.12)' }} />
+              <div>
+                <div className="font-semibold text-white text-sm">{s.label}</div>
+                <div className="text-[11px] text-white/30 mt-0.5">{s.tag}</div>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-white">{cs.label}</span>
-                  <div className="flex-1 h-1.5 bg-white/10 rounded-full max-w-[120px]">
-                    <div className="h-full bg-cyan-500 rounded-full transition-all" style={{ width: `${cs.maturity}%`, opacity: selected ? 1 : 0.4 }} />
-                  </div>
-                  <span className="text-xs text-white/40 font-mono">{cs.maturity}%</span>
-                </div>
-                <div className="text-white/40 text-sm mt-1">{cs.desc}</div>
-              </div>
-              {selected && <CheckCircle2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />}
+              {selected && <CheckCircle2 className="w-4 h-4 ml-auto text-cyan-400" />}
             </button>
           )
         })}
@@ -375,30 +344,54 @@ function StepCurrentState({ value, onChange }: { value: string; onChange: (v: st
   )
 }
 
-function StepTechMaturity({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+// ─── STEP 5: TECH MATURITY ────────────────────────────────────────────────────
+function StepMaturity({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div>
-      <div className="mb-8">
-        <div className="text-[11px] text-cyan-400 uppercase tracking-widest font-bold mb-2">Step 5 of 6 · Tech Maturity</div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">Describe your organization&apos;s technology landscape.</h2>
-        <p className="text-white/50 mt-3 text-base">This shapes the complexity and timeline of your AI roadmap.</p>
+    <div className="w-full">
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="font-mono text-[11px] text-white/20 tracking-widest">05 / 06</span>
+          <div className="h-px flex-1 bg-white/5" />
+          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Tech Maturity</span>
+        </div>
+        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+          How modern is<br />your tech foundation?
+        </h2>
+        <p className="text-white/30 mt-3 text-sm max-w-md">Your infrastructure vintage shapes our AI integration complexity and your time-to-value.</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {TECH_MATURITY.map(tm => {
-          const selected = value === tm.value
-          return (
-            <button key={tm.value} onClick={() => onChange(tm.value)}
-              className={`group p-6 rounded-2xl border-2 text-left transition-all duration-200
-                ${selected ? 'border-cyan-500/60 bg-cyan-500/10 shadow-lg shadow-cyan-500/10 scale-[1.02]' : 'border-white/10 bg-white/3 hover:border-white/20 hover:scale-[1.01]'}`}>
-              <div className="text-3xl mb-3">{tm.icon}</div>
-              <div className="font-semibold text-white text-base mb-1">{tm.label}</div>
-              <div className="text-white/40 text-sm">{tm.desc}</div>
-              {selected && (
-                <div className="mt-3 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs text-cyan-400 font-semibold">Selected</span>
+
+      {/* Timeline visual */}
+      <div className="relative mb-8">
+        <div className="h-px w-full bg-white/10 absolute top-3" />
+        <div className="flex justify-between relative">
+          {MATURITY_LIST.map(m => {
+            const selected = value === m.value
+            return (
+              <button key={m.value} onClick={() => onChange(m.value)} className="flex flex-col items-center gap-2 group">
+                <div className="w-6 h-6 rounded-full border-2 transition-all duration-200 z-10 flex items-center justify-center"
+                  style={selected ? { background: '#06b6d4', borderColor: '#06b6d4', boxShadow: '0 0 12px #06b6d460' } : { background: '#050508', borderColor: 'rgba(255,255,255,0.15)' }}>
+                  {selected && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
-              )}
+                <div className={`text-[10px] font-mono transition-colors ${selected ? 'text-cyan-400' : 'text-white/25 group-hover:text-white/50'}`}>{m.year}</div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {MATURITY_LIST.map(m => {
+          const selected = value === m.value
+          return (
+            <button key={m.value} onClick={() => onChange(m.value)}
+              className="p-5 rounded-xl border text-left transition-all duration-150"
+              style={{
+                borderColor: selected ? '#06b6d4' : 'rgba(255,255,255,0.07)',
+                background: selected ? 'rgba(6,182,212,0.08)' : 'rgba(255,255,255,0.02)',
+              }}>
+              <div className="font-semibold text-white text-sm mb-1">{m.label}</div>
+              <div className="text-[11px] text-white/30">{m.tag}</div>
+              {selected && <div className="mt-2 text-[10px] text-cyan-400 font-semibold">✓ Selected</div>}
             </button>
           )
         })}
@@ -407,32 +400,49 @@ function StepTechMaturity({ value, onChange }: { value: string; onChange: (v: st
   )
 }
 
+// ─── STEP 6: URGENCY ─────────────────────────────────────────────────────────
 function StepUrgency({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div>
-      <div className="mb-8">
-        <div className="text-[11px] text-cyan-400 uppercase tracking-widest font-bold mb-2">Step 6 of 6 · Timeline</div>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">What&apos;s driving your evaluation timeline?</h2>
-        <p className="text-white/50 mt-3 text-base">This determines how we prioritize your roadmap — quick wins vs. strategic transformation.</p>
+    <div className="w-full">
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="font-mono text-[11px] text-white/20 tracking-widest">06 / 06</span>
+          <div className="h-px flex-1 bg-white/5" />
+          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Priority Signal</span>
+        </div>
+        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+          What&apos;s forcing<br />the timeline?
+        </h2>
+        <p className="text-white/30 mt-3 text-sm max-w-md">This determines how aggressively we front-load your roadmap with quick wins vs. strategic plays.</p>
       </div>
-      <div className="space-y-3">
-        {URGENCY.map(u => {
+
+      <div className="flex flex-col gap-3">
+        {URGENCY_LIST.map(u => {
           const selected = value === u.value
           return (
             <button key={u.value} onClick={() => onChange(u.value)}
-              className={`w-full group p-5 rounded-2xl border text-left transition-all duration-200 flex items-center gap-5
-                ${selected ? 'border-cyan-500/60 bg-cyan-500/10' : 'border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5'}`}>
-              <div className="text-2xl">{u.icon}</div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="font-semibold text-white">{u.label}</span>
-                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${u.color} bg-white/5 border-white/10`}>
-                    {u.signal}
-                  </span>
-                </div>
-                <div className="text-white/40 text-sm mt-1">{u.desc}</div>
+              className="group w-full flex items-center gap-5 px-5 py-5 rounded-xl border transition-all duration-150 text-left relative overflow-hidden"
+              style={{
+                borderColor: selected ? u.signalColor + '50' : 'rgba(255,255,255,0.07)',
+                background: selected ? u.signalColor + '0d' : 'rgba(255,255,255,0.02)',
+              }}>
+              {/* Priority signal dot */}
+              <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0"
+                style={selected ? { background: u.signalColor + '25', color: u.signalColor, border: `1.5px solid ${u.signalColor}60` } : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                {u.signal}
               </div>
-              {selected && <CheckCircle2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />}
+              <div className="flex-1">
+                <div className="font-semibold text-white text-base">{u.label}</div>
+                <div className="text-[11px] text-white/30 mt-0.5">{u.tag}</div>
+              </div>
+              {/* Priority bar */}
+              <div className="w-16 flex flex-col items-end gap-1">
+                <div className="text-[9px] text-white/20 uppercase tracking-wider">Priority</div>
+                <div className="w-full h-1.5 bg-white/5 rounded-full">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${u.priority * 25}%`, background: selected ? u.signalColor : 'rgba(255,255,255,0.1)' }} />
+                </div>
+              </div>
+              {selected && <CheckCircle2 className="w-5 h-5" style={{ color: u.signalColor }} />}
             </button>
           )
         })}
@@ -441,26 +451,61 @@ function StepUrgency({ value, onChange }: { value: string; onChange: (v: string)
   )
 }
 
-// ─── RESULTS COMPONENT ───────────────────────────────────────────────────────
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+function Sidebar({ answers, step }: { answers: AssessmentAnswers; step: number }) {
+  const score = calcScore(answers, step)
+  const tier = score >= 70 ? 'Enterprise' : score >= 45 ? 'Mid-Market' : 'Growth'
+  const tierColor = score >= 70 ? '#10b981' : score >= 45 ? '#3b82f6' : '#64748b'
+  const cost = livePainCost(answers.volume)
+
+  return (
+    <div className="hidden xl:flex flex-col gap-4 w-64 sticky top-28">
+      {/* Score panel */}
+      <div className="bg-black/70 border border-white/[0.07] rounded-2xl p-5 backdrop-blur-xl">
+        <div className="text-[9px] uppercase tracking-widest text-white/25 mb-4 font-semibold">AI Readiness Score</div>
+        <div className="flex items-center gap-4">
+          <Gauge score={score} />
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Profile</div>
+            <div className="text-sm font-bold" style={{ color: tierColor }}>{tier}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Signal bars */}
+      <div className="bg-black/70 border border-white/[0.07] rounded-2xl p-5 backdrop-blur-xl space-y-3">
+        <div className="text-[9px] uppercase tracking-widest text-white/25 font-semibold mb-1">Signal Breakdown</div>
+        {[
+          { label: 'ERP Complexity', value: answers.erp ? 75 : 0, color: '#06b6d4' },
+          { label: 'Pain Severity', value: Math.min(answers.painPoints.length * 33, 100), color: '#ef4444' },
+          { label: 'Volume Scale', value: answers.volume.invoicesPerMonth > 5000 ? 90 : answers.volume.invoicesPerMonth > 1000 ? 60 : answers.volume.invoicesPerMonth > 0 ? 30 : 0, color: '#f59e0b' },
+          { label: 'Readiness Tier', value: { 'AI Pilot': 95, 'Modern': 70, 'Hybrid': 45, 'Legacy': 20 }[answers.techMaturity] || 0, color: '#10b981' },
+        ].map(b => (
+          <div key={b.label}>
+            <div className="flex justify-between text-[9px] text-white/25 mb-1"><span>{b.label}</span><span className="font-mono">{b.value}%</span></div>
+            <div className="h-1 bg-white/5 rounded-full"><div className="h-full rounded-full transition-all duration-700" style={{ width: `${b.value}%`, background: b.color, boxShadow: `0 0 4px ${b.color}60` }} /></div>
+          </div>
+        ))}
+      </div>
+
+      {/* Cost preview */}
+      {cost > 0 && (
+        <div className="bg-red-500/5 border border-red-500/15 rounded-2xl p-5">
+          <div className="text-[9px] uppercase tracking-widest text-red-400/60 font-semibold mb-2">Est. Annual Bleed</div>
+          <div className="text-2xl font-black font-mono text-red-400">{fmtK(cost)}</div>
+          <div className="text-[10px] text-white/25 mt-1">Based on industry benchmarks</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── RESULTS ─────────────────────────────────────────────────────────────────
 function Results({ result, answers, assessmentId }: { result: AssessmentResult; answers: AssessmentAnswers; assessmentId: string | null }) {
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
   const [emailError, setEmailError] = useState('')
   const [isSending, setIsSending] = useState(false)
-  const [showScore, setShowScore] = useState(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowScore(true), 400)
-    return () => clearTimeout(t)
-  }, [])
-
-  const quickWins = result.recommendations.filter(r => r.category === 'quick-win')
-  const strategic = result.recommendations.filter(r => r.category === 'strategic')
-  const innovation = result.recommendations.filter(r => r.category === 'innovation')
-
-  const tierLabel = result.tier === 'enterprise' ? 'Enterprise' : result.tier === 'mid-market' ? 'Mid-Market' : 'Growth'
-  const tierColor = result.tier === 'enterprise' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
-    result.tier === 'mid-market' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' : 'text-slate-400 border-slate-500/30 bg-slate-500/10'
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -468,186 +513,161 @@ function Results({ result, answers, assessmentId }: { result: AssessmentResult; 
     setIsSending(true)
     setEmailError('')
     try {
-      const resp = await fetch('/api/leads/assessment', {
+      const r = await fetch('/api/leads/assessment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: assessmentId, email, result, answers }),
       })
-      const data = await resp.json()
-      if (!resp.ok) throw new Error(data.error || 'Failed')
+      if (!r.ok) throw new Error((await r.json()).error || 'Failed')
       setEmailSent(true)
       localStorage.removeItem(STORAGE_KEY)
     } catch (err: unknown) {
-      setEmailError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setEmailError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setIsSending(false)
     }
   }
 
-  const CATEGORY_CONFIG = {
-    'quick-win': { label: 'Quick Wins', sub: '0–3 months', icon: Zap, color: '#10b981', border: 'border-emerald-500/30', bg: 'bg-emerald-500/5', badge: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
-    'strategic': { label: 'Strategic', sub: '3–9 months', icon: Target, color: '#f59e0b', border: 'border-amber-500/30', bg: 'bg-amber-500/5', badge: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-    'innovation': { label: 'Innovation', sub: '9–18 months', icon: Rocket, color: '#a855f7', border: 'border-purple-500/30', bg: 'bg-purple-500/5', badge: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
+  const catConfig = {
+    'quick-win': { Icon: Zap, label: 'Quick Wins', sub: '0–3 months', color: '#10b981' },
+    'strategic': { Icon: Target, label: 'Strategic', sub: '3–9 months', color: '#f59e0b' },
+    'innovation': { Icon: Rocket, label: 'Innovation', sub: '9–18 months', color: '#a855f7' },
   }
 
+  const scoreColor = result.leadScore >= 70 ? '#10b981' : result.leadScore >= 45 ? '#f59e0b' : '#ef4444'
+
   return (
-    <div className="w-full animate-in fade-in duration-700">
-      {/* ── HEADER HERO ── */}
-      <div className="text-center py-12 px-6 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent pointer-events-none" />
-        <div className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border mb-6 ${tierColor}`}>
-          {tierLabel} Profile
-        </div>
-        <h2 className="text-4xl lg:text-5xl font-black text-white mb-4 leading-tight">Your Strategic Intelligence Report</h2>
-        <p className="text-white/50 max-w-2xl mx-auto text-base leading-relaxed">{result.summary}</p>
-      </div>
-
-      {/* ── KEY METRICS ROW ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-6 mb-10 max-w-5xl mx-auto w-full">
-        <div className="bg-black/60 border border-white/10 rounded-2xl p-5 text-center">
-          <div className="text-[10px] text-white/40 uppercase tracking-widest mb-2">AI Readiness</div>
-          <div className="flex justify-center">{showScore ? <ScoreGauge score={result.leadScore} size={90} /> : <div className="h-[90px]" />}</div>
-        </div>
-        <div className="bg-black/60 border border-white/10 rounded-2xl p-5 text-center">
-          <div className="text-[10px] text-white/40 uppercase tracking-widest mb-2">Est. Annual Savings</div>
-          <div className="text-3xl font-black font-mono text-emerald-400 mt-3">
-            {showScore ? fmtK(result.totalEstimatedSavings) : '—'}
+    <div className="max-w-5xl mx-auto px-6 py-12 w-full">
+      {/* Hero */}
+      <div className="mb-12">
+        <div className="flex items-start gap-8 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4">Strategic Intelligence Report · {result.tier}</div>
+            <h2 className="text-display-xs text-white leading-[1.05] tracking-tight mb-4">Your AI Automation<br />Roadmap is Ready</h2>
+            <p className="text-white/40 text-sm leading-relaxed max-w-lg">{result.summary}</p>
           </div>
-        </div>
-        <div className="bg-black/60 border border-white/10 rounded-2xl p-5 text-center">
-          <div className="text-[10px] text-white/40 uppercase tracking-widest mb-2">Opportunities</div>
-          <div className="text-3xl font-black font-mono text-white mt-3">{result.recommendations.length}</div>
-          <div className="text-xs text-white/30 mt-1">AI capabilities identified</div>
-        </div>
-        <div className="bg-black/60 border border-white/10 rounded-2xl p-5 text-center">
-          <div className="text-[10px] text-white/40 uppercase tracking-widest mb-2">Fastest Payback</div>
-          <div className="text-3xl font-black font-mono text-cyan-400 mt-3">
-            {result.recommendations.length > 0 ? `${Math.min(...result.recommendations.map(r => r.estimatedPaybackMonths))} mo` : '—'}
+          <div className="flex items-center gap-6 flex-shrink-0">
+            <div className="text-center">
+              <div className="text-[9px] uppercase tracking-widest text-white/25 mb-2">Readiness Score</div>
+              <div className="text-6xl font-black font-mono leading-none" style={{ color: scoreColor }}>{result.leadScore}</div>
+              <div className="text-[9px] text-white/20 mt-1 font-mono">/ 100</div>
+            </div>
+            <div className="w-px h-16 bg-white/10" />
+            <div className="text-center">
+              <div className="text-[9px] uppercase tracking-widest text-white/25 mb-2">Est. Annual Savings</div>
+              <div className="text-3xl font-black font-mono text-emerald-400">{fmtK(result.totalEstimatedSavings)}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── ROADMAP ── */}
-      <div className="px-6 max-w-5xl mx-auto w-full mb-10">
-        <div className="text-[11px] text-white/40 uppercase tracking-widest font-semibold mb-6">Your AI Automation Roadmap</div>
-        <div className="space-y-4">
+      {/* KPI row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12">
+        {[
+          { label: 'Opportunities', value: String(result.recommendations.length), unit: 'identified' },
+          { label: 'Quick Wins', value: String(result.recommendations.filter(r => r.category === 'quick-win').length), unit: 'immediate' },
+          { label: 'Fastest Payback', value: result.recommendations.length ? `${Math.min(...result.recommendations.map(r => r.estimatedPaybackMonths))} mo` : '—', unit: 'to value' },
+          { label: 'Investment Tier', value: result.tier === 'enterprise' ? 'Ent.' : result.tier === 'mid-market' ? 'Mid' : 'SMB', unit: 'profile' },
+        ].map(k => (
+          <div key={k.label} className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-4 py-4">
+            <div className="text-[9px] uppercase tracking-widest text-white/25 mb-2">{k.label}</div>
+            <div className="text-2xl font-black font-mono text-white">{k.value}</div>
+            <div className="text-[10px] text-white/25 mt-0.5">{k.unit}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Roadmap */}
+      <div className="mb-12">
+        <div className="text-[10px] uppercase tracking-widest text-white/25 font-semibold mb-5 flex items-center gap-3">
+          <span>Recommended Roadmap</span>
+          <div className="h-px flex-1 bg-white/5" />
+        </div>
+        <div className="space-y-3">
           {(['quick-win', 'strategic', 'innovation'] as const).map(cat => {
-            const recs = cat === 'quick-win' ? quickWins : cat === 'strategic' ? strategic : innovation
-            const cfg = CATEGORY_CONFIG[cat]
-            const Icon = cfg.icon
+            const recs = result.recommendations.filter(r => r.category === cat)
             if (recs.length === 0) return null
+            const cfg = catConfig[cat]
+            const Icon = cfg.Icon
             return (
-              <div key={cat} className={`rounded-2xl border ${cfg.border} ${cfg.bg} p-6`}>
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="p-2 rounded-xl" style={{ backgroundColor: cfg.color + '22' }}>
-                    <Icon className="w-5 h-5" style={{ color: cfg.color }} />
-                  </div>
-                  <div>
-                    <div className="font-bold text-white text-base">{cfg.label}</div>
-                    <div className="text-xs text-white/40">{cfg.sub} · {recs.length} initiative{recs.length > 1 ? 's' : ''}</div>
-                  </div>
-                  <div className="ml-auto text-right">
-                    <div className="text-xs text-white/30 mb-0.5">Tier savings</div>
-                    <div className="font-bold font-mono text-sm" style={{ color: cfg.color }}>{fmtK(recs.reduce((s, r) => s + r.estimatedSavings, 0))}/yr</div>
-                  </div>
+              <div key={cat} className="border border-white/[0.07] rounded-xl overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-3 border-b border-white/5" style={{ background: cfg.color + '08' }}>
+                  <Icon className="w-4 h-4" style={{ color: cfg.color }} />
+                  <span className="font-semibold text-sm text-white">{cfg.label}</span>
+                  <span className="text-[10px] font-mono text-white/30">{cfg.sub}</span>
+                  <span className="ml-auto font-mono text-sm font-bold" style={{ color: cfg.color }}>{fmtK(recs.reduce((s, r) => s + r.estimatedSavings, 0))}/yr</span>
                 </div>
-                <div className="space-y-3">
-                  {recs.map(rec => (
-                    <div key={rec.capabilitySlug} className="bg-black/30 rounded-xl p-4 border border-white/5">
-                      <div className="flex items-start justify-between gap-3 flex-wrap">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-white text-sm mb-1">{rec.capability}</div>
-                          <div className="text-white/40 text-xs leading-relaxed">{rec.description}</div>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-xs text-white/30 mb-0.5">Est. savings</div>
-                          <div className="font-bold font-mono text-base" style={{ color: cfg.color }}>{fmtK(rec.estimatedSavings)}/yr</div>
-                          <div className="text-[10px] text-white/20 mt-0.5">{rec.estimatedPaybackMonths}mo payback</div>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${cfg.badge}`}>{rec.timeline}</span>
-                        {rec.savingsBreakdown.laborSavings > 0 && (
-                          <span className="text-[10px] text-white/30 font-mono">Labor: {fmtK(rec.savingsBreakdown.laborSavings)}</span>
-                        )}
-                        {rec.savingsBreakdown.errorReduction > 0 && (
-                          <span className="text-[10px] text-white/30 font-mono">Errors: {fmtK(rec.savingsBreakdown.errorReduction)}</span>
-                        )}
-                        {rec.savingsBreakdown.complianceSavings > 0 && (
-                          <span className="text-[10px] text-white/30 font-mono">Compliance: {fmtK(rec.savingsBreakdown.complianceSavings)}</span>
-                        )}
-                        <a href={`/capabilities/${rec.capabilitySlug}`} className="ml-auto text-[10px] text-cyan-400 hover:text-cyan-300 transition-colors">
-                          View details →
-                        </a>
-                      </div>
+                {recs.map((rec: Recommendation, i: number) => (
+                  <div key={rec.capabilitySlug} className={`px-5 py-4 flex items-start justify-between gap-4 ${i < recs.length - 1 ? 'border-b border-white/[0.04]' : ''}`}>
+                    <div>
+                      <div className="font-semibold text-white text-sm">{rec.capability}</div>
+                      <div className="text-[11px] text-white/30 mt-0.5 leading-relaxed">{rec.description}</div>
                     </div>
-                  ))}
-                </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="font-bold font-mono text-sm" style={{ color: cfg.color }}>{fmtK(rec.estimatedSavings)}/yr</div>
+                      <div className="text-[10px] text-white/20 mt-0.5">{rec.estimatedPaybackMonths}mo payback</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )
           })}
         </div>
       </div>
 
-      {/* ── EMAIL CAPTURE ── */}
-      <div className="px-6 max-w-5xl mx-auto w-full mb-10">
-        <div className="bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 border border-cyan-500/20 rounded-2xl p-8">
+      {/* Email */}
+      <div className="border border-white/10 rounded-2xl overflow-hidden mb-8">
+        <div className="px-6 py-5 border-b border-white/5 bg-white/[0.02]">
+          <div className="font-semibold text-white">Get the Full Report</div>
+          <div className="text-white/40 text-xs mt-1">Receive your personalized roadmap with implementation guidance and CFO conversation starters.</div>
+        </div>
+        <div className="px-6 py-5">
           {emailSent ? (
-            <div className="text-center py-4">
-              <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-              <div className="text-xl font-bold text-white mb-2">Report Sent to Your Inbox!</div>
-              <div className="text-white/50 text-sm">Check your email for the full Strategic Intelligence Report with implementation guidance.</div>
+            <div className="flex items-center gap-3 text-emerald-400">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="font-semibold text-sm">Report sent — check your inbox.</span>
             </div>
           ) : (
-            <>
-              <div className="text-center mb-6">
-                <div className="text-xl font-bold text-white mb-2">Get Your Full Report Delivered</div>
-                <div className="text-white/50 text-sm max-w-md mx-auto">Receive your personalized roadmap with implementation guidance, peer benchmarks, and a conversation starter for your CFO.</div>
-              </div>
-              <form onSubmit={handleEmail} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="cfo@yourcompany.com"
-                  className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-500 outline-none transition-colors" />
-                <button type="submit" disabled={isSending}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 whitespace-nowrap">
-                  {isSending ? <Activity className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                  {isSending ? 'Sending...' : 'Send Report'}
-                </button>
-              </form>
-              {emailError && <div className="text-red-400 text-xs text-center mt-3">{emailError}</div>}
-            </>
+            <form onSubmit={handleEmail} className="flex gap-3">
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="cfo@company.com"
+                className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-white/25 transition-colors" />
+              <button type="submit" disabled={isSending}
+                className="flex items-center gap-2 bg-white text-black font-bold text-sm px-5 py-2.5 rounded-lg transition-opacity disabled:opacity-50 hover:bg-white/90">
+                {isSending ? <Activity className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                {isSending ? 'Sending...' : 'Send Report'}
+              </button>
+            </form>
           )}
+          {emailError && <div className="text-red-400 text-xs mt-2">{emailError}</div>}
         </div>
       </div>
 
-      {/* ── SECONDARY CTAs ── */}
-      <div className="px-6 max-w-5xl mx-auto w-full mb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <a href={`/roi-calculator?erp=${encodeURIComponent(answers.erp)}&invoices=${answers.volume.invoicesPerMonth * 12}`}
-            className="flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5 transition-all group">
-            <TrendingUp className="w-8 h-8 text-cyan-400 flex-shrink-0 group-hover:scale-110 transition-transform" />
-            <div>
-              <div className="font-semibold text-white">Calculate Full ROI</div>
-              <div className="text-white/40 text-sm">Get detailed financial projections with 3-year model</div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-white/30 ml-auto group-hover:translate-x-1 transition-transform" />
-          </a>
-          <a href="/demo"
-            className="flex items-center gap-4 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all group">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400 flex-shrink-0 group-hover:scale-110 transition-transform" />
-            <div>
-              <div className="font-semibold text-white">Book a Live Demo</div>
-              <div className="text-white/40 text-sm">30-min session with a Flowtaris solutions engineer</div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-white/30 ml-auto group-hover:translate-x-1 transition-transform" />
-          </a>
-        </div>
+      {/* CTAs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <a href={`/roi-calculator?erp=${encodeURIComponent(answers.erp)}&invoices=${answers.volume.invoicesPerMonth * 12}`}
+          className="flex items-center gap-4 px-5 py-4 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all group">
+          <TrendingUp className="w-5 h-5 text-white/40 group-hover:text-white/70 transition-colors flex-shrink-0" />
+          <div>
+            <div className="font-semibold text-white text-sm">Full ROI Calculator</div>
+            <div className="text-white/30 text-xs">3-year financial model</div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-white/20 ml-auto group-hover:translate-x-1 transition-transform" />
+        </a>
+        <a href="/demo"
+          className="flex items-center gap-4 px-5 py-4 rounded-xl border border-emerald-500/20 hover:border-emerald-500/40 bg-emerald-500/[0.04] hover:bg-emerald-500/[0.08] transition-all group">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          <div>
+            <div className="font-semibold text-white text-sm">Book a Demo</div>
+            <div className="text-white/30 text-xs">30-min with a solutions engineer</div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-white/20 ml-auto group-hover:translate-x-1 transition-transform" />
+        </a>
       </div>
     </div>
   )
 }
 
-// ─── MAIN ORCHESTRATOR ───────────────────────────────────────────────────────
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function AssessmentWizardClient({ initialConfig }: { initialConfig: SanityAssessmentConfig | null }) {
   const [step, setStep] = useState(1)
   const [answers, setAnswers] = useState<AssessmentAnswers>(initialAnswers)
@@ -655,185 +675,176 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [assessmentId, setAssessmentId] = useState<string | null>(null)
   const [error, setError] = useState('')
-  const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward')
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const contentRef = useRef<HTMLDivElement>(null)
+  const [transitioning, setTransitioning] = useState(false)
+  const [dir, setDir] = useState<'f'|'b'>('f')
 
-  // Restore draft
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (parsed.answers) setAnswers(parsed.answers)
-        if (parsed.step && parsed.step <= 6) setStep(parsed.step)
-      }
-    } catch { /* ignore */ }
+      const s = localStorage.getItem(STORAGE_KEY)
+      if (s) { const p = JSON.parse(s); if (p.answers) setAnswers(p.answers); if (p.step && p.step <= 6) setStep(p.step) }
+    } catch {}
     analytics.assessment.start({ source: 'direct' })
   }, [])
 
-  // Persist draft
   useEffect(() => {
-    if (!result) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, step, timestamp: Date.now() }))
-    }
+    if (!result) localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, step, ts: Date.now() }))
   }, [answers, step, result])
 
-  const navigate = useCallback((direction: 'forward' | 'back') => {
-    if (isTransitioning) return
-    setAnimDir(direction)
-    setIsTransitioning(true)
-    setTimeout(() => {
-      setStep(s => direction === 'forward' ? s + 1 : Math.max(s - 1, 1))
-      setIsTransitioning(false)
-    }, 220)
-  }, [isTransitioning])
-
-  const canProceed = useMemo(() => {
+  const canGo = useMemo(() => {
     if (step === 1) return !!answers.erp
     if (step === 2) return answers.painPoints.length > 0
     if (step === 3) return answers.volume.invoicesPerMonth > 0 && answers.volume.employees >= 1
     if (step === 4) return !!answers.currentState
     if (step === 5) return !!answers.techMaturity
     if (step === 6) return !!answers.urgency
-    return true
+    return false
   }, [step, answers])
 
-  // Auto-advance on radio select (steps 1, 4, 5, 6)
+  const go = useCallback((d: 'f'|'b') => {
+    if (transitioning) return
+    setDir(d)
+    setTransitioning(true)
+    setTimeout(() => {
+      setStep(s => d === 'f' ? s + 1 : Math.max(s - 1, 1))
+      setTransitioning(false)
+    }, 200)
+  }, [transitioning])
+
+  // Auto-advance for single-select steps
   useEffect(() => {
-    if ([1, 4, 5, 6].includes(step) && canProceed && step < 6) {
-      const t = setTimeout(() => navigate('forward'), 380)
+    if ([1, 4, 5, 6].includes(step) && canGo && step < 6 && !transitioning) {
+      const t = setTimeout(() => go('f'), 350)
       return () => clearTimeout(t)
     }
-  }, [answers.erp, answers.currentState, answers.techMaturity])
+  }, [answers.erp, answers.currentState, answers.techMaturity, answers.urgency])
 
-  // Keyboard nav
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const h = (e: KeyboardEvent) => {
       if (result) return
-      const target = e.target as Element
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
-      if (e.key === 'Enter' && canProceed) { e.preventDefault(); step < 6 ? navigate('forward') : handleSubmit() }
-      if (e.key === 'ArrowLeft' && step > 1) { e.preventDefault(); navigate('back') }
+      const t = e.target as Element
+      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return
+      if (e.key === 'Enter' && canGo) { e.preventDefault(); step < 6 ? go('f') : handleSubmit() }
+      if (e.key === 'ArrowLeft' && step > 1) { e.preventDefault(); go('b') }
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [step, canProceed, result, navigate])
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [step, canGo, result, go])
 
   const handleSubmit = async () => {
-    if (!canProceed) return
-    setIsSubmitting(true)
-    setError('')
+    if (!canGo) return
+    setIsSubmitting(true); setError('')
     try {
-      const assessmentResult = runAssessment(answers)
-      setResult(assessmentResult)
-      setStep(7)
-      analytics.assessment.complete({
-        leadScore: assessmentResult.leadScore,
-        recommendations: assessmentResult.recommendations.map(r => r.capability),
-        erp: answers.erp,
+      const r = runAssessment(answers)
+      setResult(r); setStep(7)
+      analytics.assessment.complete({ leadScore: r.leadScore, recommendations: r.recommendations.map(x => x.capability), erp: answers.erp })
+      const { data, error: dbErr } = await insertAssessmentLead({
+        answers: answers as unknown as Record<string,unknown>,
+        recommendations: r.recommendations.map(x => x.capability),
+        lead_score: r.leadScore,
+        routed_to: r.leadScore > 70 ? 'sales' : 'nurture',
       })
-      const { data, error: dbError } = await insertAssessmentLead({
-        answers: answers as unknown as Record<string, unknown>,
-        recommendations: assessmentResult.recommendations.map(r => r.capability),
-        lead_score: assessmentResult.leadScore,
-        routed_to: assessmentResult.leadScore > 70 ? 'sales' : 'nurture',
-      })
-      if (!dbError && data) setAssessmentId(data.id)
-    } catch (err) {
-      console.error('Assessment error:', err)
-      setError('An error occurred. Please try again.')
+      if (!dbErr && data) setAssessmentId(data.id)
+    } catch (e) {
+      console.error(e); setError('An error occurred. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const STEPS = ['ERP', 'Pain Points', 'Volume', 'Current State', 'Tech Maturity', 'Timeline']
-  const progress = (step - 1) / 6 * 100
+  const STEP_LABELS = ['ERP', 'Pain Points', 'Volume', 'Current State', 'Maturity', 'Timeline']
 
   return (
-    <div className="min-h-screen bg-[#050508] relative">
-      {/* BG Glows */}
-      <div className="fixed top-0 left-0 w-[600px] h-[600px] bg-cyan-500/5 blur-[120px] rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2" />
-      <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-emerald-500/5 blur-[140px] rounded-full pointer-events-none translate-x-1/2 translate-y-1/2" />
-
-      {/* ── HEADER ── */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-[#050508]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-6">
-          <a href="/" className="text-sm font-bold text-white/60 hover:text-white transition-colors">← Flowtaris</a>
-          <div className="flex-1 h-0.5 bg-white/5 rounded-full overflow-hidden">
-            {!result && (
-              <div className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all duration-700 ease-out" style={{ width: `${progress}%` }} />
-            )}
-            {result && <div className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" style={{ width: '100%' }} />}
-          </div>
-          {!result && (
-            <div className="text-xs text-white/30 font-mono whitespace-nowrap">{step}/6</div>
-          )}
-        </div>
-        {/* Step dots */}
-        {!result && (
-          <div className="max-w-7xl mx-auto px-6 pb-3 flex items-center gap-2">
-            {STEPS.map((s, i) => (
-              <React.Fragment key={s}>
-                <div className={`flex items-center gap-1.5 cursor-pointer group`} onClick={() => i + 1 < step ? setStep(i + 1) : null}>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all
-                    ${i + 1 < step ? 'bg-cyan-500 text-black' : i + 1 === step ? 'bg-white/10 text-white border border-cyan-500' : 'bg-white/5 text-white/30'}`}>
-                    {i + 1 < step ? '✓' : i + 1}
-                  </div>
-                  <span className={`text-[10px] font-semibold transition-all hidden sm:inline ${i + 1 === step ? 'text-white/70' : i + 1 < step ? 'text-cyan-400' : 'text-white/20'}`}>{s}</span>
-                </div>
-                {i < 5 && <div className={`flex-1 h-px transition-colors ${i + 1 < step ? 'bg-cyan-500/50' : 'bg-white/5'}`} />}
-              </React.Fragment>
-            ))}
-          </div>
-        )}
+    <div className="min-h-screen bg-[#050508]">
+      {/* Fixed ambient bg */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/[0.04] blur-[100px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/[0.03] blur-[120px] rounded-full" />
       </div>
 
-      {/* ── MAIN CONTENT ── */}
-      <div className={`pt-${result ? '20' : '28'} pb-24 min-h-screen`} style={{ paddingTop: result ? '80px' : '110px' }}>
+      {/* Top nav bar */}
+      <div className="fixed top-0 left-0 right-0 z-40 border-b border-white/[0.05] bg-[#050508]/90 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center gap-6">
+          <a href="/" className="text-xs text-white/30 hover:text-white/60 transition-colors font-mono">← flowtaris.com</a>
+
+          {!result && (
+            <>
+              {/* Step dots */}
+              <div className="flex items-center gap-1.5 flex-1">
+                {STEP_LABELS.map((label, i) => {
+                  const n = i + 1
+                  const done = n < step
+                  const cur = n === step
+                  return (
+                    <React.Fragment key={label}>
+                      <button onClick={() => done ? setStep(n) : null}
+                        className={`flex items-center gap-1.5 transition-all ${done ? 'cursor-pointer' : 'cursor-default'}`}>
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold transition-all
+                          ${done ? 'bg-cyan-500 text-black' : cur ? 'bg-white/10 text-white border border-white/30' : 'bg-white/[0.04] text-white/20'}`}>
+                          {done ? '✓' : n}
+                        </div>
+                        <span className={`text-[9px] font-mono hidden sm:inline transition-colors ${cur ? 'text-white/50' : done ? 'text-cyan-500/60' : 'text-white/15'}`}>{label}</span>
+                      </button>
+                      {i < 5 && <div className={`w-6 h-px transition-colors ${done ? 'bg-cyan-500/40' : 'bg-white/[0.04]'}`} />}
+                    </React.Fragment>
+                  )
+                })}
+              </div>
+              <div className="text-[10px] font-mono text-white/20">{step}/6</div>
+            </>
+          )}
+          {result && <div className="flex-1 text-xs text-white/30 font-mono">Assessment Complete</div>}
+        </div>
+      </div>
+
+      {/* Main */}
+      <div style={{ paddingTop: result ? '56px' : '56px' }}>
         {result ? (
           <Results result={result} answers={answers} assessmentId={assessmentId} />
         ) : (
-          <div className="max-w-7xl mx-auto px-6 flex gap-10 items-start">
-            {/* Main content */}
+          <div className="max-w-7xl mx-auto px-6 pt-12 pb-28 flex gap-12 items-start">
+            {/* Step content */}
             <div className="flex-1 min-w-0">
-              <div ref={contentRef}
-                className={`transition-all duration-200 ${isTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}
-                style={{ transform: isTransitioning ? (animDir === 'forward' ? 'translateX(16px)' : 'translateX(-16px)') : 'none', opacity: isTransitioning ? 0 : 1 }}>
+              <div style={{
+                opacity: transitioning ? 0 : 1,
+                transform: transitioning ? `translateY(${dir === 'f' ? '10px' : '-10px'})` : 'translateY(0)',
+                transition: 'opacity 200ms ease, transform 200ms ease',
+              }}>
                 {step === 1 && <StepERP value={answers.erp} onChange={v => setAnswers(p => ({ ...p, erp: v }))} />}
-                {step === 2 && <StepPainPoints value={answers.painPoints} onChange={v => setAnswers(p => ({ ...p, painPoints: v }))} />}
+                {step === 2 && <StepPain value={answers.painPoints} onChange={v => setAnswers(p => ({ ...p, painPoints: v }))} />}
                 {step === 3 && <StepVolume value={answers.volume} onChange={v => setAnswers(p => ({ ...p, volume: v }))} />}
-                {step === 4 && <StepCurrentState value={answers.currentState} onChange={v => setAnswers(p => ({ ...p, currentState: v }))} />}
-                {step === 5 && <StepTechMaturity value={answers.techMaturity} onChange={v => setAnswers(p => ({ ...p, techMaturity: v }))} />}
+                {step === 4 && <StepState value={answers.currentState} onChange={v => setAnswers(p => ({ ...p, currentState: v }))} />}
+                {step === 5 && <StepMaturity value={answers.techMaturity} onChange={v => setAnswers(p => ({ ...p, techMaturity: v }))} />}
                 {step === 6 && <StepUrgency value={answers.urgency} onChange={v => setAnswers(p => ({ ...p, urgency: v }))} />}
               </div>
 
-              {error && <div className="mt-4 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{error}</div>}
+              {error && <div className="mt-4 text-red-400 text-xs bg-red-500/10 border border-red-500/15 rounded-xl px-4 py-3">{error}</div>}
 
-              {/* Nav buttons */}
-              <div className="flex items-center justify-between mt-10 pt-6 border-t border-white/5">
-                <button onClick={() => navigate('back')} disabled={step === 1}
-                  className="flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors disabled:opacity-0">
-                  <ChevronLeft className="w-4 h-4" /> Back
-                </button>
-                <div className="text-xs text-white/20 font-mono">Press Enter to continue</div>
-                {step < 6 ? (
-                  <button onClick={() => navigate('forward')} disabled={!canProceed}
-                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                    Continue <ArrowRight className="w-4 h-4" />
+              {/* Nav */}
+              <div className="fixed bottom-0 left-0 right-0 border-t border-white/[0.05] bg-[#050508]/95 backdrop-blur-xl z-30">
+                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+                  <button onClick={() => go('b')} disabled={step === 1}
+                    className="flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors disabled:opacity-0">
+                    <ChevronLeft className="w-4 h-4" /> Back
                   </button>
-                ) : (
-                  <button onClick={handleSubmit} disabled={!canProceed || isSubmitting}
-                    className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold px-8 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                    {isSubmitting ? <><Activity className="w-4 h-4 animate-spin" /> Analyzing...</> : <>Get My Roadmap <ArrowRight className="w-4 h-4" /></>}
-                  </button>
-                )}
+                  <span className="text-[10px] font-mono text-white/15 hidden sm:inline">Enter to continue</span>
+                  {step < 6 ? (
+                    <button onClick={() => go('f')} disabled={!canGo}
+                      className="flex items-center gap-2 text-xs font-semibold px-5 py-2.5 rounded-lg border transition-all disabled:opacity-25"
+                      style={{ borderColor: canGo ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)', color: canGo ? 'white' : 'rgba(255,255,255,0.3)' }}>
+                      Continue <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <button onClick={handleSubmit} disabled={!canGo || isSubmitting}
+                      className="flex items-center gap-2 text-sm font-bold px-6 py-2.5 rounded-lg transition-all disabled:opacity-25"
+                      style={{ background: canGo ? 'white' : 'rgba(255,255,255,0.1)', color: canGo ? '#050508' : 'rgba(255,255,255,0.3)' }}>
+                      {isSubmitting ? <><Activity className="w-4 h-4 animate-spin" /> Analyzing...</> : <>Get My Roadmap <ArrowRight className="w-4 h-4" /></>}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Sidebar */}
-            <LiveScoreSidebar answers={answers} step={step} />
+            <Sidebar answers={answers} step={step} />
           </div>
         )}
       </div>
