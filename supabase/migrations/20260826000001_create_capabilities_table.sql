@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS public.capabilities (
   seo_og_image    text,
   seo_keywords    text,
 
+  -- Per-capability color identity (hex, e.g. #f59e0b)
+  accent_color    text DEFAULT '#6366f1',
+
   -- Metadata
   is_published    boolean NOT NULL DEFAULT true,
   maturity        text NOT NULL DEFAULT 'production' CHECK (maturity IN ('production', 'pilot', 'research')),

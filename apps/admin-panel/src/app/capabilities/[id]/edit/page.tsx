@@ -1,319 +1,524 @@
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { getAICapabilityById, updateAICapability } from '@/lib/supabase'
+'use client'
 
-// Simple UI components for admin panel (using Tailwind directly)
-const SimpleButton = ({ children, type = 'submit', className = '' }: { children: React.ReactNode; type?: string; className?: string }) => (
-  <button type={type} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className}`}>
-    {children}
-  </button>
-)
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Save, Eye, ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Globe, GlobeOff } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
 
-const SimpleInput = ({ label, value, onChange, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; className?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <input
-      type="text"
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-    />
-  </div>
-)
-
-const SimpleTextarea = ({ label, value, onChange, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void; className?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <textarea
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-      rows={4}
-    />
-  </div>
-)
-
-const SimpleSelect = ({ label, value, onChange, options, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: Array<{ value: string; label: string }>; className?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <select
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-    >
-      {options.map(option => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </div>
-)
-
-// Default category and maturity options (matching Sanity schema)
-const CATEGORY_OPTIONS = [
-  { value: 'Document Intelligence', label: 'Document Intelligence' },
-  { value: 'Workflow Automation', label: 'Workflow Automation' },
-  { value: 'Analytics & Forecasting', label: 'Analytics & Forecasting' },
-  { value: 'Governance & Compliance', label: 'Governance & Compliance' },
-  { value: 'Integration & Monitoring', label: 'Integration & Monitoring' }
-]
-
-const MATURITY_OPTIONS = [
-  { value: 'production', label: 'Production Ready' },
-  { value: 'pilot', label: 'Pilot / Beta' },
-  { value: 'beta', label: 'Beta' },
-  { value: 'research', label: 'Research / Alpha' }
-]
-
-type AICapabilityFormData = {
-  id: string
-  name: string
-  slug: string
-  category: string
-  maturity: string
-  short_description: string
-  description: string
-  icon: string
-  key_metrics: string // JSON string
-  features: string // JSON string
-  use_cases: string // JSON string
-  supported_platform_ids: string // JSON string (array of UUIDs)
-  timeline: string
-  prerequisites: string // JSON string
-  demo_url: string
-  docs_url: string
-  related_capability_ids: string // JSON string (array of UUIDs)
-  case_study_ids: string // JSON string (array of UUIDs)
-  seo: string // JSON string
+interface PageParams {
+  params: { id: string }
 }
 
-export default function EditCapabilityPage() {
-  const { id } = useParams<{ id: string }>()
-  const [formData, setFormData] = useState<AICapabilityFormData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const router = useRouter()
+// ─── UI COMPONENTS ─────────────────────────────────────────────────────────────
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-sm font-bold text-slate-900">{label}</label>
+      {hint && <p className="text-xs text-slate-500">{hint}</p>}
+      {children}
+    </div>
+  )
+}
 
-  // Fetch capability data on load
+function TextInput({ value, onChange, placeholder, mono }: { value: string; onChange: (v: string) => void; placeholder?: string; mono?: boolean }) {
+  return (
+    <input
+      type="text"
+      value={value || ''}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent ${mono ? 'font-mono' : ''}`}
+    />
+  )
+}
+
+function TextArea({ value, onChange, placeholder, rows = 4 }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number }) {
+  return (
+    <textarea
+      value={value || ''}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-y"
+    />
+  )
+}
+
+function SectionHeader({ title, description, expanded, onToggle, accent }: { title: string; description: string; expanded: boolean; onToggle: () => void; accent?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between p-5 hover:bg-slate-100 transition-colors border border-slate-200 rounded-xl bg-slate-50"
+    >
+      <div className="text-left">
+        <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
+          {accent && <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: accent }} />}
+          {title}
+        </div>
+        <div className="text-xs text-slate-500 mt-0.5">{description}</div>
+      </div>
+      {expanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+    </button>
+  )
+}
+
+// ─── MAIN EDIT PAGE ─────────────────────────────────────────────────────────────
+export default function CapabilityEditPage({ params }: PageParams) {
+  const { id } = params
+  const router = useRouter()
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+  const [sections, setSections] = useState({
+    basics: true, problem: false, stats: false, steps: false,
+    technical: false, integrations: false, faqs: false, seo: false, cta: false
+  })
+
+  function getSupabase() {
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+
   useEffect(() => {
-    const fetchAICapability = async () => {
-      if (!id) return
+    async function load() {
       try {
-        setLoading(true)
-        const data = await getAICapabilityById(id)
-        if (data) {
-          // Convert the data to our form format, ensuring JSON fields are strings and handling UUID arrays
-          const formData: AICapabilityFormData = {
-            id: data.id,
-            name: data.name || '',
-            slug: data.slug || '',
-            category: data.category || 'Document Intelligence',
-            maturity: data.maturity || 'production',
-            short_description: data.short_description || '',
-            description: data.description || '',
-            icon: data.icon || '',
-            key_metrics: JSON.stringify(data.key_metrics || [], null, 2),
-            features: JSON.stringify(data.features || [], null, 2),
-            use_cases: JSON.stringify(data.use_cases || [], null, 2),
-            supported_platform_ids: JSON.stringify(data.supported_platform_ids || []),
-            timeline: data.timeline || '',
-            prerequisites: JSON.stringify(data.prerequisites || [], null, 2),
-            demo_url: data.demo_url || '',
-            docs_url: data.docs_url || '',
-            related_capability_ids: JSON.stringify(data.related_capability_ids || []),
-            case_study_ids: JSON.stringify(data.case_study_ids || []),
-            seo: JSON.stringify(data.seo || {}, null, 2)
-          }
-          setFormData(formData)
-        } else {
-          setError('Capability not found')
-        }
-      } catch (err: any) {
-        setError('Failed to load capability')
-        console.error(err)
+        const supabase = getSupabase()
+        const { data: cap, error } = await supabase
+          .from('capabilities')
+          .select('*')
+          .eq('id', id)
+          .single()
+        if (error) throw error
+        // Ensure array fields are arrays
+        setData({
+          ...cap,
+          stats: cap.stats || [],
+          steps: cap.steps || [],
+          technical_details: cap.technical_details || [],
+          integrations: cap.integrations || [],
+          faq_items: cap.faq_items || [],
+          related_slugs: cap.related_slugs || [],
+        })
+      } catch (e: any) {
+        setError('Could not load capability. ' + (e.message || ''))
       } finally {
         setLoading(false)
       }
     }
-
-    fetchAICapability()
+    load()
   }, [id])
 
-  const handleChange = (field: keyof AICapabilityFormData, value: string) => {
-    if (formData) {
-      setFormData(prev => ({ ...prev, [field]: value }))
-    }
+  const update = (key: string, val: any) => setData((d: any) => ({ ...d, [key]: val }))
+  const toggleSection = (key: string) => setSections(s => ({ ...s, [key]: !s[key as keyof typeof s] }))
+
+  // Stats CRUD
+  const updateStat = (idx: number, field: string, val: string) => {
+    const updated = [...data.stats]; updated[idx] = { ...updated[idx], [field]: val }; update('stats', updated)
   }
+  const addStat = () => update('stats', [...data.stats, { value: '', label: '', context: '' }])
+  const removeStat = (idx: number) => update('stats', data.stats.filter((_: any, i: number) => i !== idx))
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData) return
+  // Steps CRUD
+  const updateStep = (idx: number, field: string, val: any) => {
+    const updated = [...data.steps]; updated[idx] = { ...updated[idx], [field]: val }; update('steps', updated)
+  }
+  const addStep = () => update('steps', [...data.steps, { eyebrow: '', headline: '', body: '', image: '', imageAlt: '', imageRight: false, bullets: [] }])
+  const removeStep = (idx: number) => update('steps', data.steps.filter((_: any, i: number) => i !== idx))
+  const updateStepBullet = (stepIdx: number, bIdx: number, val: string) => {
+    const bullets = [...(data.steps[stepIdx].bullets || [])]; bullets[bIdx] = val
+    updateStep(stepIdx, 'bullets', bullets)
+  }
+  const addStepBullet = (stepIdx: number) => updateStep(stepIdx, 'bullets', [...(data.steps[stepIdx].bullets || []), ''])
+  const removeStepBullet = (stepIdx: number, bIdx: number) => updateStep(stepIdx, 'bullets', data.steps[stepIdx].bullets.filter((_: any, i: number) => i !== bIdx))
 
-    setError(null)
-    setSuccess(null)
-    setLoading(true)
+  // Tech CRUD
+  const updateTech = (idx: number, field: string, val: string) => {
+    const updated = [...data.technical_details]; updated[idx] = { ...updated[idx], [field]: val }; update('technical_details', updated)
+  }
+  const addTech = () => update('technical_details', [...data.technical_details, { component: '', technology: '', description: '' }])
+  const removeTech = (idx: number) => update('technical_details', data.technical_details.filter((_: any, i: number) => i !== idx))
 
+  // FAQs CRUD
+  const updateFaq = (idx: number, field: string, val: string) => {
+    const updated = [...data.faq_items]; updated[idx] = { ...updated[idx], [field]: val }; update('faq_items', updated)
+  }
+  const addFaq = () => update('faq_items', [...data.faq_items, { question: '', answer: '' }])
+  const removeFaq = (idx: number) => update('faq_items', data.faq_items.filter((_: any, i: number) => i !== idx))
+
+  const handleSave = async () => {
+    setSaving(true); setError('')
     try {
-      // Prepare data for update
-      const capabilityData = {
-        name: formData.name,
-        slug: formData.slug,
-        category: formData.category,
-        maturity: formData.maturity,
-        short_description: formData.short_description,
-        description: formData.description,
-        icon: formData.icon,
-        key_metrics: JSON.parse(formData.key_metrics),
-        features: JSON.parse(formData.features),
-        use_cases: JSON.parse(formData.use_cases),
-        supported_platform_ids: JSON.parse(formData.supported_platform_ids),
-        timeline: formData.timeline,
-        prerequisites: JSON.parse(formData.prerequisites),
-        demo_url: formData.demo_url,
-        docs_url: formData.docs_url,
-        related_capability_ids: JSON.parse(formData.related_capability_ids),
-        case_study_ids: JSON.parse(formData.case_study_ids),
-        seo: JSON.parse(formData.seo)
-      }
-
-      // Update the capability
-      await updateAICapability(id, capabilityData)
-      setSuccess('Capability updated successfully!')
-
-      // Redirect to capabilities list after a short delay
-      setTimeout(() => {
-        router.push('/capabilities')
-      }, 1500)
-    } catch (err: any) {
-      setError('Failed to update capability')
-      console.error(err)
+      const supabase = getSupabase()
+      const { error: saveError } = await supabase
+        .from('capabilities')
+        .update({
+          ...data,
+          integrations: typeof data.integrations === 'string'
+            ? data.integrations.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : data.integrations,
+          related_slugs: typeof data.related_slugs === 'string'
+            ? data.related_slugs.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : data.related_slugs,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+      if (saveError) throw saveError
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch (e: any) {
+      setError(e.message || 'Save failed')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
-  if (loading) return <div className="p-6">Loading...</div>
-  if (error) return <div className="p-6 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>
-  if (!formData) return <div className="p-6">No data to display</div>
+  const handleTogglePublish = async () => {
+    update('is_published', !data.is_published)
+    const supabase = getSupabase()
+    await supabase.from('capabilities').update({ is_published: !data.is_published }).eq('id', id)
+  }
+
+  if (loading) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-slate-500 text-sm">Loading capability…</p>
+      </div>
+    </div>
+  )
+
+  if (error && !data) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
+      <div className="max-w-md text-center">
+        <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Could not load capability</h2>
+        <p className="text-slate-500 text-sm mb-6">{error}</p>
+        <button onClick={() => router.back()} className="bg-slate-900 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors">Go Back</button>
+      </div>
+    </div>
+  )
+
+  const accent = data?.accent_color || '#6366f1'
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          Edit Capability
-        </h1>
-        <a href="/capabilities" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
-          ← Back to Capabilities
-        </a>
+    <div className="min-h-screen bg-slate-50">
+      {/* ── TOP BAR ───────────────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.back()} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+            <ArrowLeft className="w-4 h-4 text-slate-600" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: accent }} />
+            <div>
+              <div className="font-black text-slate-900 text-sm">{data?.title}</div>
+              <div className="text-xs text-slate-400 font-mono">/capabilities/{data?.slug}</div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {error && (
+            <div className="flex items-center gap-1.5 text-red-600 text-xs font-medium">
+              <AlertCircle className="w-4 h-4" /> {error}
+            </div>
+          )}
+          {saved && (
+            <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-medium">
+              <CheckCircle2 className="w-4 h-4" /> Saved successfully!
+            </div>
+          )}
+
+          {/* Publish toggle */}
+          <button
+            onClick={handleTogglePublish}
+            className={`inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-lg border transition-colors ${data?.is_published ? 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100' : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'}`}
+          >
+            {data?.is_published ? <><Globe className="w-4 h-4" /> Live</> : <><GlobeOff className="w-4 h-4" /> Draft</>}
+          </button>
+
+          <a
+            href={`https://flowtaris-ecosystem-flowtaris-ai.vercel.app/capabilities/${data?.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-slate-600 border border-slate-200 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <Eye className="w-4 h-4" /> Preview
+          </a>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 bg-slate-900 text-white text-sm font-bold px-6 py-2 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors"
+          >
+            <Save className="w-4 h-4" />
+            {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+        </div>
       </div>
 
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-      {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
+      {/* ── FORM BODY ─────────────────────────────────────────────────────── */}
+      <div className="max-w-4xl mx-auto px-6 py-10 space-y-4">
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <SimpleInput
-          label="Capability Name *"
-          value={formData.name}
-          onChange={(e) => handleChange('name', e.target.value)}
-        />
-        <SimpleInput
-          label="Slug *"
-          value={formData.slug}
-          onChange={(e) => handleChange('slug', e.target.value)}
-        />
-        <SimpleSelect
-          label="Category *"
-          value={formData.category}
-          onChange={(e) => handleChange('category', e.target.value)}
-          options={CATEGORY_OPTIONS}
-        />
-        <SimpleSelect
-          label="Maturity Level *"
-          value={formData.maturity}
-          onChange={(e) => handleChange('maturity', e.target.value)}
-          options={MATURITY_OPTIONS}
-        />
-        <SimpleInput
-          label="Icon (Emoji or Lucide name)"
-          value={formData.icon}
-          onChange={(e) => handleChange('icon', e.target.value)}
-        />
-        <SimpleInput
-          label="Short Description *"
-          value={formData.short_description}
-          onChange={(e) => handleChange('short_description', e.target.value)}
-        />
-        <SimpleTextarea
-          label="Full Description"
-          value={formData.description}
-          onChange={(e) => handleChange('description', e.target.value)}
-          rows={6}
-        />
-        <SimpleTextarea
-          label="Key Metrics (JSON Array of {label, value} objects)"
-          value={formData.key_metrics}
-          onChange={(e) => handleChange('key_metrics', e.target.value)}
-        />
-        <SimpleTextarea
-          label="Features (JSON Array of strings)"
-          value={formData.features}
-          onChange={(e) => handleChange('features', e.target.value)}
-        />
-        <SimpleTextarea
-          label="Use Cases (JSON Array of strings)"
-          value={formData.use_cases}
-          onChange={(e) => handleChange('use_cases', e.target.value)}
-        />
-        {/* For simplicity, we are using a text area for UUID arrays. In a real app, we would use a multi-select. */}
-        <SimpleTextarea
-          label="Supported Platform IDs (JSON Array of UUIDs)"
-          value={formData.supported_platform_ids}
-          onChange={(e) => handleChange('supported_platform_ids', e.target.value)}
-        />
-        <SimpleInput
-          label="Timeline (e.g., 'Q1 2024 - Q3 2024')"
-          value={formData.timeline}
-          onChange={(e) => handleChange('timeline', e.target.value)}
-        />
-        <SimpleTextarea
-          label="Prerequisites (JSON Array of strings)"
-          value={formData.prerequisites}
-          onChange={(e) => handleChange('prerequisites', e.target.value)}
-        />
-        <SimpleInput
-          label="Demo URL"
-          value={formData.demo_url}
-          onChange={(e) => handleChange('demo_url', e.target.value)}
-        />
-        <SimpleInput
-          label="Documentation URL"
-          value={formData.docs_url}
-          onChange={(e) => handleChange('docs_url', e.target.value)}
-        />
-        {/* For related capabilities and case studies, we are using text areas for UUID arrays. */}
-        <SimpleTextarea
-          label="Related Capability IDs (JSON Array of UUIDs)"
-          value={formData.related_capability_ids}
-          onChange={(e) => handleChange('related_capability_ids', e.target.value)}
-        />
-        <SimpleTextarea
-          label="Case Study IDs (JSON Array of UUIDs)"
-          value={formData.case_study_ids}
-          onChange={(e) => handleChange('case_study_ids', e.target.value)}
-        />
-        <SimpleTextarea
-          label="SEO (JSON Object)"
-          value={formData.seo}
-          onChange={(e) => handleChange('seo', e.target.value)}
-        />
-        <div className="flex justify-end">
-          <SimpleButton type="submit" disabled={loading}>
-            {loading ? 'Updating...' : 'Update Capability'}
-          </SimpleButton>
+        {/* BASICS */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="Basics & Branding" description="Category, headline, subheadline, accent color" expanded={sections.basics} onToggle={() => toggleSection('basics')} accent={accent} />
+          {sections.basics && (
+            <div className="p-6 space-y-5 border-t border-slate-100">
+              <div className="grid md:grid-cols-3 gap-4">
+                <Field label="Slug" hint="URL identifier — do not change after publish">
+                  <TextInput value={data.slug} onChange={v => update('slug', v)} mono />
+                </Field>
+                <Field label="Category" hint="Short uppercase label (e.g. DOCUMENT PROCESSING)">
+                  <TextInput value={data.category} onChange={v => update('category', v)} />
+                </Field>
+                <Field label="Maturity">
+                  <select value={data.maturity} onChange={e => update('maturity', e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="production">Production</option>
+                    <option value="pilot">Pilot</option>
+                    <option value="research">Research</option>
+                  </select>
+                </Field>
+              </div>
+              <div className="grid md:grid-cols-4 gap-4 items-center">
+                <Field label="Accent Color" hint="Per-capability color identity (hex)">
+                  <div className="flex items-center gap-3">
+                    <input type="color" value={accent} onChange={e => update('accent_color', e.target.value)} className="w-12 h-10 cursor-pointer rounded border border-slate-200 p-1" />
+                    <TextInput value={accent} onChange={v => update('accent_color', v)} mono />
+                  </div>
+                </Field>
+              </div>
+              <Field label="Page Title" hint="Large H1 — should be a bold, CEO-targeting claim">
+                <TextArea value={data.headline} onChange={v => update('headline', v)} rows={2} placeholder="Your Finance Team Is Spending $53,820 Per Analyst…" />
+              </Field>
+              <Field label="Subheadline" hint="One or two sentences expanding on the headline">
+                <TextArea value={data.subheadline} onChange={v => update('subheadline', v)} rows={3} />
+              </Field>
+            </div>
+          )}
         </div>
-      </form>
+
+        {/* PROBLEM */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="Problem Section" description="Eyebrow, headline, body copy, and big stat callout" expanded={sections.problem} onToggle={() => toggleSection('problem')} />
+          {sections.problem && (
+            <div className="p-6 space-y-5 border-t border-slate-100">
+              <Field label="Eyebrow" hint="Short label above the problem headline (e.g. THE BOARDROOM PROBLEM)">
+                <TextInput value={data.problem_eyebrow} onChange={v => update('problem_eyebrow', v)} />
+              </Field>
+              <Field label="Problem Headline">
+                <TextArea value={data.problem_headline} onChange={v => update('problem_headline', v)} rows={2} />
+              </Field>
+              <Field label="Problem Body" hint="Use two newlines between paragraphs">
+                <TextArea value={data.problem_body} onChange={v => update('problem_body', v)} rows={8} />
+              </Field>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Stat Value" hint="The BIG number in the callout box (e.g. $53K, 23 hrs)">
+                  <TextInput value={data.problem_stat_value} onChange={v => update('problem_stat_value', v)} />
+                </Field>
+                <Field label="Stat Label" hint="Context below the stat value">
+                  <TextInput value={data.problem_stat_label} onChange={v => update('problem_stat_label', v)} />
+                </Field>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* STATS */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="Metric Cards (4 Stats)" description="The 4 key performance metrics shown in the hero" expanded={sections.stats} onToggle={() => toggleSection('stats')} />
+          {sections.stats && (
+            <div className="p-6 space-y-4 border-t border-slate-100">
+              {data.stats.map((stat: any, idx: number) => (
+                <div key={idx} className="flex gap-3 items-start p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex-1 grid md:grid-cols-3 gap-3">
+                    <Field label="Value"><TextInput value={stat.value} onChange={v => updateStat(idx, 'value', v)} placeholder="99.4%" /></Field>
+                    <Field label="Label"><TextInput value={stat.label} onChange={v => updateStat(idx, 'label', v)} placeholder="Extraction Accuracy" /></Field>
+                    <Field label="Context"><TextInput value={stat.context} onChange={v => updateStat(idx, 'context', v)} placeholder="across 2.1M documents" /></Field>
+                  </div>
+                  <button onClick={() => removeStat(idx)} className="mt-6 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                </div>
+              ))}
+              <button onClick={addStat} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 border border-dashed border-slate-300 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors w-full justify-center">
+                <Plus className="w-4 h-4" /> Add Stat Card
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* STEPS */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="How It Works — Steps" description="Alternating image/text sections (3 recommended)" expanded={sections.steps} onToggle={() => toggleSection('steps')} />
+          {sections.steps && (
+            <div className="p-6 space-y-6 border-t border-slate-100">
+              {data.steps.map((step: any, idx: number) => (
+                <div key={idx} className="p-5 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="font-bold text-slate-700 text-sm">Step {idx + 1}</div>
+                    <button onClick={() => removeStep(idx)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Field label="Eyebrow"><TextInput value={step.eyebrow} onChange={v => updateStep(idx, 'eyebrow', v)} placeholder="STEP 01 — CAPTURE" /></Field>
+                    <Field label="Image URL"><TextInput value={step.image} onChange={v => updateStep(idx, 'image', v)} placeholder="/images/capabilities/cap1-invoice-extract.png" mono /></Field>
+                  </div>
+                  <Field label="Headline"><TextInput value={step.headline} onChange={v => updateStep(idx, 'headline', v)} placeholder="Every document in. Zero configuration." /></Field>
+                  <Field label="Body (use two newlines for paragraphs)"><TextArea value={step.body} onChange={v => updateStep(idx, 'body', v)} rows={5} /></Field>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Field label="Image Alt Text"><TextInput value={step.imageAlt} onChange={v => updateStep(idx, 'imageAlt', v)} /></Field>
+                    <Field label="Image Position">
+                      <select value={step.imageRight ? 'right' : 'left'} onChange={e => updateStep(idx, 'imageRight', e.target.value === 'right')} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900">
+                        <option value="left">Image Left (text on right)</option>
+                        <option value="right">Image Right (text on left)</option>
+                      </select>
+                    </Field>
+                  </div>
+                  <Field label="Bullet Points">
+                    <div className="space-y-2">
+                      {(step.bullets || []).map((b: string, bIdx: number) => (
+                        <div key={bIdx} className="flex items-center gap-2">
+                          <TextInput value={b} onChange={v => updateStepBullet(idx, bIdx, v)} placeholder="Bullet point text" />
+                          <button onClick={() => removeStepBullet(idx, bIdx)} className="p-2 text-slate-400 hover:text-red-500 rounded-lg transition-colors flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      ))}
+                      <button onClick={() => addStepBullet(idx)} className="text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors">+ Add bullet</button>
+                    </div>
+                  </Field>
+                </div>
+              ))}
+              <button onClick={addStep} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 border border-dashed border-slate-300 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors w-full justify-center">
+                <Plus className="w-4 h-4" /> Add Step
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* TECHNICAL DETAILS */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="Technical Architecture Table" description="Component, technology, description rows" expanded={sections.technical} onToggle={() => toggleSection('technical')} />
+          {sections.technical && (
+            <div className="p-6 space-y-4 border-t border-slate-100">
+              {data.technical_details.map((row: any, idx: number) => (
+                <div key={idx} className="flex gap-3 items-start p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex-1 grid md:grid-cols-3 gap-3">
+                    <Field label="Component"><TextInput value={row.component} onChange={v => updateTech(idx, 'component', v)} placeholder="Extraction Engine" /></Field>
+                    <Field label="Technology"><TextInput value={row.technology} onChange={v => updateTech(idx, 'technology', v)} placeholder="Fine-tuned Gemini 1.5 Pro" mono /></Field>
+                    <Field label="Description"><TextInput value={row.description} onChange={v => updateTech(idx, 'description', v)} placeholder="What it does…" /></Field>
+                  </div>
+                  <button onClick={() => removeTech(idx)} className="mt-6 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                </div>
+              ))}
+              <button onClick={addTech} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 border border-dashed border-slate-300 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors w-full justify-center">
+                <Plus className="w-4 h-4" /> Add Architecture Row
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* INTEGRATIONS */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="Platform Integrations" description="Comma-separated list of connected platforms" expanded={sections.integrations} onToggle={() => toggleSection('integrations')} />
+          {sections.integrations && (
+            <div className="p-6 border-t border-slate-100">
+              <Field label="Integrations" hint="Comma-separated: NetSuite SuiteCloud, Coupa Open APIs, SAP BTP, …">
+                <TextArea
+                  value={Array.isArray(data.integrations) ? data.integrations.join(', ') : data.integrations}
+                  onChange={v => update('integrations', v)}
+                  rows={4}
+                  placeholder="NetSuite SuiteCloud, Coupa Open APIs, SAP BTP, Workday Cloud Connect"
+                />
+              </Field>
+            </div>
+          )}
+        </div>
+
+        {/* FAQs */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title={`FAQs (${data.faq_items.length} items)`} description="6-8 FAQs recommended for AEO and FAQ schema" expanded={sections.faqs} onToggle={() => toggleSection('faqs')} />
+          {sections.faqs && (
+            <div className="p-6 space-y-4 border-t border-slate-100">
+              {data.faq_items.map((faq: any, idx: number) => (
+                <div key={idx} className="p-5 bg-slate-50 rounded-xl border border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">FAQ {idx + 1}</span>
+                    <button onClick={() => removeFaq(idx)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                  <Field label="Question"><TextInput value={faq.question} onChange={v => updateFaq(idx, 'question', v)} placeholder="How does Flowtaris handle…?" /></Field>
+                  <Field label="Answer" hint="Detailed, specific answer. Avoid generic AI-sounding language.">
+                    <TextArea value={faq.answer} onChange={v => updateFaq(idx, 'answer', v)} rows={4} />
+                  </Field>
+                </div>
+              ))}
+              <button onClick={addFaq} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 border border-dashed border-slate-300 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors w-full justify-center">
+                <Plus className="w-4 h-4" /> Add FAQ
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* SEO */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="SEO / GEO / AEO Metadata" description="Title tag, meta description, keywords, OG image" expanded={sections.seo} onToggle={() => toggleSection('seo')} />
+          {sections.seo && (
+            <div className="p-6 space-y-5 border-t border-slate-100">
+              <Field label="SEO Title" hint="Ideal: 50-60 characters. Include primary keyword + brand.">
+                <TextInput value={data.seo_title} onChange={v => update('seo_title', v)} placeholder="AI Invoice Processing for NetSuite & SAP | Flowtaris AI" />
+                <p className="text-xs text-slate-400 mt-1">{(data.seo_title || '').length} / 60 chars</p>
+              </Field>
+              <Field label="Meta Description" hint="Ideal: 150-160 characters. Specific, with numbers.">
+                <TextArea value={data.seo_description} onChange={v => update('seo_description', v)} rows={3} />
+                <p className="text-xs text-slate-400 mt-1">{(data.seo_description || '').length} / 160 chars</p>
+              </Field>
+              <Field label="Keywords" hint="Comma-separated primary and secondary keywords">
+                <TextArea value={data.seo_keywords} onChange={v => update('seo_keywords', v)} rows={3} />
+              </Field>
+              <Field label="OG Image URL" hint="1200×630px image URL for social sharing previews">
+                <TextInput value={data.seo_og_image} onChange={v => update('seo_og_image', v)} placeholder="https://flowtaris.ai/images/og/..." mono />
+              </Field>
+              <Field label="Related Slugs" hint="Comma-separated slugs for the Related Capabilities section">
+                <TextInput
+                  value={Array.isArray(data.related_slugs) ? data.related_slugs.join(', ') : data.related_slugs}
+                  onChange={v => update('related_slugs', v)}
+                  placeholder="autonomous-workflow-engine, predictive-analytics"
+                />
+              </Field>
+            </div>
+          )}
+        </div>
+
+        {/* CTA */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <SectionHeader title="CTA Section" description="Bottom-of-page call to action headline, body, and buttons" expanded={sections.cta} onToggle={() => toggleSection('cta')} />
+          {sections.cta && (
+            <div className="p-6 space-y-5 border-t border-slate-100">
+              <Field label="CTA Headline"><TextArea value={data.cta_headline} onChange={v => update('cta_headline', v)} rows={2} placeholder="Ready to see it in action?" /></Field>
+              <Field label="CTA Body"><TextArea value={data.cta_body} onChange={v => update('cta_body', v)} rows={3} /></Field>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Primary Button Label"><TextInput value={data.cta_primary_label} onChange={v => update('cta_primary_label', v)} placeholder="Start Assessment" /></Field>
+                <Field label="Primary Button URL"><TextInput value={data.cta_primary_href} onChange={v => update('cta_primary_href', v)} placeholder="/assessment" mono /></Field>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Secondary Button Label"><TextInput value={data.cta_secondary_label} onChange={v => update('cta_secondary_label', v)} placeholder="Calculate Cost of Inaction" /></Field>
+                <Field label="Secondary Button URL"><TextInput value={data.cta_secondary_href} onChange={v => update('cta_secondary_href', v)} placeholder="/cost-of-inaction" mono /></Field>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Save Footer */}
+        <div className="sticky bottom-6 flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="inline-flex items-center gap-2 bg-slate-900 text-white font-bold text-sm px-8 py-4 rounded-2xl shadow-2xl hover:bg-slate-700 disabled:opacity-50 transition-all"
+          >
+            <Save className="w-5 h-5" />
+            {saving ? 'Saving Changes…' : 'Save All Changes'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

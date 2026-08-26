@@ -1,227 +1,293 @@
 import { Metadata } from 'next'
-import { HeroPattern } from '@repo/ui'
-import { Section, Container, Stack } from '@repo/ui'
-import { CascadingCardStack, FloatingProduct } from '@repo/ui'
-import { Button } from '@repo/ui'
-import { ArrowRight, Zap, Shield, BarChart3, Code2, Users } from 'lucide-react'
-import { serviceSchema } from '@flowtaris/seo'
+import Link from 'next/link'
+import { ArrowRight, BarChart3 } from 'lucide-react'
 
-const capabilities = [
+// ─── CAPABILITY REGISTRY ─────────────────────────────────────────────────────
+const CAPABILITIES = [
   {
-    slug: 'genai-doc-intelligence',
+    slug: 'genai-document-intelligence',
     title: 'GenAI Document Intelligence',
-    category: 'GenAI',
-    platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'],
+    category: 'DOCUMENT PROCESSING',
     maturity: 'production',
-    metric: '85% faster processing',
-    icon: '📄',
-    description: 'Automate invoice, PO, and contract processing with LLMs that understand context, not just keywords.',
+    metric: '99.4% extraction accuracy',
+    headline: 'Eliminate manual invoice processing at enterprise scale.',
+    description: 'AI that reads every invoice, PO, and contract — validates against ERP data — and posts directly to NetSuite, Coupa, or SAP without a human touching it.',
+    accent: '#f59e0b',
+    accentMuted: 'rgba(245,158,11,0.06)',
+    accentBorder: 'rgba(245,158,11,0.2)',
+    platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'],
+    keyResult: '$4.5M average annual savings',
+  },
+  {
+    slug: 'autonomous-workflow-engine',
+    title: 'Autonomous Workflow Engine',
+    category: 'PROCESS AUTOMATION',
+    maturity: 'production',
+    metric: '92% straight-through rate',
+    headline: 'Approval workflows that run themselves.',
+    description: 'AI-driven orchestration that routes, escalates, and resolves AP exceptions — across Slack, Teams, and your ERP — without manual intervention.',
+    accent: '#10b981',
+    accentMuted: 'rgba(16,185,129,0.06)',
+    accentBorder: 'rgba(16,185,129,0.2)',
+    platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday', 'Slack'],
+    keyResult: '4.2 days → 0.3 days approval cycle',
   },
   {
     slug: 'predictive-analytics',
     title: 'Predictive Analytics',
-    category: 'ML',
-    platforms: ['NetSuite', 'SAP', 'Workday'],
-    maturity: 'pilot',
-    metric: '92% forecast accuracy',
-    icon: '📈',
-    description: 'Forecast cash flow, detect anomalies, and predict payment delays before they happen.',
-  },
-  {
-    slug: 'autonomous-workflow',
-    title: 'Autonomous Workflow Engine',
-    category: 'Workflow',
-    platforms: ['NetSuite', 'Coupa', 'SAP'],
+    category: 'FINANCE INTELLIGENCE',
     maturity: 'production',
-    metric: '3-day implementation',
-    icon: '⚙️',
-    description: 'Self-healing workflows that adapt to ERP changes without code modifications.',
+    metric: '94% forecast accuracy',
+    headline: 'From lagging reports to leading signals.',
+    description: 'Real-time cash flow forecasting, vendor risk scoring, and spend anomaly detection — updated hourly, not monthly. Your CFO stops flying blind.',
+    accent: '#8b5cf6',
+    accentMuted: 'rgba(139,92,246,0.06)',
+    accentBorder: 'rgba(139,92,246,0.2)',
+    platforms: ['NetSuite', 'SAP', 'Workday', 'Coupa', 'Tableau', 'Power BI'],
+    keyResult: '12 days early warning lead time',
   },
   {
     slug: 'conversational-erp',
     title: 'Conversational ERP Interface',
-    category: 'GenAI',
-    platforms: ['NetSuite', 'Workday', 'Salesforce'],
-    maturity: 'research',
-    metric: 'Natural language → SQL',
-    icon: '💬',
-    description: 'Chat with your ERP. Ask questions, run reports, execute transactions in plain English.',
-  },
-  {
-    slug: 'integration-monitoring',
-    title: 'Integration Health Monitoring',
-    category: 'RPA',
-    platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'],
+    category: 'HUMAN COMPUTER INTERACTION',
     maturity: 'production',
-    metric: '99.9% uptime detection',
-    icon: '🔍',
-    description: 'Real-time visibility into iPaaS, API, and custom integration health with auto-remediation.',
+    metric: '80% queries resolved without ERP',
+    headline: 'Talk to your ERP. In Slack. In plain English.',
+    description: 'Any finance team member can query data, run reports, and execute approved actions against NetSuite, SAP, or Coupa — without opening the ERP UI.',
+    accent: '#06b6d4',
+    accentMuted: 'rgba(6,182,212,0.06)',
+    accentBorder: 'rgba(6,182,212,0.2)',
+    platforms: ['NetSuite', 'SAP', 'Coupa', 'Workday', 'Slack', 'Teams'],
+    keyResult: '4 min vs 45 min report delivery',
   },
   {
-    slug: 'ai-governance',
+    slug: 'integration-health-monitoring',
+    title: 'Integration Health Monitoring',
+    category: 'OBSERVABILITY',
+    maturity: 'production',
+    metric: '8 min mean time to detect',
+    headline: 'Know when integrations break — before your finance team does.',
+    description: 'Real-time monitoring, anomaly detection, and auto-remediation for every data flow between your ERP and connected systems. 73% of failures fixed automatically.',
+    accent: '#ef4444',
+    accentMuted: 'rgba(239,68,68,0.06)',
+    accentBorder: 'rgba(239,68,68,0.2)',
+    platforms: ['MuleSoft', 'NetSuite', 'Coupa', 'SAP', 'Workday', 'Datadog'],
+    keyResult: '73% issues auto-remediated',
+  },
+  {
+    slug: 'ai-governance-compliance',
     title: 'AI Governance & Compliance',
-    category: 'Governance',
-    platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'],
-    maturity: 'pilot',
-    metric: 'SOC2 + EU AI Act ready',
-    icon: '🛡️',
-    description: 'Audit trails, bias detection, and compliance reporting for every AI-driven decision.',
+    category: 'RISK AND COMPLIANCE',
+    maturity: 'production',
+    metric: '100% AI decision audit coverage',
+    headline: 'AI your auditors can actually audit.',
+    description: 'Immutable audit trails, model explainability, SOX-compliant controls, and GDPR/EU AI Act documentation — built in, not bolted on.',
+    accent: '#eab308',
+    accentMuted: 'rgba(234,179,8,0.06)',
+    accentBorder: 'rgba(234,179,8,0.2)',
+    platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday', 'ServiceNow', 'Vanta'],
+    keyResult: '<24 hr audit pack generation',
   },
 ]
 
+const COMPARISON = [
+  { feature: 'Invoice / Document Extraction', caps: [true, false, false, false, false, false] },
+  { feature: 'Approval Workflow Automation', caps: [true, true, false, true, false, false] },
+  { feature: 'Cash Flow Forecasting', caps: [false, false, true, false, false, false] },
+  { feature: 'Spend Anomaly Detection', caps: [false, false, true, false, true, false] },
+  { feature: 'ERP Natural Language Query', caps: [false, false, false, true, false, false] },
+  { feature: 'Integration Monitoring', caps: [false, false, false, false, true, false] },
+  { feature: 'AI Audit Trail', caps: [true, true, true, true, true, true] },
+  { feature: 'SOX / GDPR / EU AI Act', caps: [false, false, false, false, false, true] },
+  { feature: 'Slack & Teams Native', caps: [false, true, false, true, true, false] },
+  { feature: 'ERP Bidirectional Sync', caps: [true, true, false, false, true, false] },
+]
+
 export const metadata: Metadata = {
-  title: 'AI Capabilities | Flowtaris AI',
-  description: 'Explore 6 enterprise AI capabilities for NetSuite, Coupa, SAP, and Workday automation. From GenAI Document Intelligence to AI Governance.',
+  title: 'AI Capabilities for Enterprise Finance — NetSuite, Coupa, SAP, Workday | Flowtaris AI',
+  description: 'Six production-ready AI capabilities for enterprise finance teams. From GenAI document processing to AI governance. Connects to NetSuite, Coupa, SAP, and Workday.',
+  keywords: 'enterprise AI capabilities, finance automation, NetSuite AI, Coupa AI, SAP AI, Workday AI, AP automation, ERP AI',
+  alternates: { canonical: 'https://flowtaris.ai/capabilities' },
   openGraph: {
-    title: 'AI Capabilities | Flowtaris AI',
-    description: 'Explore 6 enterprise AI capabilities for NetSuite, Coupa, SAP, and Workday automation.',
+    title: 'AI Capabilities for Enterprise Finance | Flowtaris AI',
+    description: 'Six production-ready AI capabilities for NetSuite, Coupa, SAP, and Workday finance teams.',
+    url: 'https://flowtaris.ai/capabilities',
+    siteName: 'Flowtaris AI',
     type: 'website',
-  },
-  other: {
-    'script:ld+json': JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'ItemList',
-      name: 'Flowtaris AI Capabilities',
-      description: 'Six enterprise AI capabilities for finance automation across NetSuite, Coupa, SAP, and Workday',
-      itemListElement: capabilities.map((cap, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: serviceSchema({
-          name: cap.title,
-          description: cap.description,
-          category: cap.category,
-          platforms: cap.platforms,
-        }),
-      })),
-    }),
   },
 }
 
 export default function CapabilitiesPage() {
   return (
-    <div className="flex flex-col flex-1 w-full">
-      <HeroPattern
-        headline={{
-          text: 'Enterprise AI<br />Capabilities',
-          split: ['words', 'lines'],
-          className: 'text-display-xl text-gradient-brand text-balance',
-        }}
-        subheadline={{
-          text: 'Six production-ready AI capabilities built for NetSuite, Coupa, SAP, and Workday. Each capability delivers measurable ROI through automation, intelligence, and governance.',
-          shape: 'wave',
-          className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
-        }}
-        ctas={[
-          { label: 'Start Assessment', variant: 'primary', href: '/assessment' },
-          { label: 'ROI Calculator', variant: 'secondary', href: '/roi-calculator' },
-        ]}
-        stats={[
-          { label: '6', value: 'Capabilities' },
-          { label: '4', value: 'Platforms' },
-          { label: '85%', value: 'Avg Automation' },
-          { label: '3mo', value: 'Avg Payback' },
-        ]}
-        scrollIndicator={{ show: true }}
-        vignette={{ show: true, intensity: 0.3 }}
-        noise={{ show: true, opacity: 0.03 }}
-      />
+    <div className="min-h-screen bg-[#050505] text-white font-sans">
+      {/* Subtle grid */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.015]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
-      <main className="flex-1 w-full">
-        <section className="py-32 px-6" aria-labelledby="capabilities-heading">
-          <Container size="xl">
-            <Stack gap="2xl" className="w-full">
-              <header className="text-center max-w-3xl mx-auto">
-                <h2 id="capabilities-heading" className="text-display-md text-gradient-brand text-balance mb-6">
-                  Production-Ready AI for Enterprise ERP
-                </h2>
-                <p className="text-headline-md text-neutral-400 text-balance mb-12">
-                  Each capability is battle-tested, platform-certified, and designed for measurable business impact.
-                </p>
-              </header>
-
-              <div className="w-full flex justify-center mb-16 relative">
-                 <div className="relative z-10 w-full max-w-[800px]">
-                    <FloatingProduct
-                      src="/images/capabilities_doc_intel.png"
-                      alt="GenAI Document Intelligence"
-                      frames={['/images/capabilities_doc_intel.png']}
-                      mouseParallax={true}
-                      parallaxStrength={0.1}
-                      autoRotate={false}
-                      width={800}
-                      height={500}
-                      borderRadius="16px"
-                      shadow={true}
-                      shadowIntensity={1.2}
-                    />
-                 </div>
-              </div>
-
-              <CascadingCardStack
-                cards={capabilities.map((cap) => ({
-                  id: cap.slug,
-                  title: cap.title,
-                  category: cap.category,
-                  platforms: cap.platforms,
-                  maturity: cap.maturity as 'production' | 'pilot' | 'research',
-                  metric: cap.metric,
-                  icon: cap.icon,
-                  description: cap.description,
-                  href: `/capabilities/${cap.slug}`,
-                }))}
-                perspective={1000}
-                staggerDelay={100}
-                itemHeight={460}
-                gap={24}
-                className="w-full"
-              />
-            </Stack>
-          </Container>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-32 px-6 bg-gradient-to-b from-brand-navy-900/50 to-transparent">
-          <Container size="lg">
-            <div className="glass-strong rounded-3xl p-12 md:p-16 text-center">
-              <h2 className="text-display-lg text-gradient-brand mb-6 text-balance">
-                Not Sure Where to Start?
-              </h2>
-              <p className="text-headline-md text-neutral-300 mb-10 max-w-2xl mx-auto text-balance">
-                Take our 3-minute diagnostic to get a personalized AI automation roadmap tailored to your ERP, volume, and urgency.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="/assessment">
-                  <Button size="lg" className="glass-strong px-10 py-4">
-                    Start Free Assessment
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </a>
-                <a href="/roi-calculator">
-                  <Button variant="secondary" size="lg" className="glass px-10 py-4">
-                    Calculate ROI First
-                    <BarChart3 className="ml-2 h-5 w-5" />
-                  </Button>
-                </a>
-              </div>
-            </div>
-          </Container>
-        </section>
-      </main>
-
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">All Capabilities</a>
-              <a href="/case-studies" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Case Studies</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            </div>
+      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% -10%, rgba(255,255,255,0.04), transparent 70%)' }} />
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          <div className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-gray-400 bg-white/5 border border-white/10 px-5 py-2 rounded-full mb-10">
+            6 Production-Ready AI Capabilities
           </div>
-        </Container>
-      </footer>
+          <h1 className="text-5xl md:text-7xl lg:text-[6.5rem] font-bold leading-[1.02] tracking-tight text-white mb-8 max-w-4xl mx-auto">
+            Enterprise AI.<br />No Pilot Theater.
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-400 font-light leading-relaxed max-w-2xl mx-auto mb-16">
+            Six capabilities your finance team can deploy in weeks — not quarters. Each one connected to your existing ERP, each one with a measurable ROI.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-5 justify-center">
+            <Link href="/assessment" className="inline-flex items-center justify-center gap-2 bg-white text-black font-semibold text-lg px-10 py-5 rounded-2xl hover:bg-gray-100 hover:scale-[1.02] transition-all duration-300">
+              Find Your Starting Point <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link href="/roi-calculator" className="inline-flex items-center justify-center gap-2 bg-white/5 text-white font-semibold text-lg px-10 py-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <BarChart3 className="w-5 h-5" /> Calculate ROI First
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CAPABILITY CARDS ─────────────────────────────────────────────────── */}
+      <section className="py-16 px-6" aria-labelledby="capabilities-heading">
+        <div className="max-w-7xl mx-auto">
+          <h2 id="capabilities-heading" className="sr-only">All 6 AI Capabilities</h2>
+
+          <div className="space-y-6">
+            {CAPABILITIES.map((cap, idx) => (
+              <Link
+                key={cap.slug}
+                href={`/capabilities/${cap.slug}`}
+                className="group block rounded-3xl border p-8 md:p-12 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden"
+                style={{ borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(10,10,10,0.8)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = cap.accentBorder; (e.currentTarget as HTMLElement).style.backgroundColor = cap.accentMuted; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(10,10,10,0.8)'; }}
+              >
+                {/* Number indicator */}
+                <div className="absolute top-10 right-10 text-[100px] font-bold leading-none opacity-[0.04] text-white select-none">
+                  {String(idx + 1).padStart(2, '0')}
+                </div>
+
+                <div className="relative z-10 grid md:grid-cols-[1fr_auto] gap-8 items-start">
+                  <div>
+                    {/* Category + maturity */}
+                    <div className="flex items-center gap-4 mb-5">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.25em] px-3 py-1 rounded-full border" style={{ color: cap.accent, backgroundColor: cap.accentMuted, borderColor: cap.accentBorder }}>
+                        {cap.category}
+                      </span>
+                      <span className="text-xs text-gray-500 font-medium">● Production</span>
+                    </div>
+
+                    <h3 className="text-2xl md:text-3xl font-semibold text-white mb-3 group-hover:text-white transition-colors">
+                      {cap.title}
+                    </h3>
+                    <p className="text-base font-medium mb-4" style={{ color: cap.accent }}>{cap.headline}</p>
+                    <p className="text-gray-400 text-base font-light leading-relaxed max-w-2xl">{cap.description}</p>
+
+                    {/* Key metric */}
+                    <div className="flex items-center gap-6 mt-8 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cap.accent }} />
+                        <span className="text-sm font-semibold text-white">{cap.metric}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-gray-600" />
+                        <span className="text-sm text-gray-400">{cap.keyResult}</span>
+                      </div>
+                    </div>
+
+                    {/* Platform chips */}
+                    <div className="flex flex-wrap gap-2 mt-6">
+                      {cap.platforms.slice(0, 4).map((p) => (
+                        <span key={p} className="text-xs px-3 py-1 rounded-full bg-white/5 text-gray-400 border border-white/[0.06]">{p}</span>
+                      ))}
+                      {cap.platforms.length > 4 && (
+                        <span className="text-xs px-3 py-1 rounded-full bg-white/5 text-gray-500 border border-white/[0.06]">+{cap.platforms.length - 4} more</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="flex flex-col items-end justify-between h-full gap-4">
+                    <div className="w-12 h-12 rounded-xl border flex items-center justify-center transition-all duration-300 group-hover:scale-110" style={{ borderColor: cap.accentBorder, backgroundColor: cap.accentMuted, color: cap.accent }}>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                    <span className="text-sm font-semibold" style={{ color: cap.accent }}>Explore capability →</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURE COMPARISON MATRIX ──────────────────────────────────────── */}
+      <section className="py-32 px-6 bg-[#0a0a0a] border-t border-white/5" aria-labelledby="compare-heading">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 id="compare-heading" className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-6">
+              Which capabilities do you need?
+            </h2>
+            <p className="text-gray-400 text-lg font-light max-w-2xl mx-auto">
+              Most finance teams start with one capability and expand. This matrix helps you find where Flowtaris AI delivers the most impact for your specific situation.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-3xl border border-white/10">
+            <table className="w-full min-w-[900px] text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.02]">
+                  <th className="text-left px-6 py-5 text-xs font-bold uppercase tracking-widest text-gray-500 w-[28%]">Capability</th>
+                  {CAPABILITIES.map((cap) => (
+                    <th key={cap.slug} className="px-4 py-5 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: cap.accent }}>
+                        {cap.title.split(' ').slice(0, 2).join(' ')}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {COMPARISON.map((row) => (
+                  <tr key={row.feature} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-5 text-gray-300 font-medium">{row.feature}</td>
+                    {row.caps.map((has, i) => (
+                      <td key={i} className="px-4 py-5 text-center">
+                        {has
+                          ? <span className="inline-block w-5 h-5 rounded-full" style={{ backgroundColor: CAPABILITIES[i].accentMuted, border: `1.5px solid ${CAPABILITIES[i].accent}`, color: CAPABILITIES[i].accent }}>
+                              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 p-[3px]"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                            </span>
+                          : <span className="text-gray-700">—</span>
+                        }
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────────────────────────────────── */}
+      <section className="py-40 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,255,255,0.02), transparent 70%)' }} />
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-4xl md:text-6xl font-semibold text-white mb-8 tracking-tight">
+            Not sure where to start?
+          </h2>
+          <p className="text-gray-400 text-xl font-light leading-relaxed mb-14 max-w-2xl mx-auto">
+            Take our 3-minute AI Readiness Assessment and get a personalized recommendation of which capability will deliver the fastest ROI for your ERP environment and team size.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-5 justify-center">
+            <Link href="/assessment" className="inline-flex items-center justify-center gap-2 bg-white text-black font-semibold text-lg px-12 py-5 rounded-2xl hover:bg-gray-100 hover:scale-[1.02] transition-all duration-300">
+              Start Free Assessment <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link href="/roi-calculator" className="inline-flex items-center justify-center gap-2 bg-white/5 text-white font-semibold text-lg px-12 py-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <BarChart3 className="w-5 h-5" /> Calculate ROI First
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
