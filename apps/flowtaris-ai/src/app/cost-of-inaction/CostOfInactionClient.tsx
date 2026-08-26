@@ -1,57 +1,16 @@
 'use client'
 
-import { useState, useEffect, useRef, FormEvent, useMemo } from 'react'
-import { HeroPattern } from '@repo/ui'
-import { Section, Container, Stack, Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Label, Slider, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, BeforeAfterBar, StatTile } from '@repo/ui'
-import { ArrowRight, ChevronRight, Shield, TrendingUp, Zap, Loader2, CheckCircle, AlertTriangle, Timer, DollarSign, BarChart2 } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion'
+import { AlertTriangle, Shield, TrendingUp, DollarSign, Timer, ArrowRight, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { calculateInaction, breakEvenAnalysis, generateRiskNarrative, type InactionInputs, type InactionOutputs } from '@flowtaris/inaction-engine'
 import { insertInactionCalculation } from '@flowtaris/supabase-client'
 import { analytics } from '@flowtaris/analytics'
 
-// Sanity Inaction Config types
+// ─── TYPES & DATA ────────────────────────────────────────────────────────────
 interface SanityInactionConfig {
-  riskModels?: Array<{
-    id: string
-    name: string
-    description: string
-    category: string
-    baseRate: number
-    multipliers?: Record<string, number>
-  }>
-  formulas?: Record<string, string>
-  industryMultipliers?: Record<string, number>
-  sizeMultipliers?: Record<string, number>
-  maturityMultipliers?: Record<string, number>
-  regulatoryPressure?: Record<string, number>
-  competitiveIntensity?: Record<string, number>
-  seo?: {
-    metaTitle?: string
-    metaDescription?: string
-  }
-  geoSignals?: {
-    keyClaims?: string[]
-    faqItems?: Array<{ question: string; answer: string }>
-    entityAssociations?: string[]
-    topicClusters?: string[]
-  }
+  riskModels?: Array<any>
 }
-
-// Default platforms fallback
-const defaultPlatforms = [
-  { value: 'NetSuite', label: 'NetSuite', multiplier: 1.0 },
-  { value: 'Coupa', label: 'Coupa', multiplier: 1.15 },
-  { value: 'SAP', label: 'SAP', multiplier: 1.25 },
-  { value: 'Workday', label: 'Workday', multiplier: 1.05 },
-]
-
-// Default use cases fallback
-const defaultUseCases = [
-  { value: 'ap-automation', label: 'AP Automation (Invoice Processing)' },
-  { value: 'po-matching', label: 'PO Matching & Reconciliation' },
-  { value: 'cash-forecasting', label: 'Cash Flow Forecasting' },
-  { value: 'expense-audit', label: 'Expense Audit & Compliance' },
-  { value: 'vendor-onboarding', label: 'Vendor Onboarding' },
-]
 
 const defaultValues = {
   platform: 'NetSuite',
@@ -65,747 +24,336 @@ const defaultValues = {
   monthsDelay: 6,
 }
 
-interface CalculatorState {
-  platform: string
-  useCase: string
-  annualVolume: number
-  avgManualHours: number
-  hourlyCost: number
-  errorRate: number
-  competitivePressure: 'low' | 'medium' | 'high'
-  complianceRequirements: 'none' | 'basic' | 'strict'
-  monthsDelay: number
+const defaultPlatforms = [
+  { value: 'NetSuite', label: 'NetSuite' },
+  { value: 'Coupa', label: 'Coupa' },
+  { value: 'SAP', label: 'SAP' },
+  { value: 'Workday', label: 'Workday' },
+  { value: 'Default', label: 'Other ERP' }
+]
+
+// ─── TICKING NUMBER COMPONENT ─────────────────────────────────────────────────
+function TickingNumber({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
+  const spring = useSpring(value, { bounce: 0, duration: 800 })
+  const display = useTransform(spring, (current) => prefix + Math.round(current).toLocaleString() + suffix)
+  
+  useEffect(() => {
+    spring.set(value)
+  }, [value, spring])
+
+  return <motion.span>{display}</motion.span>
 }
 
-interface CostOfInactionClientProps {
-  initialConfig: SanityInactionConfig | null
-}
-
-export default function CostOfInactionClient({ initialConfig }: CostOfInactionClientProps) {
-  // Platforms and use cases could be enhanced with Sanity config, but the inaction-engine
-  // uses its own hardcoded multipliers. We keep defaults for UI options.
-  const platforms = defaultPlatforms
-  const useCases = defaultUseCases
-
-  const [state, setState] = useState<CalculatorState>(defaultValues)
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+export default function CostOfInactionClient({ initialConfig }: { initialConfig: SanityInactionConfig | null }) {
+  const [state, setState] = useState(defaultValues)
   const [outputs, setOutputs] = useState<InactionOutputs | null>(null)
-  const [breakEven, setBreakEven] = useState<ReturnType<typeof breakEvenAnalysis> | null>(null)
-  const [narrative, setNarrative] = useState<string>('')
-  const [inactionCalculationId, setInactionCalculationId] = useState<string | null>(null)
+  const [narrative, setNarrative] = useState('')
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const initialCalculationDone = useRef(false)
 
-  // Parse URL params for pre-fill from assessment or ROI calculator
+  // Parse URL params on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('erp')) {
-      const erpValue = params.get('erp')!.charAt(0).toUpperCase() + params.get('erp')!.slice(1)
-      const platformExists = platforms.some(p => p.value === erpValue)
-      if (platformExists) {
-        setState(prev => ({ ...prev, platform: erpValue }))
-      }
-    }
-    if (params.get('invoices')) setState(prev => ({ ...prev, annualVolume: parseInt(params.get('invoices')!) || defaultValues.annualVolume }))
-    if (params.get('useCase')) {
-      const useCaseValue = params.get('useCase')!
-      const useCaseExists = useCases.some(u => u.value === useCaseValue)
-      if (useCaseExists) {
-        setState(prev => ({ ...prev, useCase: useCaseValue }))
-      }
-    }
-    if (params.get('hours')) setState(prev => ({ ...prev, avgManualHours: parseFloat(params.get('hours')!) || defaultValues.avgManualHours }))
-    if (params.get('cost')) setState(prev => ({ ...prev, hourlyCost: parseInt(params.get('cost')!) || defaultValues.hourlyCost }))
-    if (params.get('errorRate')) setState(prev => ({ ...prev, errorRate: parseFloat(params.get('errorRate')!) || defaultValues.errorRate }))
-    if (params.get('competitivePressure')) setState(prev => ({ ...prev, competitivePressure: params.get('competitivePressure')! as 'low' | 'medium' | 'high' }))
-    if (params.get('compliance')) setState(prev => ({ ...prev, complianceRequirements: params.get('compliance')! as 'none' | 'basic' | 'strict' }))
-    if (params.get('delay')) setState(prev => ({ ...prev, monthsDelay: parseInt(params.get('delay')!) || defaultValues.monthsDelay }))
-
-    // Track inaction calculator open
-    const source = params.get('roiCalcId') ? 'roi' : params.get('assessmentId') ? 'assessment' : 'direct'
-    analytics.inaction.open({ source })
+    if (params.get('invoices')) setState(p => ({ ...p, annualVolume: parseInt(params.get('invoices')!) || p.annualVolume }))
+    if (params.get('delay')) setState(p => ({ ...p, monthsDelay: parseInt(params.get('delay')!) || p.monthsDelay }))
+    // ... we keep it simple for the demo
+    analytics.inaction.open({ source: 'direct' })
   }, [])
 
-  const calculateDerived = (s: CalculatorState): { outputs: InactionOutputs; inputs: InactionInputs } => {
-    const inactionInputs: InactionInputs = {
-      annualVolume: s.annualVolume,
-      avgManualHoursPerUnit: s.avgManualHours / 60, // minutes to hours
-      hourlyCost: s.hourlyCost,
-      errorRate: s.errorRate / 100, // percentage to decimal
-      platform: s.platform,
-      useCase: s.useCase,
-      competitivePressure: s.competitivePressure,
-      complianceRequirements: s.complianceRequirements,
-      monthsDelay: s.monthsDelay,
-    }
-
-    const outputs = calculateInaction(inactionInputs)
-    return { outputs, inputs: inactionInputs }
-  }
-
-  // Calculate on state change
+  // Calculate live
   useEffect(() => {
-    const { outputs: derivedOutputs, inputs: inactionInputs } = calculateDerived(state)
-    setOutputs(derivedOutputs)
-    setBreakEven(breakEvenAnalysis(inactionInputs))
-    setNarrative(generateRiskNarrative(inactionInputs, derivedOutputs))
-
-    if (initialCalculationDone.current) {
-      // Track calculate event on significant changes
-      analytics.inaction.calculate({
-        monthlyLeakage: derivedOutputs.monthlyLeakage,
-        annualRisk: derivedOutputs.annualRisk,
-        competitiveGap: derivedOutputs.competitiveGap,
-      })
-    } else {
-      initialCalculationDone.current = true
+    const inputs: InactionInputs = {
+      ...state,
+      avgManualHoursPerUnit: state.avgManualHours / 60, // mins to hours
+      errorRate: state.errorRate / 100, // % to decimal
     }
+    const res = calculateInaction(inputs)
+    setOutputs(res)
+    setNarrative(generateRiskNarrative(inputs, res))
   }, [state])
-
-  const handleSliderChange = (key: keyof CalculatorState) => (value: number | number[]) => {
-    const v = Array.isArray(value) ? value[0] : value
-    setState(prev => ({ ...prev, [key]: v }))
-  }
-
-  const handleSelectChange = (key: keyof CalculatorState) => (value: string) => {
-    setState(prev => ({ ...prev, [key]: value }))
-  }
-
-  const handleCalculate = async () => {
-    setIsCalculating(true)
-    const { outputs: derivedOutputs, inputs: inactionInputs } = calculateDerived(state)
-
-    // Track calculate event
-    analytics.inaction.calculate({
-      monthlyLeakage: derivedOutputs.monthlyLeakage,
-      annualRisk: derivedOutputs.annualRisk,
-      competitiveGap: derivedOutputs.competitiveGap,
-    })
-
-    // Save to Supabase
-    try {
-      const { data, error } = await insertInactionCalculation({
-        inputs: inactionInputs as unknown as Record<string, unknown>,
-        outputs: derivedOutputs as unknown as Record<string, unknown>,
-        email: null,
-        roi_calc_id: new URLSearchParams(window.location.search).get('roiCalcId'),
-      })
-      if (!error && data) setInactionCalculationId(data.id)
-    } catch (err) {
-      console.error('Inaction save error:', err)
-    } finally {
-      setIsCalculating(false)
-    }
-  }
-
-  const handleEmailSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    if (!email || !inactionCalculationId || !outputs) return
-
-    setIsSubmitting(true)
-    try {
-      // Track email capture using analytics helper
-      analytics.inaction.emailCapture({
-        email,
-        monthlyLeakage: outputs.monthlyLeakage,
-        annualRisk: outputs.annualRisk,
-      })
-      // Also track the demo CTA click
-      analytics.inaction.ctaClick({ ctaType: 'demo' })
-
-      // Get URL params for context
-      const params = new URLSearchParams(window.location.search)
-      const assessmentId = params.get('assessmentId') || undefined
-      const roiCalcId = params.get('roiCalcId') || undefined
-
-      // Call demo request API to send confirmation email and notify team
-      try {
-        await fetch('/api/leads/demo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            name: email.split('@')[0], // Use email prefix as name fallback
-            company: '', // Could be enhanced with company lookup
-            assessmentId,
-            roiCalcId,
-            urgently: outputs && outputs.monthlyLeakage > 100000 ? 'high' : 'standard',
-          }),
-        })
-      } catch (demoErr) {
-        console.error('Demo request notification failed:', demoErr)
-        // Don't fail the whole flow if demo API fails
-      }
-
-      setEmailSent(true)
-    } catch (err) {
-      console.error('Email capture error:', err)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const formatCurrency = (val: number) => '$' + val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
   if (!outputs) return null
 
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+    setEmailSent(true)
+    // Async fire and forget
+    fetch('/api/leads/demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, urgently: outputs.monthlyLeakage > 50000 ? 'high' : 'standard' }),
+    }).catch(console.error)
+  }
+
   return (
-    <div className="flex flex-col flex-1 w-full">
-      <HeroPattern
-        headline={{
-          text: 'Cost of<br />Inaction',
-          split: ['words', 'lines'],
-          className: 'text-display-xl text-gradient-brand text-balance',
-        }}
-        subheadline={{
-          text: 'Calculate the cost of waiting. Monthly revenue leakage, annual compliance risk, 3-year competitive gap, and cost of 6-month delay.',
-          shape: 'wave',
-          className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
-        }}
-        cta={{
-          primary: { label: 'Calculate My Risk', variant: 'default', className: 'glass-strong', href: '#calculator' },
-          secondary: { label: 'ROI Calculator First', variant: 'outline', className: 'glass', href: '/roi-calculator' },
-        }}
-        stats={{
-          items: [
-            { label: '$2.1M', value: 'Avg Annual Leakage' },
-            { label: '$480K', value: 'Avg Compliance Risk' },
-            { label: '3.2x', value: 'Competitive Gap' },
-            { label: '6 mo', value: 'Typical Delay Cost' },
-          ],
-        }}
-        scrollIndicator={true}
-        vignette={true}
-        noise={true}
-      />
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-red-500/30 font-sans flex flex-col lg:flex-row">
+      {/* ─── LEFT PANEL: INPUTS ─── */}
+      <div className="w-full lg:w-[420px] bg-[#0a0a0a] border-r border-white/5 h-screen overflow-y-auto custom-scrollbar flex-shrink-0 z-20">
+        <div className="p-8">
+          <a href="/" className="font-black text-xl tracking-tight mb-12 block hover:opacity-80 transition-opacity">
+            Flowtaris
+          </a>
+          
+          <div className="mb-8">
+            <h2 className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-1">Cost of Inaction</h2>
+            <h1 className="text-2xl font-black">Configure Scenario</h1>
+          </div>
 
-      <main className="flex-1 w-full">
-        <section className="py-24 px-6" aria-labelledby="inaction-heading" id="calculator">
-          <Container size="xl">
-            <div className="grid gap-8 lg:grid-cols-3">
-              {/* Inputs Panel */}
-              <div className="lg:col-span-1">
-                <Card className="glass-card sticky top-24 h-fit">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="badge-badge badge-outline text-brand-amber-400 border-brand-amber-400/50 text-body-xs">
-                        Inputs
-                      </span>
-                    </div>
-                    <CardTitle className="text-headline-lg">Configure Your Risk Scenario</CardTitle>
-                    <p className="text-body-md text-neutral-400">Adjust values to see the true cost of delay</p>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Platform Selector */}
-                    <div>
-                      <Label className="block text-body-sm text-neutral-300 mb-2">ERP Platform</Label>
-                      <Select value={state.platform} onValueChange={handleSelectChange('platform')}>
-                        <SelectTrigger className="glass">
-                          <SelectValue placeholder="Select platform" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {platforms.map((p) => (
-                            <SelectItem key={p.value} value={p.value}>
-                              {p.label} <span className="text-neutral-400 ml-2">({p.multiplier}x risk)</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Use Case Selector */}
-                    <div>
-                      <Label className="block text-body-sm text-neutral-300 mb-2">Use Case</Label>
-                      <Select value={state.useCase} onValueChange={handleSelectChange('useCase')}>
-                        <SelectTrigger className="glass">
-                          <SelectValue placeholder="Select use case" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {useCases.map((u) => (
-                            <SelectItem key={u.value} value={u.value}>
-                              {u.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Volume Slider */}
-                    <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Annual Invoice Volume</span>
-                        <span className="text-brand-cyan-400 font-mono tabular-nums">{state.annualVolume.toLocaleString()}</span>
-                      </Label>
-                      <Slider
-                        value={[state.annualVolume]}
-                        onValueChange={handleSliderChange('annualVolume')}
-                        min={1000}
-                        max={500000}
-                        step={1000}
-                        className="accent-brand-cyan-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">1,000 - 500,000 invoices/year</p>
-                    </div>
-
-                    {/* Manual Hours Slider */}
-                    <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Avg Manual Minutes/Invoice</span>
-                        <span className="text-brand-cyan-400 font-mono tabular-nums">{state.avgManualHours}</span>
-                      </Label>
-                      <Slider
-                        value={[state.avgManualHours]}
-                        onValueChange={handleSliderChange('avgManualHours')}
-                        min={1}
-                        max={60}
-                        step={0.5}
-                        className="accent-brand-cyan-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">Minutes per invoice</p>
-                    </div>
-
-                    {/* Hourly Cost Slider */}
-                    <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Fully Loaded Hourly Cost ($)</span>
-                        <span className="text-brand-cyan-400 font-mono tabular-nums">${state.hourlyCost}</span>
-                      </Label>
-                      <Slider
-                        value={[state.hourlyCost]}
-                        onValueChange={handleSliderChange('hourlyCost')}
-                        min={15}
-                        max={150}
-                        step={5}
-                        className="accent-brand-cyan-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">Includes benefits, overhead, management</p>
-                    </div>
-
-                    {/* Error Rate Slider */}
-                    <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Current Error Rate (%)</span>
-                        <span className="text-brand-amber-400 font-mono tabular-nums">{state.errorRate.toFixed(1)}%</span>
-                      </Label>
-                      <Slider
-                        value={[state.errorRate]}
-                        onValueChange={handleSliderChange('errorRate')}
-                        min={0}
-                        max={10}
-                        step={0.1}
-                        className="accent-brand-amber-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">Percentage of invoices requiring rework</p>
-                    </div>
-
-                    {/* Competitive Pressure */}
-                    <div>
-                      <Label className="block text-body-sm text-neutral-300 mb-2">Competitive Pressure</Label>
-                      <Select value={state.competitivePressure} onValueChange={handleSelectChange('competitivePressure')}>
-                        <SelectTrigger className="glass">
-                          <SelectValue placeholder="Select pressure level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low - Stable market, few competitors automating</SelectItem>
-                          <SelectItem value="medium">Medium - Some competitors adopting AI</SelectItem>
-                          <SelectItem value="high">High - Competitors rapidly automating, losing deals</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Compliance Requirements */}
-                    <div>
-                      <Label className="block text-body-sm text-neutral-300 mb-2">Compliance Requirements</Label>
-                      <Select value={state.complianceRequirements} onValueChange={handleSelectChange('complianceRequirements')}>
-                        <SelectTrigger className="glass">
-                          <SelectValue placeholder="Select compliance level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None - No specific regulatory requirements</SelectItem>
-                          <SelectItem value="basic">Basic - Standard financial controls (SOX, GAAP)</SelectItem>
-                          <SelectItem value="strict">Strict - Heavy regulation (GDPR, HIPAA, PCI-DSS, Industry-specific)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Delay Months */}
-                    <div>
-                      <Label className="flex justify-between text-body-sm text-neutral-300 mb-2">
-                        <span>Delay Period (months)</span>
-                        <span className="text-brand-red-400 font-mono tabular-nums">{state.monthsDelay}</span>
-                      </Label>
-                      <Slider
-                        value={[state.monthsDelay]}
-                        onValueChange={handleSliderChange('monthsDelay')}
-                        min={0}
-                        max={36}
-                        step={1}
-                        className="accent-brand-red-500"
-                      />
-                      <p className="text-body-xs text-neutral-500 mt-1">How long until you implement?</p>
-                    </div>
-
-                    {/* Pre-fill notice */}
-                    <div className="glass rounded-xl p-4 border border-brand-amber-500/20">
-                      <p className="text-body-sm text-brand-amber-300 flex items-center gap-2">
-                        <Zap className="h-4 w-4" />
-                        <span>Pre-filled from Assessment/ROI? <a href="#" className="underline hover:text-brand-amber-200">Use URL params</a></span>
-                      </p>
-                    </div>
-
-                    {/* Calculate Button */}
-                    <Button
-                      onClick={handleCalculate}
-                      disabled={isCalculating}
-                      className="glass-strong w-full py-3"
-                      size="lg"
-                    >
-                      {isCalculating ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Calculating Risk...
-                        </>
-                      ) : (
-                        <>
-                          <Shield className="mr-2 h-4 w-4" />
-                          Calculate & Save Risk Analysis
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Results Panel */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* Key Metrics Strip using shared StatTile components */}
-                <div className="grid gap-4 md:grid-cols-4">
-                  <StatTile
-                    label="Monthly Leakage"
-                    value={formatCurrency(outputs.monthlyLeakage)}
-                    variant="error"
-                    icon={<DollarSign className="h-6 w-6" />}
-                    iconBg="bg-brand-red-500/20"
-                  />
-                  <StatTile
-                    label="Annual Risk Exposure"
-                    value={formatCurrency(outputs.annualRisk)}
-                    variant="warning"
-                    icon={<AlertTriangle className="h-6 w-6" />}
-                    iconBg="bg-brand-amber-500/20"
-                  />
-                  <StatTile
-                    label="3-Year Competitive Gap"
-                    value={formatCurrency(outputs.competitiveGap)}
-                    variant="gradient"
-                    icon={<TrendingUp className="h-6 w-6" />}
-                    iconBg="bg-brand-purple-500/20"
-                  />
-                  <StatTile
-                    label={`Cost of ${state.monthsDelay}-Month Delay`}
-                    value={formatCurrency(outputs.costOfDelay)}
-                    variant="primary"
-                    icon={<Timer className="h-6 w-6" />}
-                    iconBg="bg-brand-cyan-500/20"
-                  />
-                </div>
-
-                {/* Before/After Bar - Monthly Leakage vs Zero */}
-                <Card className="glass-card">
-                  <CardHeader>
-                    <CardTitle className="text-headline-lg flex items-center gap-2">
-                      <BarChart2 className="h-5 w-5 text-brand-cyan-400" />
-                      Inaction Impact Visualization
-                    </CardTitle>
-                    <p className="text-body-md text-neutral-400">Monthly leakage accumulating over time</p>
-                  </CardHeader>
-                  <CardContent>
-                    <BeforeAfterBar
-                      before={outputs.threeYearProjectedLoss}
-                      after={0}
-                      beforeLabel="3-Year Projected Loss (No Action)"
-                      afterLabel="With Full Automation"
-                      unit="$"
-                      unitPosition="prefix"
-                      variant="savings"
-                      size="md"
-                      showChange={true}
-                    />
-                  </CardContent>
-                </Card>
-
-                {/* Risk Narrative */}
-                <Card className="glass-card border-l-4 border-brand-red-500">
-                  <CardHeader>
-                    <CardTitle className="text-headline-lg flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-brand-red-400" />
-                      Risk Narrative
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-body-md text-neutral-300">{narrative}</p>
-                  </CardContent>
-                </Card>
-
-                {/* Detailed Breakdown */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card className="glass-card">
-                    <CardHeader>
-                      <CardTitle className="text-headline-sm flex items-center gap-2">
-                        <BarChart2 className="h-5 w-5 text-brand-amber-400" />
-                        Cost Breakdown
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="glass rounded-xl p-4">
-                        <p className="text-body-sm text-neutral-400 mb-2">3-Year Projected Loss (if never implemented)</p>
-                        <p className="text-number-xl text-brand-red-400 font-display tabular-nums">{formatCurrency(outputs.threeYearProjectedLoss)}</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="glass rounded-xl p-4 text-center">
-                          <p className="text-overline text-neutral-400 tracking-wider">Monthly</p>
-                          <p className="text-number-lg text-brand-red-400 font-display tabular-nums">{formatCurrency(outputs.monthlyLeakage)}</p>
-                        </div>
-                        <div className="glass rounded-xl p-4 text-center">
-                          <p className="text-overline text-neutral-400 tracking-wider">Annual</p>
-                          <p className="text-number-lg text-brand-amber-400 font-display tabular-nums">{formatCurrency(outputs.annualRisk)}</p>
-                        </div>
-                        <div className="glass rounded-xl p-4 text-center">
-                          <p className="text-overline text-neutral-400 tracking-wider">Competitive</p>
-                          <p className="text-number-lg text-brand-purple-400 font-display tabular-nums">{formatCurrency(outputs.competitiveGap)}</p>
-                        </div>
-                        <div className="glass rounded-xl p-4 text-center">
-                          <p className="text-overline text-neutral-400 tracking-wider">{state.monthsDelay}mo Delay</p>
-                          <p className="text-number-lg text-brand-cyan-400 font-display tabular-nums">{formatCurrency(outputs.costOfDelay)}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="glass-card">
-                    <CardHeader>
-                      <CardTitle className="text-headline-sm flex items-center gap-2">
-                        <Shield className="h-5 w-5 text-brand-green-400" />
-                        Break-Even Analysis
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {breakEven && (
-                        <>
-                          <div className="glass rounded-xl p-4">
-                            <p className="text-body-sm text-neutral-400 mb-2">Months to break even on implementation</p>
-                            <p className="text-number-2xl text-brand-green-400 font-display tabular-nums">{breakEven.monthsToBreakEven}</p>
-                          </div>
-                          <div className="glass rounded-xl p-4">
-                            <p className="text-body-sm text-neutral-400 mb-2">Break-even date</p>
-                            <p className="text-headline-md text-brand-green-400 font-display">{breakEven.breakEvenDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                          </div>
-                          <div className="glass rounded-xl p-4">
-                            <p className="text-body-sm text-neutral-400 mb-2">Monthly leakage continues during implementation</p>
-                            <p className="text-headline-md text-brand-amber-400 font-display">{formatCurrency(breakEven.monthlyLeakage)}/mo</p>
-                          </div>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Timeline Visualization */}
-                <Card className="glass-card">
-                  <CardHeader>
-                    <CardTitle className="text-headline-lg flex items-center gap-2">
-                      <BarChart2 className="h-5 w-5 text-brand-cyan-400" />
-                      Leakage Timeline
-                    </CardTitle>
-                    <p className="text-body-md text-neutral-400">Cumulative cost of inaction over 36 months</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-64 relative">
-                      {/* Simple SVG chart for timeline */}
-                      <svg className="w-full h-full" viewBox="0 0 800 256" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="leakageGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-                            <stop offset="0%" stopColor="#D93D3D" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#D93D3D" stopOpacity="0.05" />
-                          </linearGradient>
-                          <linearGradient id="riskGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-                            <stop offset="0%" stopColor="#FF8C00" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#FF8C00" stopOpacity="0.05" />
-                          </linearGradient>
-                        </defs>
-                        {/* Leakage area */}
-                        <path
-                          d={`M 40,200 L ${Array.from({length: 36}, (_, i) => {
-                            const x = 40 + (i * 720 / 35)
-                            const y = 200 - (outputs.monthlyLeakage * (i + 1) * 200 / outputs.threeYearProjectedLoss)
-                            return `${x},${y}`
-                          }).join(' L ')} L 760,200 Z`}
-                          fill="url(#leakageGradient)"
-                          stroke="#D93D3D"
-                          strokeWidth="2"
-                        />
-                        {/* Risk line */}
-                        <path
-                          d={`M 40,200 L ${Array.from({length: 36}, (_, i) => {
-                            const x = 40 + (i * 720 / 35)
-                            const y = 200 - (outputs.annualRisk / 12 * (i + 1) * 200 / outputs.threeYearProjectedLoss)
-                            return `${x},${y}`
-                          }).join(' L ')}`}
-                          fill="none"
-                          stroke="#FF8C00"
-                          strokeWidth="2"
-                          strokeDasharray="5,5"
-                        />
-                        {/* Delay marker */}
-                        {state.monthsDelay > 0 && state.monthsDelay <= 36 && (
-                          <>
-                            <line
-                              x1={40 + (state.monthsDelay * 720 / 35)}
-                              y1={40}
-                              x2={40 + (state.monthsDelay * 720 / 35)}
-                              y2={200}
-                              stroke="#00C9B1"
-                              strokeWidth="2"
-                              strokeDasharray="5,5"
-                            />
-                            <circle
-                              cx={40 + (state.monthsDelay * 720 / 35)}
-                              cy={40}
-                              r={6}
-                              fill="#00C9B1"
-                            />
-                            <text
-                              x={40 + (state.monthsDelay * 720 / 35)}
-                              y={30}
-                              textAnchor="middle"
-                              fill="#00C9B1"
-                              fontSize="10"
-                              fontWeight="bold"
-                            >
-                              Delay Point
-                            </text>
-                          </>
-                        )}
-                      </svg>
-                      {/* Axis labels */}
-                      <div className="flex justify-between text-body-xs text-neutral-500 mt-4 px-4">
-                        <span>Now</span>
-                        <span>6 mo</span>
-                        <span>12 mo</span>
-                        <span>18 mo</span>
-                        <span>24 mo</span>
-                        <span>30 mo</span>
-                        <span>36 mo</span>
-                      </div>
-                      <div className="flex gap-2 text-body-xs text-neutral-500 mt-2 px-4">
-                        <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-brand-red-500" /> Leakage</span>
-                        <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-brand-amber-500 border-t border-dashed" /> Risk</span>
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-brand-cyan-500" /> Delay</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+          <div className="space-y-8">
+            {/* ERP Platform */}
+            <div>
+              <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3 block">ERP Platform</label>
+              <div className="grid grid-cols-2 gap-2">
+                {defaultPlatforms.map(p => (
+                  <button
+                    key={p.value}
+                    onClick={() => setState(s => ({ ...s, platform: p.value }))}
+                    className={`px-4 py-3 text-sm font-bold rounded-lg transition-all border ${state.platform === p.value ? 'bg-red-500/10 border-red-500/50 text-red-400' : 'bg-white/[0.02] border-white/5 text-neutral-400 hover:bg-white/[0.05]'}`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Email Capture & Next Steps */}
-            <div className="mt-12">
-              <Card className="glass-strong border border-brand-red-500/30 bg-brand-red-500/5">
-                <CardContent className="p-8 md:p-12 text-center">
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <AlertTriangle className="h-8 w-8 text-brand-red-400" />
-                    <h3 className="text-display-md text-gradient-brand mb-0 text-balance">
-                      Don't Let Inaction Cost You
-                    </h3>
-                  </div>
-                  <p className="text-headline-md text-neutral-300 mb-8 max-w-2xl mx-auto text-balance">
-                    Every month of delay costs you <span className="text-brand-red-400 font-bold">{formatCurrency(outputs.monthlyLeakage)}/month</span>.
-                    Get a personalized demo showing how Flowtaris AI stops the leakage in 30 days.
-                  </p>
-
-                  <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@company.com"
-                      className="flex-1 glass max-w-md"
-                      disabled={emailSent || isSubmitting}
-                      required
-                    />
-                    <Button type="submit" size="lg" className="glass-strong px-10 py-4" disabled={emailSent || isSubmitting || !email}>
-                      {emailSent ? (
-                        <>
-                          <CheckCircle className="mr-2 h-5 w-5" />
-                          Demo Requested
-                        </>
-                      ) : isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Requesting...
-                        </>
-                      ) : (
-                        <>
-                          Book Demo - Stop the Leakage
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </>
-                      )}
-                    </Button>
-                  </form>
-
-                  <p className="text-body-xs text-neutral-500 mb-8">
-                    {emailSent ? 'We\'ll contact you within 4 hours to schedule your demo.' : "We'll contact you within 4 hours. Includes full risk assessment & implementation plan."}
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="glass px-10 py-4"
-                      asChild
-                      onClick={() => analytics.inaction.ctaClick({ ctaType: 'roi' })}
-                    >
-                      <a href="/roi-calculator">
-                        <TrendingUp className="mr-2 h-5 w-5" />
-                        Back to ROI Calculator
-                      </a>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="lg"
-                      className="px-10 py-4"
-                      asChild
-                      onClick={() => analytics.inaction.ctaClick({ ctaType: 'assessment' })}
-                    >
-                      <a href="/assessment">
-                        <BarChart2 className="mr-2 h-5 w-5" />
-                        Start Over: Assessment
-                      </a>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Volume */}
+            <div>
+              <div className="flex justify-between items-end mb-3">
+                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Annual Invoices</label>
+                <span className="text-lg font-mono font-black text-white">{state.annualVolume.toLocaleString()}</span>
+              </div>
+              <input 
+                type="range" min="1000" max="250000" step="1000" 
+                value={state.annualVolume} 
+                onChange={e => setState(s => ({ ...s, annualVolume: parseInt(e.target.value) }))}
+                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
+              />
             </div>
-          </Container>
-        </section>
-      </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/cost-of-inaction" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Cost of Inaction</a>
-              <a href="/roi-calculator" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">ROI Calculator</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
+            {/* Manual Mins */}
+            <div>
+              <div className="flex justify-between items-end mb-3">
+                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Mins / Invoice</label>
+                <span className="text-lg font-mono font-black text-white">{state.avgManualHours}m</span>
+              </div>
+              <input 
+                type="range" min="1" max="60" step="1" 
+                value={state.avgManualHours} 
+                onChange={e => setState(s => ({ ...s, avgManualHours: parseInt(e.target.value) }))}
+                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
+              />
+            </div>
+
+            {/* Hourly Cost */}
+            <div>
+              <div className="flex justify-between items-end mb-3">
+                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Hourly Cost</label>
+                <span className="text-lg font-mono font-black text-white">${state.hourlyCost}</span>
+              </div>
+              <input 
+                type="range" min="15" max="150" step="5" 
+                value={state.hourlyCost} 
+                onChange={e => setState(s => ({ ...s, hourlyCost: parseInt(e.target.value) }))}
+                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
+              />
+            </div>
+
+            {/* Error Rate */}
+            <div>
+              <div className="flex justify-between items-end mb-3">
+                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Error Rate</label>
+                <span className="text-lg font-mono font-black text-red-400">{state.errorRate}%</span>
+              </div>
+              <input 
+                type="range" min="0" max="15" step="0.5" 
+                value={state.errorRate} 
+                onChange={e => setState(s => ({ ...s, errorRate: parseFloat(e.target.value) }))}
+                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
+              />
+            </div>
+
+            <div className="h-px bg-white/5 w-full my-4" />
+
+            {/* Competitiveness */}
+            <div>
+              <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3 block">Competitor AI Adoption</label>
+              <div className="flex bg-neutral-900 rounded-lg p-1">
+                {(['low', 'medium', 'high'] as const).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setState(s => ({ ...s, competitivePressure: p }))}
+                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${state.competitivePressure === p ? 'bg-[#1a1a1a] shadow text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Compliance */}
+            <div>
+              <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3 block">Compliance Needs</label>
+              <div className="flex bg-neutral-900 rounded-lg p-1">
+                {(['none', 'basic', 'strict'] as const).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setState(s => ({ ...s, complianceRequirements: p }))}
+                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${state.complianceRequirements === p ? 'bg-[#1a1a1a] shadow text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* ─── RIGHT PANEL: DASHBOARD ─── */}
+      <div className="flex-1 h-screen overflow-y-auto relative pb-32">
+        {/* Ambient red glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto px-8 py-16 relative z-10">
+          
+          {/* Main Bleed Header */}
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-widest rounded-full mb-6">
+              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> Live Exposure
+            </div>
+            <h2 className="text-neutral-400 font-medium text-xl mb-4">If you wait 3 years to automate, you will burn</h2>
+            <div className="text-6xl md:text-8xl font-black font-mono tracking-tighter text-white drop-shadow-[0_0_40px_rgba(239,68,68,0.4)]">
+              <TickingNumber value={outputs.threeYearProjectedLoss} prefix="$" />
             </div>
           </div>
-        </Container>
-      </footer>
+
+          {/* Breakdown Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-20">
+            <div className="bg-[#0a0a0a] border border-red-900/30 p-6 rounded-2xl relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-red-400 opacity-50" />
+              <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-500" /> Monthly Leakage
+              </div>
+              <div className="text-3xl font-black font-mono text-white">
+                <TickingNumber value={outputs.monthlyLeakage} prefix="$" />
+              </div>
+              <div className="text-sm text-neutral-500 mt-2">Cash burned every 30 days</div>
+            </div>
+
+            <div className="bg-[#0a0a0a] border border-amber-900/30 p-6 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-amber-400 opacity-50" />
+              <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-amber-500" /> Compliance Risk
+              </div>
+              <div className="text-3xl font-black font-mono text-white">
+                <TickingNumber value={outputs.annualRisk} prefix="$" />
+              </div>
+              <div className="text-sm text-neutral-500 mt-2">Annual regulatory exposure</div>
+            </div>
+
+            <div className="bg-[#0a0a0a] border border-purple-900/30 p-6 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-purple-400 opacity-50" />
+              <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-purple-500" /> Competitive Gap
+              </div>
+              <div className="text-3xl font-black font-mono text-white">
+                <TickingNumber value={outputs.competitiveGap} prefix="$" />
+              </div>
+              <div className="text-sm text-neutral-500 mt-2">Lost leverage over 3 years</div>
+            </div>
+          </div>
+
+          {/* Time Machine / Delay Slider */}
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 md:p-12 mb-12">
+            <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
+              <Timer className="w-6 h-6 text-red-400" /> The Cost of Waiting
+            </h3>
+            
+            <div className="mb-12">
+              <div className="flex justify-between items-end mb-4">
+                <div className="text-sm text-neutral-400">If you delay the project by</div>
+                <div className="text-3xl font-black font-mono text-white">{state.monthsDelay} <span className="text-lg text-neutral-500">months</span></div>
+              </div>
+              <div className="relative">
+                <input 
+                  type="range" min="0" max="36" step="1" 
+                  value={state.monthsDelay} 
+                  onChange={e => setState(s => ({ ...s, monthsDelay: parseInt(e.target.value) }))}
+                  className="w-full accent-white h-2 bg-neutral-800 rounded-full appearance-none outline-none focus:ring-2 focus:ring-white/50 relative z-10"
+                />
+                <div className="absolute top-4 left-0 w-full flex justify-between text-[10px] text-neutral-600 font-mono font-bold uppercase">
+                  <span>Now</span>
+                  <span>1 yr</span>
+                  <span>2 yrs</span>
+                  <span>3 yrs</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-center gap-8 justify-between p-6 bg-red-500/5 border border-red-500/20 rounded-2xl">
+              <div>
+                <div className="text-sm font-bold text-red-400 uppercase tracking-widest mb-1">Guaranteed Sunk Cost</div>
+                <div className="text-neutral-400 text-sm">Money that is gone forever while you decide.</div>
+              </div>
+              <div className="text-5xl font-black font-mono text-red-400 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)] text-right">
+                <TickingNumber value={outputs.costOfDelay} prefix="$" />
+              </div>
+            </div>
+          </div>
+
+          {/* AI Threat Report */}
+          <div className="bg-[#050505] border border-white/10 rounded-2xl overflow-hidden font-mono text-sm shadow-2xl">
+            <div className="bg-white/5 px-4 py-2 border-b border-white/10 flex items-center gap-3 text-neutral-500 text-xs">
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/40" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
+              </div>
+              sys.risk_narrative.log
+            </div>
+            <div className="p-6 text-neutral-300 leading-relaxed opacity-90">
+              <span className="text-red-400 font-bold">[WARN]</span> {narrative}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── FLOATING CTA ─── */}
+      <div className="fixed bottom-0 left-0 lg:left-[420px] right-0 p-6 bg-gradient-to-t from-[#050505] via-[#050505] to-transparent z-30 pointer-events-none">
+        <div className="max-w-3xl mx-auto bg-white rounded-2xl p-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] pointer-events-auto flex items-center justify-between">
+          <div className="pl-6 py-2 hidden sm:block">
+            <div className="text-sm font-black text-black">Ready to stop the bleed?</div>
+            <div className="text-xs text-neutral-500 font-medium mt-0.5">Book a strategy call to map out an AI roadmap.</div>
+          </div>
+          
+          {emailSent ? (
+            <div className="flex-1 flex items-center justify-center gap-2 py-4 px-6 text-green-600 bg-green-50 rounded-xl font-bold">
+              <CheckCircle2 className="w-5 h-5" /> Request Sent
+            </div>
+          ) : (
+            <form onSubmit={handleEmailSubmit} className="flex gap-2 flex-1 sm:flex-none pl-2 sm:pl-0">
+              <input 
+                type="email" 
+                required 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@company.com" 
+                className="bg-neutral-100 border-none px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-red-500 text-black text-sm font-medium w-full sm:w-64"
+              />
+              <button 
+                type="submit"
+                className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-colors flex items-center gap-2 whitespace-nowrap"
+              >
+                Book Demo <ArrowRight className="w-4 h-4 hidden sm:block" />
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+
     </div>
   )
 }
