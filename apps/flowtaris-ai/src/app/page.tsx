@@ -5,7 +5,7 @@ import TrustSignalsSection from '../components/TrustSignalsSection'
 import DualVisionSection from '../components/DualVisionSection'
 import IntelligenceSuiteSection from '../components/IntelligenceSuiteSection'
 import CapabilitiesSection from '../components/CapabilitiesSection'
-import CtaTerminalSection from '../components/CtaTerminalSection'
+import CtaCostSection from '../components/CtaCostSection'
 
 export const metadata: Metadata = {
   title: 'Flowtaris AI | Enterprise AI Automation for Finance',
@@ -38,8 +38,8 @@ export default function Home() {
       {/* ── Capabilities: Proof Wall Accordion ── */}
       <CapabilitiesSection />
 
-      {/* ── CTA Banner: Terminal Unlock ── */}
-      <CtaTerminalSection />
+      {/* ── CTA: Cost of Inaction Counter ── */}
+      <CtaCostSection />
 
       {/* ── Footer ── */}
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '40px 24px' }}>
