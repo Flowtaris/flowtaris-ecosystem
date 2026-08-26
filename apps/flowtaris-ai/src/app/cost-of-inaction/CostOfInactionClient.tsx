@@ -285,16 +285,20 @@ export default function CostOfInactionClient({ initialConfig }: { initialConfig:
         <div className="flex-1 p-6 md:p-12 pb-32 xl:pb-12 bg-white">
           
           <div className="max-w-4xl mx-auto">
-            {/* AI Diagnostic Summary */}
-            <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl mb-12">
-              <div className="flex items-center gap-2 text-blue-800 font-bold mb-3">
-                <CheckCircle2 className="w-5 h-5" /> AI Diagnostic Analysis
+            {/* Executive Synthesis */}
+            <div className="relative mb-16">
+              <div className="hidden md:block absolute -left-6 top-0 bottom-0 w-1 bg-slate-900 rounded-full" />
+              <h2 className="text-xl font-black text-slate-900 mb-4 tracking-tight">
+                Executive Synthesis
+              </h2>
+              <div className="text-slate-700 text-base leading-relaxed mb-6 max-w-3xl">
+                {narrative.split('\n\n').map((paragraph, idx) => (
+                  <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
+                ))}
               </div>
-              <p className="text-blue-900/80 text-sm leading-relaxed mb-4">
-                {narrative}
-              </p>
-              <div className="text-xs text-blue-800/60 font-medium">
-                Note: This is a projected analysis based on algorithmic models and industry benchmarks, designed to illustrate potential exposure. It is not real-time telemetry.
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-md uppercase tracking-wider">
+                <Info className="w-3.5 h-3.5" />
+                Diagnostic Projection Engine
               </div>
             </div>
             
