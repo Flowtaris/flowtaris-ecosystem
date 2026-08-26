@@ -14,18 +14,52 @@ interface Props {
 }
 
 // ─── DATA FETCHING ─────────────────────────────────────────────────────────────
-async function getCapability(slug: string) {
-  const supabase = createServerClient()
-  const { data, error } = await supabase
-    .from('capabilities')
-    .select('*')
-    .eq('slug', slug)
-    .single()
-
-  if (error || !data || !data.is_published) {
-    return null
+const STATIC_FALLBACKS: Record<string, any> = {
+  'genai-document-intelligence': {
+    slug: 'genai-document-intelligence',
+    category: 'DOCUMENT PROCESSING',
+    title: 'GenAI Document Intelligence',
+    headline: 'Your Finance Team Processes 400 Documents a Day. AI Can Handle 400,000.',
+    subheadline: 'Flowtaris AI extracts, validates, and routes invoices, purchase orders, receipts, and contracts — at 99.4% accuracy — directly into your ERP.',
+    maturity: 'production',
+    problem_eyebrow: 'THE PROBLEM',
+    problem_headline: 'Finance teams lose 23 hours per week manually keying invoices, POs, and receipts into the ERP.',
+    problem_body: "At a fully loaded cost of $45/hr per finance analyst, that's $53,820 per person per year — before accounting for error remediation, late payment penalties, and duplicate invoice fraud.\n\nLegacy OCR tools were built for simple, templated documents. Modern AP environments receive invoices in 60+ formats from hundreds of vendors. Template-based extraction breaks constantly, creating a tier of exceptions that still requires manual review.\n\nFlowtaris AI uses large language models fine-tuned on financial documents — not rigid templates — so it understands context the way a human does, at machine speed.",
+    problem_stat_value: '23 hrs',
+    problem_stat_label: 'lost per analyst per week to manual document entry',
+    stats: [
+      { value: '99.4%', label: 'Extraction Accuracy', context: 'across 2.1M documents processed' },
+      { value: '4 days → 3 min', label: 'Invoice-to-Pay Cycle', context: 'median reduction in production' },
+      { value: '85%', label: 'Automation Rate', context: 'of invoices with zero human touch' },
+      { value: '$4.5M/yr', label: 'Cost Reduction', context: 'for enterprise at 50K invoices/yr' }
+    ],
+    integrations: ['NetSuite SuiteCloud','Coupa Open APIs','SAP BTP','Workday Cloud Connect','Oracle ERP Cloud','MuleSoft','Celonis','Microsoft Azure AI'],
+    faq_items: [],
+    seo_title: 'AI Invoice Processing & Document Intelligence for NetSuite, Coupa & SAP | Flowtaris AI',
+    seo_description: 'Automate accounts payable with GenAI. Flowtaris AI extracts invoice data at 99.4% accuracy and syncs directly to NetSuite, Coupa, SAP, and Workday.',
+    seo_keywords: 'AI invoice processing, GenAI document extraction, AP automation NetSuite',
+    is_published: true,
   }
-  return data
+}
+
+async function getCapability(slug: string) {
+  try {
+    const supabase = createServerClient()
+    const { data, error } = await supabase
+      .from('capabilities')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+
+    if (!error && data && data.is_published) {
+      return data
+    }
+  } catch (err) {
+    // Suppress error and fallback
+  }
+
+  // Fallback to static data if Supabase env vars are missing or query fails
+  return STATIC_FALLBACKS[slug] || null
 }
 
 // ─── METADATA ─────────────────────────────────────────────────────────────────
