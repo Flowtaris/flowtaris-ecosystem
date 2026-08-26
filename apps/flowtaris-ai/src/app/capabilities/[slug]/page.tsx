@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { CheckCircle2, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react'
 import { createServerClient } from '@flowtaris/supabase-client'
+import { IntegrationChips, RelatedCapabilityLinks } from '../CapabilityInteractives'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -970,13 +971,7 @@ export default async function CapabilityDetailPage({ params }: Props) {
                 Connects to the stack you already run.
               </h2>
               <p className="text-gray-500 mb-14 text-base font-light">No rip-and-replace. No new modules. Flowtaris layers on top of your existing ERP investment.</p>
-              <div className="flex flex-wrap justify-center gap-4">
-                {cap.integrations.map((i: string) => (
-                  <span key={i} className="px-6 py-3 rounded-full text-sm font-medium text-gray-300 border transition-all duration-300 hover:text-white cursor-default" style={{ backgroundColor: 'rgba(10,10,10,0.8)', borderColor: 'rgba(255,255,255,0.08)' }} onMouseEnter={(e) => { (e.target as HTMLElement).style.borderColor = accentBorder; (e.target as HTMLElement).style.color = accent; }} onMouseLeave={(e) => { (e.target as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; (e.target as HTMLElement).style.color = 'rgb(209,213,219)'; }}>
-                    {i}
-                  </span>
-                ))}
-              </div>
+              <IntegrationChips integrations={cap.integrations} accent={accent} accentBorder={accentBorder} />
             </div>
           </section>
         )}
@@ -1009,20 +1004,14 @@ export default async function CapabilityDetailPage({ params }: Props) {
           <section className="py-24 px-6 border-t border-white/5">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-2xl font-semibold text-white mb-10 text-center">Related Capabilities</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {related.map((rc: any) => {
-                  const rcColors = CAPABILITY_COLORS[rc.slug] || DEFAULT_COLOR
-                  return (
-                    <Link key={rc.slug} href={`/capabilities/${rc.slug}`} className="group rounded-2xl p-8 border transition-all duration-300 hover:-translate-y-1" style={{ borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(10,10,10,0.8)' }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = rcColors.accentBorder; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; }}>
-                      <div className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: rcColors.accent }}>{rc.category}</div>
-                      <div className="text-white font-semibold text-lg mb-4 leading-snug">{rc.title}</div>
-                      <div className="flex items-center gap-2 text-sm font-medium" style={{ color: rcColors.accent }}>
-                        Explore <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
+              <RelatedCapabilityLinks 
+                related={related.map((rc: any) => ({
+                  slug: rc.slug,
+                  title: rc.title,
+                  category: rc.category,
+                  ...((CAPABILITY_COLORS as any)[rc.slug] || DEFAULT_COLOR)
+                }))}
+              />
             </div>
           </section>
         )}

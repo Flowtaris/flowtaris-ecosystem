@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, BarChart3 } from 'lucide-react'
+import { CapabilityCardList } from './CapabilityInteractives'
 
 // ─── CAPABILITY REGISTRY ─────────────────────────────────────────────────────
 const CAPABILITIES = [
@@ -153,69 +154,7 @@ export default function CapabilitiesPage() {
           <h2 id="capabilities-heading" className="sr-only">All 6 AI Capabilities</h2>
 
           <div className="space-y-6">
-            {CAPABILITIES.map((cap, idx) => (
-              <Link
-                key={cap.slug}
-                href={`/capabilities/${cap.slug}`}
-                className="group block rounded-3xl border p-8 md:p-12 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden"
-                style={{ borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(10,10,10,0.8)' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = cap.accentBorder; (e.currentTarget as HTMLElement).style.backgroundColor = cap.accentMuted; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(10,10,10,0.8)'; }}
-              >
-                {/* Number indicator */}
-                <div className="absolute top-10 right-10 text-[100px] font-bold leading-none opacity-[0.04] text-white select-none">
-                  {String(idx + 1).padStart(2, '0')}
-                </div>
-
-                <div className="relative z-10 grid md:grid-cols-[1fr_auto] gap-8 items-start">
-                  <div>
-                    {/* Category + maturity */}
-                    <div className="flex items-center gap-4 mb-5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.25em] px-3 py-1 rounded-full border" style={{ color: cap.accent, backgroundColor: cap.accentMuted, borderColor: cap.accentBorder }}>
-                        {cap.category}
-                      </span>
-                      <span className="text-xs text-gray-500 font-medium">● Production</span>
-                    </div>
-
-                    <h3 className="text-2xl md:text-3xl font-semibold text-white mb-3 group-hover:text-white transition-colors">
-                      {cap.title}
-                    </h3>
-                    <p className="text-base font-medium mb-4" style={{ color: cap.accent }}>{cap.headline}</p>
-                    <p className="text-gray-400 text-base font-light leading-relaxed max-w-2xl">{cap.description}</p>
-
-                    {/* Key metric */}
-                    <div className="flex items-center gap-6 mt-8 flex-wrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cap.accent }} />
-                        <span className="text-sm font-semibold text-white">{cap.metric}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-gray-600" />
-                        <span className="text-sm text-gray-400">{cap.keyResult}</span>
-                      </div>
-                    </div>
-
-                    {/* Platform chips */}
-                    <div className="flex flex-wrap gap-2 mt-6">
-                      {cap.platforms.slice(0, 4).map((p) => (
-                        <span key={p} className="text-xs px-3 py-1 rounded-full bg-white/5 text-gray-400 border border-white/[0.06]">{p}</span>
-                      ))}
-                      {cap.platforms.length > 4 && (
-                        <span className="text-xs px-3 py-1 rounded-full bg-white/5 text-gray-500 border border-white/[0.06]">+{cap.platforms.length - 4} more</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* CTA */}
-                  <div className="flex flex-col items-end justify-between h-full gap-4">
-                    <div className="w-12 h-12 rounded-xl border flex items-center justify-center transition-all duration-300 group-hover:scale-110" style={{ borderColor: cap.accentBorder, backgroundColor: cap.accentMuted, color: cap.accent }}>
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                    <span className="text-sm font-semibold" style={{ color: cap.accent }}>Explore capability →</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+            <CapabilityCardList capabilities={CAPABILITIES} />
           </div>
         </div>
       </section>
