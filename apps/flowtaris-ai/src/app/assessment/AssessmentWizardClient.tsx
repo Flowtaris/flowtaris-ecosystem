@@ -12,7 +12,7 @@ interface SanityAssessmentConfig {
   uiContent?: Record<string, string>
 }
 
-const STORAGE_KEY = 'flowtaris-assessment-v3'
+const STORAGE_KEY = 'flowtaris-assessment-v4'
 const initialAnswers: AssessmentAnswers = {
   erp: '', painPoints: [],
   volume: { invoicesPerMonth: 0, employees: 1, transactions: 0, poLines: 0 },
@@ -22,20 +22,20 @@ const initialAnswers: AssessmentAnswers = {
 // ─── ERP DATA ─────────────────────────────────────────────────────────────────
 const ERP_LIST = [
   { value: 'NetSuite', abbr: 'NS', label: 'Oracle NetSuite', sub: 'ERP · Cloud', accent: '#00b4a0' },
-  { value: 'SAP', abbr: 'SAP', label: 'SAP S/4HANA', sub: 'ERP · Hybrid', accent: '#0070f3' },
-  { value: 'Coupa', abbr: 'CPA', label: 'Coupa BSM', sub: 'Procurement · Cloud', accent: '#f76b15' },
-  { value: 'Workday', abbr: 'WD', label: 'Workday Finance', sub: 'HCM · Cloud', accent: '#00c86e' },
-  { value: 'Multiple', abbr: '···', label: 'Multiple Systems', sub: 'Multi-platform', accent: '#9b6fff' },
+  { value: 'SAP', abbr: 'SAP', label: 'SAP S/4HANA', sub: 'ERP · Hybrid', accent: '#3b82f6' },
+  { value: 'Coupa', abbr: 'CPA', label: 'Coupa BSM', sub: 'Procurement · Cloud', accent: '#f97316' },
+  { value: 'Workday', abbr: 'WD', label: 'Workday Finance', sub: 'HCM · Cloud', accent: '#22c55e' },
+  { value: 'Multiple', abbr: '···', label: 'Multiple Systems', sub: 'Multi-platform', accent: '#a855f7' },
 ]
 
 // ─── PAIN POINTS ──────────────────────────────────────────────────────────────
 const PAIN_LIST = [
-  { value: 'Manual data entry', label: 'Manual Invoice Processing', metric: '$14.20', unit: 'per invoice', severity: 92, color: '#ff4d4f' },
-  { value: 'Invoice processing delays', label: 'Cash Flow Blind Spots', metric: '11 days', unit: 'avg DSO gap', severity: 78, color: '#fa8c16' },
-  { value: 'Integration Failures', label: 'Integration Failures', metric: '4.3 hrs', unit: 'downtime/month', severity: 84, color: '#ff7a45' },
-  { value: 'Compliance risks', label: 'Compliance Exposure', metric: '$82K', unit: 'avg fine risk', severity: 89, color: '#f5222d' },
-  { value: 'Slow decision making', label: 'Slow Financial Close', metric: '7.5 days', unit: 'avg cycle', severity: 71, color: '#faad14' },
-  { value: 'High error rates', label: 'Error Rates & Disputes', metric: '4.8%', unit: 'error rate avg', severity: 76, color: '#ff4d4f' },
+  { value: 'Manual data entry', label: 'Manual Invoice Processing', metric: '$14.20', unit: 'per invoice', severity: 92, color: '#ef4444' },
+  { value: 'Invoice processing delays', label: 'Cash Flow Blind Spots', metric: '11 days', unit: 'avg DSO gap', severity: 78, color: '#f59e0b' },
+  { value: 'Integration Failures', label: 'Integration Failures', metric: '4.3 hrs', unit: 'downtime/month', severity: 84, color: '#f97316' },
+  { value: 'Compliance risks', label: 'Compliance Exposure', metric: '$82K', unit: 'avg fine risk', severity: 89, color: '#ef4444' },
+  { value: 'Slow decision making', label: 'Slow Financial Close', metric: '7.5 days', unit: 'avg cycle', severity: 71, color: '#eab308' },
+  { value: 'High error rates', label: 'Error Rates & Disputes', metric: '4.8%', unit: 'error rate avg', severity: 76, color: '#ef4444' },
 ]
 
 const STATE_LIST = [
@@ -54,10 +54,10 @@ const MATURITY_LIST = [
 ]
 
 const URGENCY_LIST = [
-  { value: 'Exploring', label: 'Research Phase', tag: 'Building business case', signal: 'L', signalColor: '#64748b', priority: 1 },
-  { value: 'Budget Approved', label: 'Budget Approved', tag: 'Funding secured', signal: 'M', signalColor: '#3b82f6', priority: 2 },
-  { value: 'Audit-Driven', label: 'Audit Deadline', tag: 'Regulatory requirement', signal: 'H', signalColor: '#f59e0b', priority: 3 },
-  { value: 'Board Mandate', label: 'Board Mandate', tag: 'Executive directive', signal: '!', signalColor: '#ef4444', priority: 4 },
+  { value: 'Exploring', label: 'Research Phase', tag: 'Building business case', signal: 'LOW', signalColor: '#94a3b8', priority: 1 },
+  { value: 'Budget Approved', label: 'Budget Approved', tag: 'Funding secured', signal: 'MED', signalColor: '#3b82f6', priority: 2 },
+  { value: 'Audit-Driven', label: 'Audit Deadline', tag: 'Regulatory requirement', signal: 'HIGH', signalColor: '#f59e0b', priority: 3 },
+  { value: 'Board Mandate', label: 'Board Mandate', tag: 'Executive directive', signal: 'CRIT', signalColor: '#ef4444', priority: 4 },
 ]
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -90,59 +90,109 @@ function Gauge({ score }: { score: number }) {
   return (
     <div className="relative" style={{ width: sz, height: sz }}>
       <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{ transform: 'rotate(135deg)' }}>
-        <circle cx={sz/2} cy={sz/2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={8} strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" />
+        <circle cx={sz/2} cy={sz/2} r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={8} strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" />
         <circle cx={sz/2} cy={sz/2} r={r} fill="none" stroke={color} strokeWidth={8} strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
-          style={{ transition: 'stroke-dasharray 1s ease', filter: `drop-shadow(0 0 5px ${color})` }} />
+          style={{ transition: 'stroke-dasharray 1s ease', filter: `drop-shadow(0 0 8px ${color}80)` }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-2xl font-black font-mono leading-none" style={{ color }}>{score}</div>
-        <div className="text-[8px] tracking-widest text-white/30 uppercase mt-0.5">/ 100</div>
+        <div className="text-3xl font-black font-mono leading-none" style={{ color }}>{score}</div>
+        <div className="text-[10px] tracking-widest text-white/50 uppercase mt-0.5 font-bold">/ 100</div>
       </div>
     </div>
   )
 }
 
-// ─── STEP 1: ERP — Full-width horizontal slots ───────────────────────────────
+// ─── STEP 0: INTRO GUIDE ─────────────────────────────────────────────────────
+function StepIntro({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="w-full flex flex-col items-center justify-center text-center py-16">
+      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-500 to-emerald-500 p-[2px] mb-8 shadow-[0_0_40px_rgba(6,182,212,0.3)]">
+        <div className="w-full h-full bg-[#050508] rounded-[22px] flex items-center justify-center">
+          <Target className="w-10 h-10 text-cyan-400" />
+        </div>
+      </div>
+      
+      <h1 className="text-display-sm md:text-display-md text-white font-black leading-[1.1] tracking-tight mb-6">
+        Discover Your AI Automation <br />
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Potential & ROI</span>
+      </h1>
+      
+      <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-12">
+        In just 3 minutes, we will analyze your finance tech stack, calculate your estimated annual bleed, and generate a customized roadmap to transform your operations with Autonomous AI.
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full mb-14 text-left">
+        <div className="bg-white/[0.08] border border-white/20 rounded-2xl p-6 shadow-xl">
+          <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-4 text-cyan-400 border border-cyan-500/30">
+            <Activity className="w-6 h-6" />
+          </div>
+          <div className="font-bold text-white text-lg mb-2">Benchmarked Insights</div>
+          <div className="text-sm text-white/60 leading-relaxed">See how your current processes stack up against top-performing modern finance teams.</div>
+        </div>
+        <div className="bg-white/[0.08] border border-white/20 rounded-2xl p-6 shadow-xl">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4 text-emerald-400 border border-emerald-500/30">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div className="font-bold text-white text-lg mb-2">Quantified ROI</div>
+          <div className="text-sm text-white/60 leading-relaxed">Get real dollar estimates for immediate savings, operational uplift, and payback periods.</div>
+        </div>
+        <div className="bg-white/[0.08] border border-white/20 rounded-2xl p-6 shadow-xl">
+          <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 text-purple-400 border border-purple-500/30">
+            <Rocket className="w-6 h-6" />
+          </div>
+          <div className="font-bold text-white text-lg mb-2">Actionable Roadmap</div>
+          <div className="text-sm text-white/60 leading-relaxed">Receive a step-by-step strategic plan outlining quick wins and long-term innovation.</div>
+        </div>
+      </div>
+
+      <button onClick={onStart} className="bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xl px-12 py-5 rounded-2xl transition-all hover:scale-105 active:scale-95 flex items-center gap-3 shadow-[0_0_30px_rgba(6,182,212,0.4)]">
+        Start Assessment <ArrowRight className="w-6 h-6" />
+      </button>
+      <div className="text-sm text-white/40 mt-6 font-mono font-medium">Takes ~3 minutes · No email required to see your score</div>
+    </div>
+  )
+}
+
+// ─── STEP 1: ERP ─────────────────────────────────────────────────────────────
 function StepERP({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="w-full">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span className="font-mono text-[11px] text-white/20 tracking-widest">01 / 06</span>
-          <div className="h-px flex-1 bg-white/5" />
-          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">ERP Platform</span>
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest">01 / 06</span>
+          <div className="h-px flex-1 bg-white/20" />
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest uppercase">ERP Platform</span>
         </div>
-        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+        <h2 className="text-display-xs text-white font-black leading-[1.05] tracking-tight">
           Which ERP powers<br />your finance stack?
         </h2>
-        <p className="text-white/30 mt-3 text-sm max-w-md">We calibrate every recommendation to your specific platform and its known automation constraints.</p>
+        <p className="text-white/60 mt-4 text-base max-w-md">We calibrate every recommendation to your specific platform and its known automation constraints.</p>
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3">
         {ERP_LIST.map((erp) => {
           const selected = value === erp.value
           return (
             <button key={erp.value} onClick={() => onChange(erp.value)}
-              className="group w-full flex items-center gap-5 px-5 py-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden"
+              className="group w-full flex items-center gap-5 px-6 py-5 rounded-2xl border-2 transition-all duration-200 text-left relative overflow-hidden bg-[#0a0a0f]"
               style={{
-                borderColor: selected ? erp.accent + '60' : 'rgba(255,255,255,0.06)',
-                background: selected ? erp.accent + '12' : 'rgba(255,255,255,0.02)',
+                borderColor: selected ? erp.accent : 'rgba(255,255,255,0.15)',
+                background: selected ? erp.accent + '15' : 'rgba(255,255,255,0.05)',
+                boxShadow: selected ? `0 0 20px ${erp.accent}30` : 'none',
               }}>
-              {selected && <div className="absolute inset-0 opacity-5" style={{ background: `linear-gradient(90deg, ${erp.accent}, transparent)` }} />}
-              <div className="w-12 h-10 rounded-lg flex items-center justify-center font-mono text-xs font-bold flex-shrink-0 relative z-10"
-                style={{ background: erp.accent + '18', color: erp.accent, border: `1px solid ${erp.accent}30` }}>
+              <div className="w-14 h-12 rounded-xl flex items-center justify-center font-mono text-sm font-black flex-shrink-0 relative z-10"
+                style={{ background: erp.accent + '25', color: erp.accent, border: `1px solid ${erp.accent}50` }}>
                 {erp.abbr}
               </div>
               <div className="flex-1 min-w-0 relative z-10">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-white text-sm">{erp.label}</span>
-                  <span className="text-[10px] font-mono text-white/20 bg-white/5 px-2 py-0.5 rounded">{erp.sub}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-bold text-white text-lg">{erp.label}</span>
+                  <span className="text-xs font-mono text-white/50 bg-white/10 px-2.5 py-1 rounded-md font-semibold">{erp.sub}</span>
                 </div>
               </div>
-              <div className="relative z-10 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: selected ? erp.accent : 'rgba(255,255,255,0.3)' }}>
-                {selected ? <CheckCircle2 className="w-5 h-5" style={{ color: erp.accent }} /> : <ArrowRight className="w-4 h-4" />}
+              <div className="relative z-10 flex items-center gap-2 transition-opacity" style={{ color: selected ? erp.accent : 'rgba(255,255,255,0.5)' }}>
+                {selected ? <CheckCircle2 className="w-6 h-6" style={{ color: erp.accent }} /> : <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />}
               </div>
-              {selected && <CheckCircle2 className="w-5 h-5 flex-shrink-0 relative z-10" style={{ color: erp.accent }} />}
             </button>
           )
         })}
@@ -151,7 +201,7 @@ function StepERP({ value, onChange }: { value: string; onChange: (v: string) => 
   )
 }
 
-// ─── STEP 2: PAIN POINTS — Severity-ranked selection ─────────────────────────
+// ─── STEP 2: PAIN POINTS ──────────────────────────────────────────────────────
 function StepPain({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const MAX = 3
   const toggle = (v: string) => {
@@ -163,19 +213,19 @@ function StepPain({ value, onChange }: { value: string[]; onChange: (v: string[]
     <div className="w-full">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span className="font-mono text-[11px] text-white/20 tracking-widest">02 / 06</span>
-          <div className="h-px flex-1 bg-white/5" />
-          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Pain Points</span>
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest">02 / 06</span>
+          <div className="h-px flex-1 bg-white/20" />
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest uppercase">Pain Points</span>
         </div>
-        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+        <h2 className="text-display-xs text-white font-black leading-[1.05] tracking-tight">
           Where is your team<br />bleeding money?
         </h2>
-        <p className="text-white/30 mt-3 text-sm max-w-md">
-          Select your top <span className="text-white/60 font-semibold">{MAX}</span> operational pain points. Industry cost benchmarks shown.
+        <p className="text-white/60 mt-4 text-base max-w-md">
+          Select your top <span className="text-white font-bold">{MAX}</span> operational pain points. Industry cost benchmarks shown.
         </p>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {PAIN_LIST.map(p => {
           const selected = value.includes(p.value)
           const disabled = !selected && value.length >= MAX
@@ -183,46 +233,43 @@ function StepPain({ value, onChange }: { value: string[]; onChange: (v: string[]
 
           return (
             <button key={p.value} onClick={() => !disabled && toggle(p.value)} disabled={disabled}
-              className="group w-full flex items-center gap-4 px-5 py-4 rounded-xl border transition-all duration-150 text-left relative overflow-hidden"
+              className="group w-full flex items-center gap-5 px-6 py-5 rounded-2xl border-2 transition-all duration-150 text-left relative overflow-hidden bg-[#0a0a0f]"
               style={{
-                borderColor: selected ? p.color + '50' : disabled ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.07)',
-                background: selected ? p.color + '0a' : 'rgba(255,255,255,0.015)',
-                opacity: disabled ? 0.35 : 1,
+                borderColor: selected ? p.color : disabled ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.15)',
+                background: selected ? p.color + '15' : 'rgba(255,255,255,0.05)',
+                boxShadow: selected ? `0 0 20px ${p.color}25` : 'none',
+                opacity: disabled ? 0.4 : 1,
                 cursor: disabled ? 'not-allowed' : 'pointer',
               }}>
-              {/* Severity bar - left border accent */}
-              <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l" style={{ background: selected ? p.color : 'transparent', boxShadow: selected ? `0 0 8px ${p.color}` : 'none' }} />
+              <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ background: selected ? p.color : 'transparent' }} />
 
-              {/* Rank badge */}
-              <div className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold flex-shrink-0"
-                style={selected ? { background: p.color + '25', color: p.color, border: `1px solid ${p.color}60` } : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}>
-                {selected ? rank + 1 : '·'}
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-sm font-black flex-shrink-0"
+                style={selected ? { background: p.color + '30', color: p.color, border: `2px solid ${p.color}` } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', border: '2px solid rgba(255,255,255,0.1)' }}>
+                {selected ? rank + 1 : ''}
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-white text-sm">{p.label}</div>
-                {/* Severity strip */}
-                <div className="flex items-center gap-2 mt-1.5">
-                  <div className="flex-1 h-1 bg-white/5 rounded-full max-w-[80px]">
-                    <div className="h-full rounded-full" style={{ width: `${p.severity}%`, background: p.color, opacity: selected ? 0.9 : 0.3 }} />
+                <div className="font-bold text-white text-lg">{p.label}</div>
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="flex-1 h-2 bg-white/10 rounded-full max-w-[120px] overflow-hidden border border-white/5">
+                    <div className="h-full rounded-full" style={{ width: `${p.severity}%`, background: p.color, opacity: selected ? 1 : 0.5 }} />
                   </div>
-                  <span className="text-[10px] font-mono" style={{ color: selected ? p.color : 'rgba(255,255,255,0.2)' }}>
-                    {p.metric} {p.unit}
+                  <span className="text-xs font-mono font-bold" style={{ color: selected ? p.color : 'rgba(255,255,255,0.4)' }}>
+                    {p.metric} <span className="font-normal opacity-80">{p.unit}</span>
                   </span>
                 </div>
               </div>
-
-              {selected && <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: p.color }} />}
+              {selected && <CheckCircle2 className="w-6 h-6 flex-shrink-0" style={{ color: p.color }} />}
             </button>
           )
         })}
       </div>
-      <div className="mt-4 text-xs font-mono text-white/20 text-right">{value.length} / {MAX} selected</div>
+      <div className="mt-5 text-sm font-mono font-bold text-white/50 text-right">{value.length} / {MAX} selected</div>
     </div>
   )
 }
 
-// ─── STEP 3: VOLUME — Trading terminal inputs ─────────────────────────────────
+// ─── STEP 3: VOLUME ───────────────────────────────────────────────────────────
 function StepVolume({ value, onChange }: { value: AssessmentAnswers['volume']; onChange: (v: AssessmentAnswers['volume']) => void }) {
   const cost = livePainCost(value)
   const savings = cost * 0.78
@@ -238,47 +285,47 @@ function StepVolume({ value, onChange }: { value: AssessmentAnswers['volume']; o
     <div className="w-full">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span className="font-mono text-[11px] text-white/20 tracking-widest">03 / 06</span>
-          <div className="h-px flex-1 bg-white/5" />
-          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Volume</span>
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest">03 / 06</span>
+          <div className="h-px flex-1 bg-white/20" />
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest uppercase">Volume</span>
         </div>
-        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+        <h2 className="text-display-xs text-white font-black leading-[1.05] tracking-tight">
           What scale are<br />we dealing with?
         </h2>
-        <p className="text-white/30 mt-3 text-sm max-w-md">Approximate numbers are fine. We use industry benchmarks to compute your real dollar exposure.</p>
+        <p className="text-white/60 mt-4 text-base max-w-md">Approximate numbers are fine. We use industry benchmarks to compute your real dollar exposure.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-8">
         {fields.map(f => (
-          <div key={f.id} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-4">
-            <div className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-3">{f.label}</div>
+          <div key={f.id} className="bg-[#0a0a0f] border-2 border-white/10 rounded-2xl p-5 hover:border-cyan-500/30 transition-colors group">
+            <div className="text-xs uppercase tracking-wider text-white/60 font-bold mb-4">{f.label}</div>
             <input type="number" min="0" value={value[f.id] || ''}
               onChange={e => onChange({ ...value, [f.id]: parseInt(e.target.value) || 0 })}
               placeholder="0"
-              className="w-full bg-transparent text-2xl font-black font-mono text-white outline-none border-b border-white/10 focus:border-white/30 pb-2 transition-colors"
+              className="w-full bg-transparent text-3xl font-black font-mono text-white outline-none border-b-2 border-white/20 group-hover:border-cyan-500 pb-2 transition-colors"
             />
-            <div className="text-[10px] font-mono text-white/20 mt-2">{f.bench}</div>
+            <div className="text-xs font-mono font-medium text-white/40 mt-3">{f.bench}</div>
           </div>
         ))}
       </div>
 
       {cost > 0 && (
-        <div className="border border-white/10 rounded-xl overflow-hidden">
-          <div className="bg-white/[0.03] px-5 py-3 border-b border-white/5">
-            <span className="text-[10px] uppercase tracking-widest text-white/30 font-semibold">Live Cost Estimate · Industry Benchmarks</span>
+        <div className="border-2 border-white/15 rounded-2xl overflow-hidden bg-[#0a0a0f] shadow-2xl">
+          <div className="bg-white/10 px-6 py-4 border-b border-white/10">
+            <span className="text-xs uppercase tracking-widest text-white/70 font-bold">Live Cost Estimate · Industry Benchmarks</span>
           </div>
-          <div className="grid grid-cols-3 divide-x divide-white/5">
-            <div className="px-5 py-4">
-              <div className="text-[10px] text-red-400/70 uppercase tracking-wider mb-1">Annual Bleed</div>
-              <div className="text-xl font-black font-mono text-red-400">{fmtK(cost)}</div>
+          <div className="grid grid-cols-3 divide-x divide-white/10">
+            <div className="px-6 py-5">
+              <div className="text-xs text-red-400 font-bold uppercase tracking-wider mb-2">Annual Bleed</div>
+              <div className="text-2xl font-black font-mono text-red-400">{fmtK(cost)}</div>
             </div>
-            <div className="px-5 py-4">
-              <div className="text-[10px] text-emerald-400/70 uppercase tracking-wider mb-1">With Flowtaris</div>
-              <div className="text-xl font-black font-mono text-emerald-400">{fmtK(cost - savings)}</div>
+            <div className="px-6 py-5">
+              <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider mb-2">With Flowtaris</div>
+              <div className="text-2xl font-black font-mono text-emerald-400">{fmtK(cost - savings)}</div>
             </div>
-            <div className="px-5 py-4">
-              <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Net Savings</div>
-              <div className="text-xl font-black font-mono text-white">{fmtK(savings)} / yr</div>
+            <div className="px-6 py-5 bg-white/5">
+              <div className="text-xs text-white/70 font-bold uppercase tracking-wider mb-2">Net Savings</div>
+              <div className="text-2xl font-black font-mono text-white">{fmtK(savings)} <span className="text-sm font-normal text-white/50">/ yr</span></div>
             </div>
           </div>
         </div>
@@ -287,55 +334,56 @@ function StepVolume({ value, onChange }: { value: AssessmentAnswers['volume']; o
   )
 }
 
-// ─── STEP 4: CURRENT STATE — Maturity spectrum ────────────────────────────────
+// ─── STEP 4: CURRENT STATE ────────────────────────────────────────────────────
 function StepState({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="w-full">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span className="font-mono text-[11px] text-white/20 tracking-widest">04 / 06</span>
-          <div className="h-px flex-1 bg-white/5" />
-          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Current State</span>
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest">04 / 06</span>
+          <div className="h-px flex-1 bg-white/20" />
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest uppercase">Current State</span>
         </div>
-        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+        <h2 className="text-display-xs text-white font-black leading-[1.05] tracking-tight">
           How do these processes<br />run today?
         </h2>
-        <p className="text-white/30 mt-3 text-sm max-w-md">This determines your automation uplift ceiling — how much Flowtaris can realistically shift.</p>
+        <p className="text-white/60 mt-4 text-base max-w-md">This determines your automation uplift ceiling — how much Flowtaris can realistically shift.</p>
       </div>
 
-      {/* Maturity spectrum bar */}
-      <div className="flex items-end gap-1 mb-8 h-8">
+      <div className="flex items-end gap-1.5 mb-10 h-12">
         {[...Array(5)].map((_, i) => {
           const level = STATE_LIST.find(s => s.value === value)?.level ?? -1
           const active = level >= 0 && i <= level
           return (
-            <div key={i} className="flex-1 rounded-sm transition-all duration-500"
+            <div key={i} className="flex-1 rounded-sm transition-all duration-500 border border-white/5"
               style={{
                 height: `${(i + 1) * 20}%`,
-                background: active ? '#06b6d4' : 'rgba(255,255,255,0.06)',
-                boxShadow: active ? '0 0 8px #06b6d440' : 'none',
+                background: active ? '#06b6d4' : 'rgba(255,255,255,0.1)',
+                boxShadow: active ? '0 0 15px rgba(6,182,212,0.5)' : 'none',
               }} />
           )
         })}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {STATE_LIST.map(s => {
           const selected = value === s.value
           return (
             <button key={s.value} onClick={() => onChange(s.value)}
-              className="group w-full flex items-center gap-4 px-5 py-4 rounded-xl border transition-all duration-150 text-left"
+              className="group w-full flex items-center gap-5 px-6 py-5 rounded-2xl border-2 transition-all duration-150 text-left bg-[#0a0a0f]"
               style={{
-                borderColor: selected ? '#06b6d4' : 'rgba(255,255,255,0.06)',
-                background: selected ? 'rgba(6,182,212,0.08)' : 'rgba(255,255,255,0.02)',
+                borderColor: selected ? '#06b6d4' : 'rgba(255,255,255,0.15)',
+                background: selected ? 'rgba(6,182,212,0.15)' : 'rgba(255,255,255,0.05)',
+                boxShadow: selected ? '0 0 20px rgba(6,182,212,0.2)' : 'none',
               }}>
-              <div className="w-6 h-6 rounded-full flex-shrink-0 border transition-all"
-                style={selected ? { background: '#06b6d4', borderColor: '#06b6d4', boxShadow: '0 0 8px #06b6d440' } : { borderColor: 'rgba(255,255,255,0.12)' }} />
-              <div>
-                <div className="font-semibold text-white text-sm">{s.label}</div>
-                <div className="text-[11px] text-white/30 mt-0.5">{s.tag}</div>
+              <div className="w-8 h-8 rounded-full flex-shrink-0 border-2 transition-all flex items-center justify-center"
+                style={selected ? { background: '#06b6d4', borderColor: '#06b6d4', boxShadow: '0 0 10px rgba(6,182,212,0.5)' } : { borderColor: 'rgba(255,255,255,0.3)' }}>
+                {selected && <div className="w-3 h-3 bg-white rounded-full" />}
               </div>
-              {selected && <CheckCircle2 className="w-4 h-4 ml-auto text-cyan-400" />}
+              <div>
+                <div className="font-bold text-white text-lg">{s.label}</div>
+                <div className="text-sm font-medium text-white/50 mt-1">{s.tag}</div>
+              </div>
             </button>
           )
         })}
@@ -350,48 +398,35 @@ function StepMaturity({ value, onChange }: { value: string; onChange: (v: string
     <div className="w-full">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span className="font-mono text-[11px] text-white/20 tracking-widest">05 / 06</span>
-          <div className="h-px flex-1 bg-white/5" />
-          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Tech Maturity</span>
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest">05 / 06</span>
+          <div className="h-px flex-1 bg-white/20" />
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest uppercase">Tech Maturity</span>
         </div>
-        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+        <h2 className="text-display-xs text-white font-black leading-[1.05] tracking-tight">
           How modern is<br />your tech foundation?
         </h2>
-        <p className="text-white/30 mt-3 text-sm max-w-md">Your infrastructure vintage shapes our AI integration complexity and your time-to-value.</p>
+        <p className="text-white/60 mt-4 text-base max-w-md">Your infrastructure vintage shapes our AI integration complexity and your time-to-value.</p>
       </div>
 
-      {/* Timeline visual */}
-      <div className="relative mb-8">
-        <div className="h-px w-full bg-white/10 absolute top-3" />
-        <div className="flex justify-between relative">
-          {MATURITY_LIST.map(m => {
-            const selected = value === m.value
-            return (
-              <button key={m.value} onClick={() => onChange(m.value)} className="flex flex-col items-center gap-2 group">
-                <div className="w-6 h-6 rounded-full border-2 transition-all duration-200 z-10 flex items-center justify-center"
-                  style={selected ? { background: '#06b6d4', borderColor: '#06b6d4', boxShadow: '0 0 12px #06b6d460' } : { background: '#050508', borderColor: 'rgba(255,255,255,0.15)' }}>
-                  {selected && <div className="w-2 h-2 rounded-full bg-white" />}
-                </div>
-                <div className={`text-[10px] font-mono transition-colors ${selected ? 'text-cyan-400' : 'text-white/25 group-hover:text-white/50'}`}>{m.year}</div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {MATURITY_LIST.map(m => {
           const selected = value === m.value
           return (
             <button key={m.value} onClick={() => onChange(m.value)}
-              className="p-5 rounded-xl border text-left transition-all duration-150"
+              className="p-6 rounded-2xl border-2 text-left transition-all duration-150 relative bg-[#0a0a0f]"
               style={{
-                borderColor: selected ? '#06b6d4' : 'rgba(255,255,255,0.07)',
-                background: selected ? 'rgba(6,182,212,0.08)' : 'rgba(255,255,255,0.02)',
+                borderColor: selected ? '#06b6d4' : 'rgba(255,255,255,0.15)',
+                background: selected ? 'rgba(6,182,212,0.15)' : 'rgba(255,255,255,0.05)',
+                boxShadow: selected ? '0 0 20px rgba(6,182,212,0.2)' : 'none',
               }}>
-              <div className="font-semibold text-white text-sm mb-1">{m.label}</div>
-              <div className="text-[11px] text-white/30">{m.tag}</div>
-              {selected && <div className="mt-2 text-[10px] text-cyan-400 font-semibold">✓ Selected</div>}
+              <div className="text-xs font-mono font-bold px-3 py-1 bg-white/10 rounded-lg inline-block mb-4 text-white/70">{m.year}</div>
+              <div className="font-bold text-white text-xl mb-2">{m.label}</div>
+              <div className="text-sm font-medium text-white/60">{m.tag}</div>
+              
+              <div className="absolute top-6 right-6 w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center"
+                style={selected ? { background: '#06b6d4', borderColor: '#06b6d4' } : { borderColor: 'rgba(255,255,255,0.3)' }}>
+                {selected && <CheckCircle2 className="w-4 h-4 text-white" />}
+              </div>
             </button>
           )
         })}
@@ -406,14 +441,14 @@ function StepUrgency({ value, onChange }: { value: string; onChange: (v: string)
     <div className="w-full">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span className="font-mono text-[11px] text-white/20 tracking-widest">06 / 06</span>
-          <div className="h-px flex-1 bg-white/5" />
-          <span className="font-mono text-[11px] text-white/20 tracking-widest uppercase">Priority Signal</span>
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest">06 / 06</span>
+          <div className="h-px flex-1 bg-white/20" />
+          <span className="font-mono text-[13px] text-white/50 font-bold tracking-widest uppercase">Timeline</span>
         </div>
-        <h2 className="text-display-xs text-white leading-[1.05] tracking-tight">
+        <h2 className="text-display-xs text-white font-black leading-[1.05] tracking-tight">
           What&apos;s forcing<br />the timeline?
         </h2>
-        <p className="text-white/30 mt-3 text-sm max-w-md">This determines how aggressively we front-load your roadmap with quick wins vs. strategic plays.</p>
+        <p className="text-white/60 mt-4 text-base max-w-md">This determines how aggressively we front-load your roadmap with quick wins vs. strategic plays.</p>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -421,28 +456,26 @@ function StepUrgency({ value, onChange }: { value: string; onChange: (v: string)
           const selected = value === u.value
           return (
             <button key={u.value} onClick={() => onChange(u.value)}
-              className="group w-full flex items-center gap-5 px-5 py-5 rounded-xl border transition-all duration-150 text-left relative overflow-hidden"
+              className="group w-full flex items-center gap-5 px-6 py-6 rounded-2xl border-2 transition-all duration-150 text-left relative overflow-hidden bg-[#0a0a0f]"
               style={{
-                borderColor: selected ? u.signalColor + '50' : 'rgba(255,255,255,0.07)',
-                background: selected ? u.signalColor + '0d' : 'rgba(255,255,255,0.02)',
+                borderColor: selected ? u.signalColor : 'rgba(255,255,255,0.15)',
+                background: selected ? u.signalColor + '15' : 'rgba(255,255,255,0.05)',
+                boxShadow: selected ? `0 0 20px ${u.signalColor}30` : 'none',
               }}>
-              {/* Priority signal dot */}
-              <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0"
-                style={selected ? { background: u.signalColor + '25', color: u.signalColor, border: `1.5px solid ${u.signalColor}60` } : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-black font-mono text-base flex-shrink-0 border-2"
+                style={selected ? { background: u.signalColor + '30', color: u.signalColor, borderColor: u.signalColor } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)' }}>
                 {u.signal}
               </div>
               <div className="flex-1">
-                <div className="font-semibold text-white text-base">{u.label}</div>
-                <div className="text-[11px] text-white/30 mt-0.5">{u.tag}</div>
+                <div className="font-bold text-white text-lg">{u.label}</div>
+                <div className="text-sm font-medium text-white/60 mt-1">{u.tag}</div>
               </div>
-              {/* Priority bar */}
-              <div className="w-16 flex flex-col items-end gap-1">
-                <div className="text-[9px] text-white/20 uppercase tracking-wider">Priority</div>
-                <div className="w-full h-1.5 bg-white/5 rounded-full">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${u.priority * 25}%`, background: selected ? u.signalColor : 'rgba(255,255,255,0.1)' }} />
+              <div className="w-24 flex flex-col items-end gap-2">
+                <div className="text-xs text-white/50 uppercase font-bold tracking-wider">Priority</div>
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${u.priority * 25}%`, background: selected ? u.signalColor : 'rgba(255,255,255,0.3)' }} />
                 </div>
               </div>
-              {selected && <CheckCircle2 className="w-5 h-5" style={{ color: u.signalColor }} />}
             </button>
           )
         })}
@@ -453,28 +486,27 @@ function StepUrgency({ value, onChange }: { value: string; onChange: (v: string)
 
 // ─── SIDEBAR ─────────────────────────────────────────────────────────────────
 function Sidebar({ answers, step }: { answers: AssessmentAnswers; step: number }) {
+  if (step === 0) return null
   const score = calcScore(answers, step)
   const tier = score >= 70 ? 'Enterprise' : score >= 45 ? 'Mid-Market' : 'Growth'
   const tierColor = score >= 70 ? '#10b981' : score >= 45 ? '#3b82f6' : '#64748b'
   const cost = livePainCost(answers.volume)
 
   return (
-    <div className="hidden xl:flex flex-col gap-4 w-64 sticky top-28">
-      {/* Score panel */}
-      <div className="bg-black/70 border border-white/[0.07] rounded-2xl p-5 backdrop-blur-xl">
-        <div className="text-[9px] uppercase tracking-widest text-white/25 mb-4 font-semibold">AI Readiness Score</div>
-        <div className="flex items-center gap-4">
+    <div className="hidden xl:flex flex-col gap-5 w-[300px] sticky top-28">
+      <div className="bg-[#0a0a0f] border-2 border-white/10 rounded-3xl p-6 shadow-2xl">
+        <div className="text-xs uppercase tracking-widest text-white/50 mb-5 font-bold">AI Readiness Score</div>
+        <div className="flex items-center gap-6">
           <Gauge score={score} />
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Profile</div>
-            <div className="text-sm font-bold" style={{ color: tierColor }}>{tier}</div>
+            <div className="text-xs uppercase tracking-wider text-white/50 mb-1 font-bold">Profile</div>
+            <div className="text-lg font-black" style={{ color: tierColor }}>{tier}</div>
           </div>
         </div>
       </div>
 
-      {/* Signal bars */}
-      <div className="bg-black/70 border border-white/[0.07] rounded-2xl p-5 backdrop-blur-xl space-y-3">
-        <div className="text-[9px] uppercase tracking-widest text-white/25 font-semibold mb-1">Signal Breakdown</div>
+      <div className="bg-[#0a0a0f] border-2 border-white/10 rounded-3xl p-6 shadow-2xl space-y-4">
+        <div className="text-xs uppercase tracking-widest text-white/50 font-bold mb-2">Signal Breakdown</div>
         {[
           { label: 'ERP Complexity', value: answers.erp ? 75 : 0, color: '#06b6d4' },
           { label: 'Pain Severity', value: Math.min(answers.painPoints.length * 33, 100), color: '#ef4444' },
@@ -482,18 +514,17 @@ function Sidebar({ answers, step }: { answers: AssessmentAnswers; step: number }
           { label: 'Readiness Tier', value: { 'AI Pilot': 95, 'Modern': 70, 'Hybrid': 45, 'Legacy': 20 }[answers.techMaturity] || 0, color: '#10b981' },
         ].map(b => (
           <div key={b.label}>
-            <div className="flex justify-between text-[9px] text-white/25 mb-1"><span>{b.label}</span><span className="font-mono">{b.value}%</span></div>
-            <div className="h-1 bg-white/5 rounded-full"><div className="h-full rounded-full transition-all duration-700" style={{ width: `${b.value}%`, background: b.color, boxShadow: `0 0 4px ${b.color}60` }} /></div>
+            <div className="flex justify-between text-xs font-bold text-white/60 mb-2"><span>{b.label}</span><span className="font-mono text-white">{b.value}%</span></div>
+            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden border border-white/5"><div className="h-full rounded-full transition-all duration-700" style={{ width: `${b.value}%`, background: b.color, boxShadow: `0 0 8px ${b.color}80` }} /></div>
           </div>
         ))}
       </div>
 
-      {/* Cost preview */}
       {cost > 0 && (
-        <div className="bg-red-500/5 border border-red-500/15 rounded-2xl p-5">
-          <div className="text-[9px] uppercase tracking-widest text-red-400/60 font-semibold mb-2">Est. Annual Bleed</div>
-          <div className="text-2xl font-black font-mono text-red-400">{fmtK(cost)}</div>
-          <div className="text-[10px] text-white/25 mt-1">Based on industry benchmarks</div>
+        <div className="bg-red-500/10 border-2 border-red-500/30 rounded-3xl p-6 shadow-2xl">
+          <div className="text-xs uppercase tracking-widest text-red-400 font-bold mb-3">Est. Annual Bleed</div>
+          <div className="text-3xl font-black font-mono text-red-400 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">{fmtK(cost)}</div>
+          <div className="text-xs font-medium text-white/50 mt-2">Based on industry benchmarks</div>
         </div>
       )}
     </div>
@@ -538,74 +569,73 @@ function Results({ result, answers, assessmentId }: { result: AssessmentResult; 
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 w-full">
-      {/* Hero */}
-      <div className="mb-12">
-        <div className="flex items-start gap-8 flex-wrap">
+      <div className="mb-14">
+        <div className="flex items-start gap-10 flex-wrap">
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4">Strategic Intelligence Report · {result.tier}</div>
-            <h2 className="text-display-xs text-white leading-[1.05] tracking-tight mb-4">Your AI Automation<br />Roadmap is Ready</h2>
-            <p className="text-white/40 text-sm leading-relaxed max-w-lg">{result.summary}</p>
-          </div>
-          <div className="flex items-center gap-6 flex-shrink-0">
-            <div className="text-center">
-              <div className="text-[9px] uppercase tracking-widest text-white/25 mb-2">Readiness Score</div>
-              <div className="text-6xl font-black font-mono leading-none" style={{ color: scoreColor }}>{result.leadScore}</div>
-              <div className="text-[9px] text-white/20 mt-1 font-mono">/ 100</div>
+            <div className="text-xs uppercase tracking-widest text-cyan-400 font-bold mb-5 flex items-center gap-2">
+              <Target className="w-4 h-4" /> Strategic Intelligence Report · {result.tier} Profile
             </div>
-            <div className="w-px h-16 bg-white/10" />
+            <h2 className="text-display-xs text-white font-black leading-[1.05] tracking-tight mb-6">Your AI Automation<br />Roadmap is Ready</h2>
+            <p className="text-white/60 text-lg leading-relaxed max-w-xl">{result.summary}</p>
+          </div>
+          <div className="flex items-center gap-8 flex-shrink-0 bg-[#0a0a0f] border-2 border-white/10 rounded-3xl p-8 shadow-2xl">
             <div className="text-center">
-              <div className="text-[9px] uppercase tracking-widest text-white/25 mb-2">Est. Annual Savings</div>
-              <div className="text-3xl font-black font-mono text-emerald-400">{fmtK(result.totalEstimatedSavings)}</div>
+              <div className="text-xs uppercase tracking-widest text-white/50 font-bold mb-3">Readiness Score</div>
+              <div className="text-7xl font-black font-mono leading-none drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]" style={{ color: scoreColor }}>{result.leadScore}</div>
+              <div className="text-[10px] text-white/40 font-bold mt-2 font-mono">/ 100</div>
+            </div>
+            <div className="w-px h-24 bg-white/10" />
+            <div className="text-center">
+              <div className="text-xs uppercase tracking-widest text-white/50 font-bold mb-3">Est. Annual Savings</div>
+              <div className="text-4xl font-black font-mono text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">{fmtK(result.totalEstimatedSavings)}</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* KPI row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-14">
         {[
           { label: 'Opportunities', value: String(result.recommendations.length), unit: 'identified' },
           { label: 'Quick Wins', value: String(result.recommendations.filter(r => r.category === 'quick-win').length), unit: 'immediate' },
           { label: 'Fastest Payback', value: result.recommendations.length ? `${Math.min(...result.recommendations.map(r => r.estimatedPaybackMonths))} mo` : '—', unit: 'to value' },
           { label: 'Investment Tier', value: result.tier === 'enterprise' ? 'Ent.' : result.tier === 'mid-market' ? 'Mid' : 'SMB', unit: 'profile' },
         ].map(k => (
-          <div key={k.label} className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-4 py-4">
-            <div className="text-[9px] uppercase tracking-widest text-white/25 mb-2">{k.label}</div>
-            <div className="text-2xl font-black font-mono text-white">{k.value}</div>
-            <div className="text-[10px] text-white/25 mt-0.5">{k.unit}</div>
+          <div key={k.label} className="bg-[#0a0a0f] border-2 border-white/10 rounded-2xl px-6 py-6 shadow-xl">
+            <div className="text-xs uppercase tracking-widest text-white/50 font-bold mb-3">{k.label}</div>
+            <div className="text-3xl font-black font-mono text-white">{k.value}</div>
+            <div className="text-xs font-medium text-white/50 mt-1">{k.unit}</div>
           </div>
         ))}
       </div>
 
-      {/* Roadmap */}
-      <div className="mb-12">
-        <div className="text-[10px] uppercase tracking-widest text-white/25 font-semibold mb-5 flex items-center gap-3">
+      <div className="mb-14">
+        <div className="text-xs uppercase tracking-widest text-white/50 font-bold mb-6 flex items-center gap-4">
           <span>Recommended Roadmap</span>
-          <div className="h-px flex-1 bg-white/5" />
+          <div className="h-px flex-1 bg-white/10" />
         </div>
-        <div className="space-y-3">
+        <div className="space-y-6">
           {(['quick-win', 'strategic', 'innovation'] as const).map(cat => {
             const recs = result.recommendations.filter(r => r.category === cat)
             if (recs.length === 0) return null
             const cfg = catConfig[cat]
             const Icon = cfg.Icon
             return (
-              <div key={cat} className="border border-white/[0.07] rounded-xl overflow-hidden">
-                <div className="flex items-center gap-3 px-5 py-3 border-b border-white/5" style={{ background: cfg.color + '08' }}>
-                  <Icon className="w-4 h-4" style={{ color: cfg.color }} />
-                  <span className="font-semibold text-sm text-white">{cfg.label}</span>
-                  <span className="text-[10px] font-mono text-white/30">{cfg.sub}</span>
-                  <span className="ml-auto font-mono text-sm font-bold" style={{ color: cfg.color }}>{fmtK(recs.reduce((s, r) => s + r.estimatedSavings, 0))}/yr</span>
+              <div key={cat} className="border-2 border-white/10 rounded-3xl overflow-hidden shadow-2xl bg-[#0a0a0f]">
+                <div className="flex items-center gap-4 px-6 py-4 border-b-2 border-white/10" style={{ background: cfg.color + '15' }}>
+                  <div className="p-2 rounded-xl bg-white/10"><Icon className="w-5 h-5" style={{ color: cfg.color }} /></div>
+                  <span className="font-black text-lg text-white">{cfg.label}</span>
+                  <span className="text-xs font-mono font-bold text-white/60 bg-white/10 px-3 py-1 rounded-md">{cfg.sub}</span>
+                  <span className="ml-auto font-mono text-xl font-black" style={{ color: cfg.color }}>{fmtK(recs.reduce((s, r) => s + r.estimatedSavings, 0))}/yr</span>
                 </div>
                 {recs.map((rec: Recommendation, i: number) => (
-                  <div key={rec.capabilitySlug} className={`px-5 py-4 flex items-start justify-between gap-4 ${i < recs.length - 1 ? 'border-b border-white/[0.04]' : ''}`}>
+                  <div key={rec.capabilitySlug} className={`px-6 py-5 flex items-start justify-between gap-6 ${i < recs.length - 1 ? 'border-b border-white/10' : ''}`}>
                     <div>
-                      <div className="font-semibold text-white text-sm">{rec.capability}</div>
-                      <div className="text-[11px] text-white/30 mt-0.5 leading-relaxed">{rec.description}</div>
+                      <div className="font-bold text-white text-lg">{rec.capability}</div>
+                      <div className="text-sm font-medium text-white/60 mt-2 leading-relaxed max-w-3xl">{rec.description}</div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="font-bold font-mono text-sm" style={{ color: cfg.color }}>{fmtK(rec.estimatedSavings)}/yr</div>
-                      <div className="text-[10px] text-white/20 mt-0.5">{rec.estimatedPaybackMonths}mo payback</div>
+                    <div className="text-right flex-shrink-0 bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                      <div className="font-black font-mono text-lg" style={{ color: cfg.color }}>{fmtK(rec.estimatedSavings)}/yr</div>
+                      <div className="text-xs font-bold text-white/50 mt-1">{rec.estimatedPaybackMonths}mo payback</div>
                     </div>
                   </div>
                 ))}
@@ -615,52 +645,58 @@ function Results({ result, answers, assessmentId }: { result: AssessmentResult; 
         </div>
       </div>
 
-      {/* Email */}
-      <div className="border border-white/10 rounded-2xl overflow-hidden mb-8">
-        <div className="px-6 py-5 border-b border-white/5 bg-white/[0.02]">
-          <div className="font-semibold text-white">Get the Full Report</div>
-          <div className="text-white/40 text-xs mt-1">Receive your personalized roadmap with implementation guidance and CFO conversation starters.</div>
+      <div className="border-2 border-cyan-500/30 bg-cyan-500/10 rounded-3xl overflow-hidden mb-10 shadow-[0_0_40px_rgba(6,182,212,0.15)] relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/20 blur-[100px] pointer-events-none rounded-full" />
+        <div className="px-8 py-6 border-b border-cyan-500/20">
+          <div className="font-black text-white text-xl">Get the Full Executive Report</div>
+          <div className="text-cyan-100/70 text-sm mt-2 font-medium">Receive your personalized roadmap with implementation guidance, CFO conversation starters, and peer benchmarks.</div>
         </div>
-        <div className="px-6 py-5">
+        <div className="px-8 py-8">
           {emailSent ? (
-            <div className="flex items-center gap-3 text-emerald-400">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="font-semibold text-sm">Report sent — check your inbox.</span>
+            <div className="flex items-center gap-4 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-2xl">
+              <CheckCircle2 className="w-8 h-8" />
+              <div>
+                <span className="font-black text-lg block">Report sent successfully.</span>
+                <span className="text-sm text-emerald-400/80 font-medium">Check your inbox.</span>
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleEmail} className="flex gap-3">
+            <form onSubmit={handleEmail} className="flex gap-4">
               <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="cfo@company.com"
-                className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-white/25 transition-colors" />
+                className="flex-1 bg-black/60 border-2 border-white/20 rounded-xl px-6 py-4 text-white text-lg font-medium outline-none focus:border-cyan-500 transition-colors shadow-inner" />
               <button type="submit" disabled={isSending}
-                className="flex items-center gap-2 bg-white text-black font-bold text-sm px-5 py-2.5 rounded-lg transition-opacity disabled:opacity-50 hover:bg-white/90">
-                {isSending ? <Activity className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                className="flex items-center gap-3 bg-cyan-500 text-black font-black text-lg px-8 py-4 rounded-xl transition-all hover:bg-cyan-400 active:scale-95 disabled:opacity-50">
+                {isSending ? <Activity className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
                 {isSending ? 'Sending...' : 'Send Report'}
               </button>
             </form>
           )}
-          {emailError && <div className="text-red-400 text-xs mt-2">{emailError}</div>}
+          {emailError && <div className="text-red-400 font-bold text-sm mt-3 bg-red-500/10 p-3 rounded-xl border border-red-500/20">{emailError}</div>}
         </div>
       </div>
 
-      {/* CTAs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <a href={`/roi-calculator?erp=${encodeURIComponent(answers.erp)}&invoices=${answers.volume.invoicesPerMonth * 12}`}
-          className="flex items-center gap-4 px-5 py-4 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all group">
-          <TrendingUp className="w-5 h-5 text-white/40 group-hover:text-white/70 transition-colors flex-shrink-0" />
-          <div>
-            <div className="font-semibold text-white text-sm">Full ROI Calculator</div>
-            <div className="text-white/30 text-xs">3-year financial model</div>
+          className="flex items-center gap-5 px-6 py-6 rounded-2xl border-2 border-white/10 hover:border-cyan-500/40 bg-[#0a0a0f] hover:bg-cyan-500/5 transition-all group shadow-xl">
+          <div className="w-12 h-12 rounded-xl bg-white/5 group-hover:bg-cyan-500/20 flex items-center justify-center transition-colors">
+            <TrendingUp className="w-6 h-6 text-white/50 group-hover:text-cyan-400 transition-colors" />
           </div>
-          <ArrowRight className="w-4 h-4 text-white/20 ml-auto group-hover:translate-x-1 transition-transform" />
+          <div>
+            <div className="font-black text-white text-lg">Full ROI Calculator</div>
+            <div className="text-white/50 text-sm font-medium mt-1">Detailed 3-year financial model</div>
+          </div>
+          <ArrowRight className="w-5 h-5 text-white/30 ml-auto group-hover:translate-x-2 group-hover:text-cyan-400 transition-all" />
         </a>
         <a href="/demo"
-          className="flex items-center gap-4 px-5 py-4 rounded-xl border border-emerald-500/20 hover:border-emerald-500/40 bg-emerald-500/[0.04] hover:bg-emerald-500/[0.08] transition-all group">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-          <div>
-            <div className="font-semibold text-white text-sm">Book a Demo</div>
-            <div className="text-white/30 text-xs">30-min with a solutions engineer</div>
+          className="flex items-center gap-5 px-6 py-6 rounded-2xl border-2 border-emerald-500/30 hover:border-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all group shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center transition-colors">
+            <CheckCircle2 className="w-6 h-6 text-emerald-400" />
           </div>
-          <ArrowRight className="w-4 h-4 text-white/20 ml-auto group-hover:translate-x-1 transition-transform" />
+          <div>
+            <div className="font-black text-white text-lg">Book a Demo</div>
+            <div className="text-white/70 text-sm font-medium mt-1">30-min with a solutions engineer</div>
+          </div>
+          <ArrowRight className="w-5 h-5 text-emerald-400/50 ml-auto group-hover:translate-x-2 group-hover:text-emerald-400 transition-all" />
         </a>
       </div>
     </div>
@@ -669,7 +705,7 @@ function Results({ result, answers, assessmentId }: { result: AssessmentResult; 
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function AssessmentWizardClient({ initialConfig }: { initialConfig: SanityAssessmentConfig | null }) {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0) // Step 0 = Intro Screen
   const [answers, setAnswers] = useState<AssessmentAnswers>(initialAnswers)
   const [result, setResult] = useState<AssessmentResult | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -681,7 +717,7 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
   useEffect(() => {
     try {
       const s = localStorage.getItem(STORAGE_KEY)
-      if (s) { const p = JSON.parse(s); if (p.answers) setAnswers(p.answers); if (p.step && p.step <= 6) setStep(p.step) }
+      if (s) { const p = JSON.parse(s); if (p.answers) setAnswers(p.answers); if (p.step !== undefined && p.step <= 6) setStep(p.step) }
     } catch {}
     analytics.assessment.start({ source: 'direct' })
   }, [])
@@ -691,6 +727,7 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
   }, [answers, step, result])
 
   const canGo = useMemo(() => {
+    if (step === 0) return true
     if (step === 1) return !!answers.erp
     if (step === 2) return answers.painPoints.length > 0
     if (step === 3) return answers.volume.invoicesPerMonth > 0 && answers.volume.employees >= 1
@@ -705,18 +742,18 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
     setDir(d)
     setTransitioning(true)
     setTimeout(() => {
-      setStep(s => d === 'f' ? s + 1 : Math.max(s - 1, 1))
+      setStep(s => d === 'f' ? s + 1 : Math.max(s - 1, 0))
       setTransitioning(false)
     }, 200)
   }, [transitioning])
 
-  // Auto-advance for single-select steps
+  // Auto-advance for single-select steps (only if not intro)
   useEffect(() => {
-    if ([1, 4, 5, 6].includes(step) && canGo && step < 6 && !transitioning) {
-      const t = setTimeout(() => go('f'), 350)
+    if (step !== 0 && [1, 4, 5, 6].includes(step) && canGo && step < 6 && !transitioning) {
+      const t = setTimeout(() => go('f'), 400)
       return () => clearTimeout(t)
     }
-  }, [answers.erp, answers.currentState, answers.techMaturity, answers.urgency])
+  }, [answers.erp, answers.currentState, answers.techMaturity, answers.urgency, step, canGo, transitioning, go])
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -724,7 +761,7 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
       const t = e.target as Element
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return
       if (e.key === 'Enter' && canGo) { e.preventDefault(); step < 6 ? go('f') : handleSubmit() }
-      if (e.key === 'ArrowLeft' && step > 1) { e.preventDefault(); go('b') }
+      if (e.key === 'ArrowLeft' && step > 0) { e.preventDefault(); go('b') }
     }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
@@ -737,12 +774,12 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
       const r = runAssessment(answers)
       setResult(r); setStep(7)
       analytics.assessment.complete({ leadScore: r.leadScore, recommendations: r.recommendations.map(x => x.capability), erp: answers.erp })
-      const { data, error: dbErr } = await insertAssessmentLead({
+      const { data, dbErr } = await insertAssessmentLead({
         answers: answers as unknown as Record<string,unknown>,
         recommendations: r.recommendations.map(x => x.capability),
         lead_score: r.leadScore,
         routed_to: r.leadScore > 70 ? 'sales' : 'nurture',
-      })
+      }) as any
       if (!dbErr && data) setAssessmentId(data.id)
     } catch (e) {
       console.error(e); setError('An error occurred. Please try again.')
@@ -756,20 +793,20 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
   return (
     <div className="min-h-screen bg-[#050508]">
       {/* Fixed ambient bg */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/[0.04] blur-[100px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/[0.03] blur-[120px] rounded-full" />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-cyan-500/[0.05] blur-[150px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[800px] h-[800px] bg-emerald-500/[0.04] blur-[150px] rounded-full" />
       </div>
 
       {/* Top nav bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 border-b border-white/[0.05] bg-[#050508]/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center gap-6">
-          <a href="/" className="text-xs text-white/30 hover:text-white/60 transition-colors font-mono">← flowtaris.com</a>
+      <div className="fixed top-0 left-0 right-0 z-40 border-b border-white/[0.1] bg-[#050508]/80 backdrop-blur-2xl">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
+          <a href="/" className="text-sm text-white/50 hover:text-white transition-colors font-bold tracking-wide">← flowtaris.com</a>
 
-          {!result && (
+          {!result && step > 0 && (
             <>
               {/* Step dots */}
-              <div className="flex items-center gap-1.5 flex-1">
+              <div className="flex items-center gap-2 flex-1">
                 {STEP_LABELS.map((label, i) => {
                   const n = i + 1
                   const done = n < step
@@ -777,38 +814,39 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
                   return (
                     <React.Fragment key={label}>
                       <button onClick={() => done ? setStep(n) : null}
-                        className={`flex items-center gap-1.5 transition-all ${done ? 'cursor-pointer' : 'cursor-default'}`}>
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold transition-all
-                          ${done ? 'bg-cyan-500 text-black' : cur ? 'bg-white/10 text-white border border-white/30' : 'bg-white/[0.04] text-white/20'}`}>
+                        className={`flex items-center gap-2 transition-all ${done ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black transition-all border-2
+                          ${done ? 'bg-cyan-500 text-black border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : cur ? 'bg-white/10 text-white border-white/50' : 'bg-transparent text-white/30 border-white/10'}`}>
                           {done ? '✓' : n}
                         </div>
-                        <span className={`text-[9px] font-mono hidden sm:inline transition-colors ${cur ? 'text-white/50' : done ? 'text-cyan-500/60' : 'text-white/15'}`}>{label}</span>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider hidden sm:inline transition-colors ${cur ? 'text-white' : done ? 'text-cyan-400' : 'text-white/30'}`}>{label}</span>
                       </button>
-                      {i < 5 && <div className={`w-6 h-px transition-colors ${done ? 'bg-cyan-500/40' : 'bg-white/[0.04]'}`} />}
+                      {i < 5 && <div className={`w-8 h-[2px] rounded-full transition-colors ${done ? 'bg-cyan-500' : 'bg-white/10'}`} />}
                     </React.Fragment>
                   )
                 })}
               </div>
-              <div className="text-[10px] font-mono text-white/20">{step}/6</div>
+              <div className="text-xs font-black font-mono text-white/50 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">{step}/6</div>
             </>
           )}
-          {result && <div className="flex-1 text-xs text-white/30 font-mono">Assessment Complete</div>}
+          {result && <div className="flex-1 text-sm font-bold text-emerald-400 flex justify-end items-center gap-2"><CheckCircle2 className="w-5 h-5"/> Assessment Complete</div>}
         </div>
       </div>
 
       {/* Main */}
-      <div style={{ paddingTop: result ? '56px' : '56px' }}>
+      <div className="relative z-10" style={{ paddingTop: '64px' }}>
         {result ? (
           <Results result={result} answers={answers} assessmentId={assessmentId} />
         ) : (
-          <div className="max-w-7xl mx-auto px-6 pt-12 pb-28 flex gap-12 items-start">
+          <div className="max-w-7xl mx-auto px-6 pt-12 pb-32 flex gap-16 items-start">
             {/* Step content */}
             <div className="flex-1 min-w-0">
               <div style={{
                 opacity: transitioning ? 0 : 1,
-                transform: transitioning ? `translateY(${dir === 'f' ? '10px' : '-10px'})` : 'translateY(0)',
-                transition: 'opacity 200ms ease, transform 200ms ease',
+                transform: transitioning ? `translateY(${dir === 'f' ? '15px' : '-15px'})` : 'translateY(0)',
+                transition: 'opacity 250ms ease, transform 250ms ease',
               }}>
+                {step === 0 && <StepIntro onStart={() => go('f')} />}
                 {step === 1 && <StepERP value={answers.erp} onChange={v => setAnswers(p => ({ ...p, erp: v }))} />}
                 {step === 2 && <StepPain value={answers.painPoints} onChange={v => setAnswers(p => ({ ...p, painPoints: v }))} />}
                 {step === 3 && <StepVolume value={answers.volume} onChange={v => setAnswers(p => ({ ...p, volume: v }))} />}
@@ -817,31 +855,36 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
                 {step === 6 && <StepUrgency value={answers.urgency} onChange={v => setAnswers(p => ({ ...p, urgency: v }))} />}
               </div>
 
-              {error && <div className="mt-4 text-red-400 text-xs bg-red-500/10 border border-red-500/15 rounded-xl px-4 py-3">{error}</div>}
+              {error && <div className="mt-6 text-red-400 font-bold text-sm bg-red-500/10 border-2 border-red-500/30 rounded-xl px-5 py-4 flex items-center gap-3"><Activity className="w-5 h-5"/> {error}</div>}
 
               {/* Nav */}
-              <div className="fixed bottom-0 left-0 right-0 border-t border-white/[0.05] bg-[#050508]/95 backdrop-blur-xl z-30">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-                  <button onClick={() => go('b')} disabled={step === 1}
-                    className="flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors disabled:opacity-0">
-                    <ChevronLeft className="w-4 h-4" /> Back
-                  </button>
-                  <span className="text-[10px] font-mono text-white/15 hidden sm:inline">Enter to continue</span>
-                  {step < 6 ? (
-                    <button onClick={() => go('f')} disabled={!canGo}
-                      className="flex items-center gap-2 text-xs font-semibold px-5 py-2.5 rounded-lg border transition-all disabled:opacity-25"
-                      style={{ borderColor: canGo ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)', color: canGo ? 'white' : 'rgba(255,255,255,0.3)' }}>
-                      Continue <ArrowRight className="w-3.5 h-3.5" />
+              {step > 0 && (
+                <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-[#050508]/90 backdrop-blur-2xl z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+                  <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
+                    <button onClick={() => go('b')}
+                      className="flex items-center gap-2 text-sm font-bold text-white/50 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-6 py-3 rounded-xl border border-white/10">
+                      <ChevronLeft className="w-5 h-5" /> Back
                     </button>
-                  ) : (
-                    <button onClick={handleSubmit} disabled={!canGo || isSubmitting}
-                      className="flex items-center gap-2 text-sm font-bold px-6 py-2.5 rounded-lg transition-all disabled:opacity-25"
-                      style={{ background: canGo ? 'white' : 'rgba(255,255,255,0.1)', color: canGo ? '#050508' : 'rgba(255,255,255,0.3)' }}>
-                      {isSubmitting ? <><Activity className="w-4 h-4 animate-spin" /> Analyzing...</> : <>Get My Roadmap <ArrowRight className="w-4 h-4" /></>}
-                    </button>
-                  )}
+                    
+                    <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-white/30 bg-black/50 px-4 py-2 rounded-lg border border-white/5">
+                      <span className="bg-white/10 text-white/70 px-2 py-0.5 rounded font-mono text-[10px]">ENTER</span> to continue
+                    </div>
+
+                    {step < 6 ? (
+                      <button onClick={() => go('f')} disabled={!canGo}
+                        className="flex items-center gap-3 text-sm font-black px-8 py-3.5 rounded-xl transition-all disabled:opacity-30 disabled:scale-100 hover:scale-105 active:scale-95 shadow-lg border-2"
+                        style={{ borderColor: canGo ? 'white' : 'transparent', background: canGo ? 'white' : 'rgba(255,255,255,0.1)', color: canGo ? 'black' : 'rgba(255,255,255,0.5)' }}>
+                        Continue <ArrowRight className="w-5 h-5" />
+                      </button>
+                    ) : (
+                      <button onClick={handleSubmit} disabled={!canGo || isSubmitting}
+                        className="flex items-center gap-3 text-base font-black px-10 py-4 rounded-xl transition-all disabled:opacity-30 disabled:scale-100 hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(6,182,212,0.4)] bg-cyan-500 text-black">
+                        {isSubmitting ? <><Activity className="w-5 h-5 animate-spin" /> Analyzing Stack...</> : <>Generate Roadmap <ArrowRight className="w-5 h-5" /></>}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <Sidebar answers={answers} step={step} />
