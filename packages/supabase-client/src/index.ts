@@ -7,11 +7,16 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 // Mock client for build time when env vars are not available
 function createMockClient(): SupabaseClient {
-  return {
-    from: () => ({
-      insert: () => ({ select: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
-      select: () => ({ eq: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
+  const mockResponse = async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } })
+  const mockQuery = {
+    insert: () => ({ select: () => ({ single: mockResponse }) }),
+    select: () => ({ 
+      eq: () => ({ single: mockResponse }),
+      single: mockResponse 
     }),
+  }
+  return {
+    from: () => mockQuery,
   } as unknown as SupabaseClient
 }
 
