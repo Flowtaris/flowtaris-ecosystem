@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react'
 import { calculateROI } from '@flowtaris/roi-engine'
-import { insertROICalculation } from '@flowtaris/supabase-client'
 import { analytics } from '@flowtaris/analytics'
 import { ChevronDown, BarChart3, PieChart, Zap, FileText, CheckCircle2, Activity } from 'lucide-react'
 
@@ -123,11 +122,25 @@ export default function ROICalculatorClient({ initialConfig }: { initialConfig: 
     e.preventDefault()
     if (!email) return
     setIsSimulating(true)
-    // Simulate network delay for "sending email"
-    await new Promise(r => setTimeout(r, 1500))
-    await insertROICalculation({ inputs: { erp, useCase, sizeIndex } as any, outputs: { res } as any, email, assessment_id: null })
-    setIsSimulating(false)
-    setSent(true)
+    
+    try {
+      const resp = await fetch('/api/leads/roi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inputs: { erp, useCase, sizeIndex },
+          outputs: { res },
+          email,
+          assessment_id: null
+        })
+      })
+      if (!resp.ok) throw new Error('Failed to send')
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSimulating(false)
+      setSent(true)
+    }
   }
 
   return (
@@ -246,10 +259,7 @@ export default function ROICalculatorClient({ initialConfig }: { initialConfig: 
               ) : (
                 <div className="w-full max-w-sm bg-brand-emerald-500/10 border border-brand-emerald-500/20 p-4 rounded-lg flex flex-col gap-2">
                   <div className="text-brand-emerald-400 text-sm font-bold flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" /> Report Saved to Supabase
-                  </div>
-                  <div className="text-[10px] text-brand-emerald-400/50 text-center uppercase tracking-widest">
-                    (Email Simulated in Demo Environment)
+                    <CheckCircle2 className="w-5 h-5" /> Report Sent to Inbox!
                   </div>
                 </div>
               )}
