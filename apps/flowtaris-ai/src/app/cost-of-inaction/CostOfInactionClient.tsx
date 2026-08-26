@@ -108,7 +108,7 @@ export default function CostOfInactionClient({ initialConfig }: { initialConfig:
     setOutputs(res)
     
     // We enhance the basic engine narrative for the UI
-    const enhancedNarrative = `Our AI diagnostic engine has processed your inputs against industry benchmarks. Based on an invoice volume of ${inputs.annualVolume.toLocaleString()} and an average manual processing time of ${inputs.avgManualHours} minutes, your baseline operational friction is significantly higher than top-quartile performers. \n\nWith a ${inputs.complianceRequirements} compliance posture and ${inputs.competitivePressure} competitive pressure, your risk profile amplifies the financial leakage. A delay of ${inputs.monthsDelay} months translates directly to unrecoverable sunk costs. This analysis provides a structured, data-driven projection to help build your business case.`
+    const enhancedNarrative = `Our AI diagnostic engine has processed your inputs against industry benchmarks. Based on an invoice volume of ${inputs.annualVolume.toLocaleString()} and an average manual processing time of ${state.avgManualHours} minutes, your baseline operational friction is significantly higher than top-quartile performers. \n\nWith a ${inputs.complianceRequirements} compliance posture and ${inputs.competitivePressure} competitive pressure, your risk profile amplifies the financial leakage. A delay of ${state.monthsDelay} months translates directly to unrecoverable sunk costs. This analysis provides a structured, data-driven projection to help build your business case.`
     setNarrative(enhancedNarrative)
   }, [state])
 
