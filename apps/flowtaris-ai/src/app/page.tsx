@@ -4,6 +4,7 @@ import { HomeHero } from './HomeHero'
 import TrustSignalsSection from '../components/TrustSignalsSection'
 import DualVisionSection from '../components/DualVisionSection'
 import IntelligenceSuiteSection from '../components/IntelligenceSuiteSection'
+import CapabilitiesSection from '../components/CapabilitiesSection'
 
 export const metadata: Metadata = {
   title: 'Flowtaris AI | Enterprise AI Automation for Finance',
@@ -15,14 +16,7 @@ export const metadata: Metadata = {
   },
 }
 
-const capabilities = [
-  { name: 'GenAI Document Intelligence', category: 'Document Processing', icon: '⚡', desc: 'Automatically extract, classify, and validate financial documents with 99.8% accuracy.', platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'] },
-  { name: 'Autonomous Workflow Engine', category: 'Process Automation', icon: '🔄', desc: 'Self-healing workflows that adapt to exceptions without human intervention.', platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'] },
-  { name: 'Predictive Analytics', category: 'Finance Intelligence', icon: '📊', desc: 'Forecast cash flow, detect anomalies, and surface actionable insights in real time.', platforms: ['NetSuite', 'SAP', 'Workday'] },
-  { name: 'Conversational ERP Interface', category: 'Human-Computer Interaction', icon: '💬', desc: 'Ask your ERP anything in plain English. Get instant answers, run approvals, update records.', platforms: ['NetSuite', 'Workday'] },
-  { name: 'Integration Health Monitoring', category: 'Observability', icon: '🛡️', desc: 'Real-time visibility into every integration, with automated alerting and self-healing.', platforms: ['NetSuite', 'Coupa', 'SAP', 'Workday'] },
-  { name: 'AI Governance & Compliance', category: 'Risk & Compliance', icon: '✅', desc: 'Full audit trail, explainable AI, and regulatory controls built into every workflow.', platforms: ['SAP', 'Coupa'] },
-]
+
 
 export default function Home() {
   return (
@@ -40,35 +34,8 @@ export default function Home() {
       {/* ── Intelligence Suite: 4 Real Interactive Tools ── */}
       <IntelligenceSuiteSection />
 
-      {/* ── Capabilities Grid ── */}
-      <section style={{ padding: '96px 24px', background: 'rgba(255,255,255,0.01)' }} aria-labelledby="capabilities-heading">
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 72 }}>
-            <p style={{ fontSize: 11, color: '#00b8db', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700, marginBottom: 16, fontFamily: "'Inter', sans-serif" }}>Platform Capabilities</p>
-            <h2 id="capabilities-heading" className="text-display-md text-gradient-brand" style={{ marginBottom: 20 }}>
-              Six Production-Grade AI Capabilities
-            </h2>
-            <p className="text-headline-sm" style={{ color: 'rgba(255,255,255,0.45)', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
-              Covering the full finance automation lifecycle — from document ingestion to governance.
-            </p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: 24 }}>
-            {capabilities.map((cap, i) => (
-              <article key={i} className="glass-card" style={{ padding: '32px 28px', borderRadius: 20, transition: 'transform 0.25s', cursor: 'default', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ fontSize: 36, marginBottom: 16 }}>{cap.icon}</div>
-                <p style={{ fontSize: 10, color: '#00b8db', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 8 }}>{cap.category}</p>
-                <h3 className="text-headline-sm" style={{ color: '#ffffff', marginBottom: 12 }}>{cap.name}</h3>
-                <p className="text-body-sm" style={{ color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, marginBottom: 20 }}>{cap.desc}</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {cap.platforms.map((p) => (
-                    <Badge key={p} variant="ghost" className="text-body-xs">{p}</Badge>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── Capabilities: Proof Wall Accordion ── */}
+      <CapabilitiesSection />
 
       {/* ── CTA Banner ── */}
       <section style={{ padding: '96px 24px' }}>
