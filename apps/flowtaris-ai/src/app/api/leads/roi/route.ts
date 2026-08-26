@@ -1,4 +1,4 @@
-﻿// @flowtaris/flowtaris-ai - ROI Calculation Email Capture & Sending API
+// @flowtaris/flowtaris-ai - ROI Calculation Email Capture & Sending API
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@flowtaris/supabase-client'
 import { Resend } from 'resend'
@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
       `
 
       const { data: resendData, error: resendError } = await resend.emails.send({
-        from: 'Flowtaris AI <onboarding@resend.dev>',
-        to: [email],
+        from: `Flowtaris AI <${process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'}>`,
+        to: [process.env.RESEND_TO_EMAIL || email],
         subject: 'Your Flowtaris ROI Projections',
         html: emailHtml,
       })

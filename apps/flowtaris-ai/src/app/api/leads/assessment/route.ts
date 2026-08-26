@@ -119,8 +119,8 @@ export async function POST(request: NextRequest) {
       `
 
       const { error: emailError } = await resend.emails.send({
-        from: 'Flowtaris AI <onboarding@resend.dev>',
-        to: [email],
+        from: `Flowtaris AI <${process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'}>`,
+        to: [process.env.RESEND_TO_EMAIL || email],
         subject: `Your Flowtaris AI Readiness Report — Score: ${result.leadScore}/100`,
         html: emailHtml,
       })

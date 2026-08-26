@@ -3,7 +3,7 @@
 import { Resend } from 'resend'
 
 const resendApiKey = process.env.RESEND_API_KEY
-const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@flowtaris.ai'
+const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 const toEmail = process.env.RESEND_TO_EMAIL || 'leads@flowtaris.ai'
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
