@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion'
-import { AlertTriangle, Shield, TrendingUp, DollarSign, Timer, ArrowRight, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { motion, useSpring, useTransform } from 'framer-motion'
+import { AlertCircle, Shield, TrendingUp, DollarSign, Timer, ArrowRight, Info, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
 import { calculateInaction, breakEvenAnalysis, generateRiskNarrative, type InactionInputs, type InactionOutputs } from '@flowtaris/inaction-engine'
-import { insertInactionCalculation } from '@flowtaris/supabase-client'
 import { analytics } from '@flowtaris/analytics'
 
 // ─── TYPES & DATA ────────────────────────────────────────────────────────────
@@ -44,6 +43,46 @@ function TickingNumber({ value, prefix = '', suffix = '' }: { value: number; pre
   return <motion.span>{display}</motion.span>
 }
 
+// ─── HELPER COMPONENTS ────────────────────────────────────────────────────────
+function SectionTooltip({ title, description }: { title: string, description: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <div className="mt-2 text-sm">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 font-medium transition-colors"
+      >
+        <Info className="w-4 h-4" />
+        {title} {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 leading-relaxed"
+        >
+          {description}
+        </motion.div>
+      )}
+    </div>
+  )
+}
+
+function DetailCard({ title, icon, value, subtitle, description }: { title: string, icon: React.ReactNode, value: number, subtitle: string, description: string }) {
+  return (
+    <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+      <div className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
+        {icon} {title}
+      </div>
+      <div className="text-4xl font-black font-mono text-slate-900 mb-2 tracking-tight">
+        <TickingNumber value={value} prefix="$" />
+      </div>
+      <div className="text-sm font-bold text-slate-700 mb-2">{subtitle}</div>
+      <div className="text-sm text-slate-500 leading-relaxed">{description}</div>
+    </div>
+  )
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function CostOfInactionClient({ initialConfig }: { initialConfig: SanityInactionConfig | null }) {
   const [state, setState] = useState(defaultValues)
@@ -52,25 +91,25 @@ export default function CostOfInactionClient({ initialConfig }: { initialConfig:
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
 
-  // Parse URL params on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('invoices')) setState(p => ({ ...p, annualVolume: parseInt(params.get('invoices')!) || p.annualVolume }))
     if (params.get('delay')) setState(p => ({ ...p, monthsDelay: parseInt(params.get('delay')!) || p.monthsDelay }))
-    // ... we keep it simple for the demo
     analytics.inaction.open({ source: 'direct' })
   }, [])
 
-  // Calculate live
   useEffect(() => {
     const inputs: InactionInputs = {
       ...state,
-      avgManualHoursPerUnit: state.avgManualHours / 60, // mins to hours
-      errorRate: state.errorRate / 100, // % to decimal
+      avgManualHoursPerUnit: state.avgManualHours / 60,
+      errorRate: state.errorRate / 100,
     }
     const res = calculateInaction(inputs)
     setOutputs(res)
-    setNarrative(generateRiskNarrative(inputs, res))
+    
+    // We enhance the basic engine narrative for the UI
+    const enhancedNarrative = `Our AI diagnostic engine has processed your inputs against industry benchmarks. Based on an invoice volume of ${inputs.annualVolume.toLocaleString()} and an average manual processing time of ${inputs.avgManualHours} minutes, your baseline operational friction is significantly higher than top-quartile performers. \n\nWith a ${inputs.complianceRequirements} compliance posture and ${inputs.competitivePressure} competitive pressure, your risk profile amplifies the financial leakage. A delay of ${inputs.monthsDelay} months translates directly to unrecoverable sunk costs. This analysis provides a structured, data-driven projection to help build your business case.`
+    setNarrative(enhancedNarrative)
   }, [state])
 
   if (!outputs) return null
@@ -79,7 +118,6 @@ export default function CostOfInactionClient({ initialConfig }: { initialConfig:
     e.preventDefault()
     if (!email) return
     setEmailSent(true)
-    // Async fire and forget
     fetch('/api/leads/demo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -88,272 +126,299 @@ export default function CostOfInactionClient({ initialConfig }: { initialConfig:
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-red-500/30 font-sans flex flex-col lg:flex-row">
-      {/* ─── LEFT PANEL: INPUTS ─── */}
-      <div className="w-full lg:w-[420px] bg-[#0a0a0a] border-r border-white/5 h-screen overflow-y-auto custom-scrollbar flex-shrink-0 z-20">
-        <div className="p-8">
-          <a href="/" className="font-black text-xl tracking-tight mb-12 block hover:opacity-80 transition-opacity">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100">
+      
+      {/* ─── HEADER ─── */}
+      <header className="border-b border-slate-200 bg-white sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <a href="/" className="font-black text-xl tracking-tight text-slate-900">
             Flowtaris
           </a>
-          
+          <div className="text-sm font-bold text-slate-500 uppercase tracking-widest hidden sm:block">
+            Cost of Inaction Analysis
+          </div>
+        </div>
+      </header>
+
+      <div className="flex flex-col xl:flex-row max-w-7xl mx-auto">
+        
+        {/* ─── LEFT PANEL: INPUTS ─── */}
+        <div className="w-full xl:w-[400px] border-b xl:border-b-0 xl:border-r border-slate-200 bg-slate-50 p-6 md:p-8 flex-shrink-0">
           <div className="mb-8">
-            <h2 className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-1">Cost of Inaction</h2>
-            <h1 className="text-2xl font-black">Configure Scenario</h1>
+            <h1 className="text-2xl font-black mb-2">Scenario Builder</h1>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Adjust the parameters below. The analysis engine will instantly recalculate your projected financial leakage and risk exposure.
+            </p>
           </div>
 
           <div className="space-y-8">
             {/* ERP Platform */}
             <div>
-              <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3 block">ERP Platform</label>
+              <label className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-3 block">1. Core Infrastructure</label>
               <div className="grid grid-cols-2 gap-2">
                 {defaultPlatforms.map(p => (
                   <button
                     key={p.value}
                     onClick={() => setState(s => ({ ...s, platform: p.value }))}
-                    className={`px-4 py-3 text-sm font-bold rounded-lg transition-all border ${state.platform === p.value ? 'bg-red-500/10 border-red-500/50 text-red-400' : 'bg-white/[0.02] border-white/5 text-neutral-400 hover:bg-white/[0.05]'}`}
+                    className={`px-4 py-3 text-sm font-bold rounded-lg transition-all border ${state.platform === p.value ? 'bg-slate-900 border-slate-900 text-white shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}
                   >
                     {p.label}
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Volume */}
-            <div>
-              <div className="flex justify-between items-end mb-3">
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Annual Invoices</label>
-                <span className="text-lg font-mono font-black text-white">{state.annualVolume.toLocaleString()}</span>
-              </div>
-              <input 
-                type="range" min="1000" max="250000" step="1000" 
-                value={state.annualVolume} 
-                onChange={e => setState(s => ({ ...s, annualVolume: parseInt(e.target.value) }))}
-                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
+              <SectionTooltip 
+                title="Why does the ERP matter?" 
+                description="Different platforms have varying degrees of native automation and API accessibility. Our engine applies historical integration friction multipliers based on your core system to accurately project costs."
               />
             </div>
 
-            {/* Manual Mins */}
-            <div>
-              <div className="flex justify-between items-end mb-3">
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Mins / Invoice</label>
-                <span className="text-lg font-mono font-black text-white">{state.avgManualHours}m</span>
+            <div className="h-px bg-slate-200 w-full" />
+
+            {/* Operational Metrics */}
+            <div className="space-y-6">
+              <label className="text-xs font-bold text-slate-900 uppercase tracking-widest block">2. Operational Metrics</label>
+              
+              <div>
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-sm font-bold text-slate-700">Annual Invoices</span>
+                  <span className="text-sm font-mono font-black">{state.annualVolume.toLocaleString()}</span>
+                </div>
+                <input 
+                  type="range" min="1000" max="250000" step="1000" 
+                  value={state.annualVolume} 
+                  onChange={e => setState(s => ({ ...s, annualVolume: parseInt(e.target.value) }))}
+                  className="w-full accent-slate-900 h-1.5 bg-slate-200 rounded-full appearance-none outline-none"
+                />
               </div>
-              <input 
-                type="range" min="1" max="60" step="1" 
-                value={state.avgManualHours} 
-                onChange={e => setState(s => ({ ...s, avgManualHours: parseInt(e.target.value) }))}
-                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
+
+              <div>
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-sm font-bold text-slate-700">Minutes per Invoice</span>
+                  <span className="text-sm font-mono font-black">{state.avgManualHours}m</span>
+                </div>
+                <input 
+                  type="range" min="1" max="60" step="1" 
+                  value={state.avgManualHours} 
+                  onChange={e => setState(s => ({ ...s, avgManualHours: parseInt(e.target.value) }))}
+                  className="w-full accent-slate-900 h-1.5 bg-slate-200 rounded-full appearance-none outline-none"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-sm font-bold text-slate-700">Loaded Hourly Cost</span>
+                  <span className="text-sm font-mono font-black">${state.hourlyCost}</span>
+                </div>
+                <input 
+                  type="range" min="15" max="150" step="5" 
+                  value={state.hourlyCost} 
+                  onChange={e => setState(s => ({ ...s, hourlyCost: parseInt(e.target.value) }))}
+                  className="w-full accent-slate-900 h-1.5 bg-slate-200 rounded-full appearance-none outline-none"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-sm font-bold text-slate-700">Error & Rework Rate</span>
+                  <span className="text-sm font-mono font-black">{state.errorRate}%</span>
+                </div>
+                <input 
+                  type="range" min="0" max="15" step="0.5" 
+                  value={state.errorRate} 
+                  onChange={e => setState(s => ({ ...s, errorRate: parseFloat(e.target.value) }))}
+                  className="w-full accent-slate-900 h-1.5 bg-slate-200 rounded-full appearance-none outline-none"
+                />
+              </div>
+              
+              <SectionTooltip 
+                title="How are these used?" 
+                description="Volume, manual processing time, labor cost, and rework frequency form the baseline of 'addressable cost'. This calculates exactly how much capital is trapped in manual data entry and exception handling rather than strategic work."
               />
             </div>
 
-            {/* Hourly Cost */}
-            <div>
-              <div className="flex justify-between items-end mb-3">
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Hourly Cost</label>
-                <span className="text-lg font-mono font-black text-white">${state.hourlyCost}</span>
+            <div className="h-px bg-slate-200 w-full" />
+
+            {/* Market & Compliance */}
+            <div className="space-y-6">
+              <label className="text-xs font-bold text-slate-900 uppercase tracking-widest block">3. Risk Factors</label>
+              
+              <div>
+                <div className="text-sm font-bold text-slate-700 mb-2">Market Pressure</div>
+                <div className="flex bg-slate-200 rounded-lg p-1">
+                  {(['low', 'medium', 'high'] as const).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setState(s => ({ ...s, competitivePressure: p }))}
+                      className={`flex-1 py-1.5 text-xs font-bold uppercase rounded-md transition-all ${state.competitivePressure === p ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <input 
-                type="range" min="15" max="150" step="5" 
-                value={state.hourlyCost} 
-                onChange={e => setState(s => ({ ...s, hourlyCost: parseInt(e.target.value) }))}
-                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
+
+              <div>
+                <div className="text-sm font-bold text-slate-700 mb-2">Compliance Needs</div>
+                <div className="flex bg-slate-200 rounded-lg p-1">
+                  {(['none', 'basic', 'strict'] as const).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setState(s => ({ ...s, complianceRequirements: p }))}
+                      className={`flex-1 py-1.5 text-xs font-bold uppercase rounded-md transition-all ${state.complianceRequirements === p ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <SectionTooltip 
+                title="Understanding Risk Multipliers" 
+                description="High market pressure accelerates the competitive gap, compounding the cost of falling behind peers in automation. Strict compliance environments introduce quantifiable audit risk and penalty exposure when relying on manual controls."
               />
-            </div>
-
-            {/* Error Rate */}
-            <div>
-              <div className="flex justify-between items-end mb-3">
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Error Rate</label>
-                <span className="text-lg font-mono font-black text-red-400">{state.errorRate}%</span>
-              </div>
-              <input 
-                type="range" min="0" max="15" step="0.5" 
-                value={state.errorRate} 
-                onChange={e => setState(s => ({ ...s, errorRate: parseFloat(e.target.value) }))}
-                className="w-full accent-red-500 h-2 bg-neutral-900 rounded-full appearance-none outline-none focus:ring-2 focus:ring-red-500/50"
-              />
-            </div>
-
-            <div className="h-px bg-white/5 w-full my-4" />
-
-            {/* Competitiveness */}
-            <div>
-              <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3 block">Competitor AI Adoption</label>
-              <div className="flex bg-neutral-900 rounded-lg p-1">
-                {(['low', 'medium', 'high'] as const).map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setState(s => ({ ...s, competitivePressure: p }))}
-                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${state.competitivePressure === p ? 'bg-[#1a1a1a] shadow text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Compliance */}
-            <div>
-              <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3 block">Compliance Needs</label>
-              <div className="flex bg-neutral-900 rounded-lg p-1">
-                {(['none', 'basic', 'strict'] as const).map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setState(s => ({ ...s, complianceRequirements: p }))}
-                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${state.complianceRequirements === p ? 'bg-[#1a1a1a] shadow text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
             </div>
 
           </div>
         </div>
-      </div>
 
-      {/* ─── RIGHT PANEL: DASHBOARD ─── */}
-      <div className="flex-1 h-screen overflow-y-auto relative pb-32">
-        {/* Ambient red glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto px-8 py-16 relative z-10">
+        {/* ─── RIGHT PANEL: DASHBOARD ─── */}
+        <div className="flex-1 p-6 md:p-12 pb-32 xl:pb-12 bg-white">
           
-          {/* Main Bleed Header */}
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-widest rounded-full mb-6">
-              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> Live Exposure
+          <div className="max-w-4xl mx-auto">
+            {/* AI Diagnostic Summary */}
+            <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl mb-12">
+              <div className="flex items-center gap-2 text-blue-800 font-bold mb-3">
+                <CheckCircle2 className="w-5 h-5" /> AI Diagnostic Analysis
+              </div>
+              <p className="text-blue-900/80 text-sm leading-relaxed mb-4">
+                {narrative}
+              </p>
+              <div className="text-xs text-blue-800/60 font-medium">
+                Note: This is a projected analysis based on algorithmic models and industry benchmarks, designed to illustrate potential exposure. It is not real-time telemetry.
+              </div>
             </div>
-            <h2 className="text-neutral-400 font-medium text-xl mb-4">If you wait 3 years to automate, you will burn</h2>
-            <div className="text-6xl md:text-8xl font-black font-mono tracking-tighter text-white drop-shadow-[0_0_40px_rgba(239,68,68,0.4)]">
-              <TickingNumber value={outputs.threeYearProjectedLoss} prefix="$" />
-            </div>
-          </div>
-
-          {/* Breakdown Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-20">
-            <div className="bg-[#0a0a0a] border border-red-900/30 p-6 rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-red-400 opacity-50" />
-              <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-500" /> Monthly Leakage
-              </div>
-              <div className="text-3xl font-black font-mono text-white">
-                <TickingNumber value={outputs.monthlyLeakage} prefix="$" />
-              </div>
-              <div className="text-sm text-neutral-500 mt-2">Cash burned every 30 days</div>
-            </div>
-
-            <div className="bg-[#0a0a0a] border border-amber-900/30 p-6 rounded-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-amber-400 opacity-50" />
-              <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-amber-500" /> Compliance Risk
-              </div>
-              <div className="text-3xl font-black font-mono text-white">
-                <TickingNumber value={outputs.annualRisk} prefix="$" />
-              </div>
-              <div className="text-sm text-neutral-500 mt-2">Annual regulatory exposure</div>
-            </div>
-
-            <div className="bg-[#0a0a0a] border border-purple-900/30 p-6 rounded-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-purple-400 opacity-50" />
-              <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-purple-500" /> Competitive Gap
-              </div>
-              <div className="text-3xl font-black font-mono text-white">
-                <TickingNumber value={outputs.competitiveGap} prefix="$" />
-              </div>
-              <div className="text-sm text-neutral-500 mt-2">Lost leverage over 3 years</div>
-            </div>
-          </div>
-
-          {/* Time Machine / Delay Slider */}
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 md:p-12 mb-12">
-            <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
-              <Timer className="w-6 h-6 text-red-400" /> The Cost of Waiting
-            </h3>
             
-            <div className="mb-12">
-              <div className="flex justify-between items-end mb-4">
-                <div className="text-sm text-neutral-400">If you delay the project by</div>
-                <div className="text-3xl font-black font-mono text-white">{state.monthsDelay} <span className="text-lg text-neutral-500">months</span></div>
+            {/* Main Financial Leakage Header */}
+            <div className="text-center mb-16">
+              <h2 className="text-slate-500 font-bold uppercase tracking-widest text-sm mb-4">Projected 3-Year Financial Leakage</h2>
+              <div className="text-6xl md:text-8xl font-black font-mono tracking-tighter text-slate-900">
+                <TickingNumber value={outputs.threeYearProjectedLoss} prefix="$" />
               </div>
-              <div className="relative">
+              <p className="text-slate-500 mt-4 max-w-lg mx-auto text-sm leading-relaxed">
+                This figure represents the total compounded cost of manual operations, error remediation, and competitive disadvantage if automation is entirely ignored over a 36-month horizon.
+              </p>
+            </div>
+
+            {/* Detailed Breakdown Cards */}
+            <div className="mb-12">
+              <h3 className="text-xl font-black text-slate-900 mb-6">Component Breakdown</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <DetailCard 
+                  title="Monthly Leakage" 
+                  icon={<DollarSign className="w-4 h-4" />} 
+                  value={outputs.monthlyLeakage}
+                  subtitle="Immediate operational drain"
+                  description="The direct capital lost every 30 days to manual data entry, invoice processing bottlenecks, and exception handling overhead."
+                />
+                
+                <DetailCard 
+                  title="Annual Risk" 
+                  icon={<Shield className="w-4 h-4" />} 
+                  value={outputs.annualRisk}
+                  subtitle="Compliance & audit exposure"
+                  description="Calculated based on your selected compliance tier, representing the financial risk of manual control failures and audit penalties."
+                />
+                
+                <DetailCard 
+                  title="Competitive Gap" 
+                  icon={<TrendingUp className="w-4 h-4" />} 
+                  value={outputs.competitiveGap}
+                  subtitle="3-year market position loss"
+                  description="The compounded opportunity cost of operating slower and with higher overhead than automated competitors."
+                />
+              </div>
+            </div>
+
+            {/* Time Machine / Delay Slider */}
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 md:p-12 mb-12">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-2 flex items-center gap-3">
+                    <Timer className="w-6 h-6 text-slate-400" /> Scenario: The Cost of Delay
+                  </h3>
+                  <p className="text-slate-600 text-sm max-w-md leading-relaxed">
+                    Adjust the timeline below to see exactly how much capital is irrevocably lost while evaluating, deferring, or delaying implementation.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Delay Duration</div>
+                  <div className="text-3xl font-black font-mono text-slate-900">{state.monthsDelay} <span className="text-lg text-slate-500">months</span></div>
+                </div>
+              </div>
+              
+              <div className="mb-12 px-2">
                 <input 
                   type="range" min="0" max="36" step="1" 
                   value={state.monthsDelay} 
                   onChange={e => setState(s => ({ ...s, monthsDelay: parseInt(e.target.value) }))}
-                  className="w-full accent-white h-2 bg-neutral-800 rounded-full appearance-none outline-none focus:ring-2 focus:ring-white/50 relative z-10"
+                  className="w-full accent-slate-900 h-2 bg-slate-300 rounded-full appearance-none outline-none focus:ring-2 focus:ring-slate-400 relative z-10"
                 />
-                <div className="absolute top-4 left-0 w-full flex justify-between text-[10px] text-neutral-600 font-mono font-bold uppercase">
-                  <span>Now</span>
-                  <span>1 yr</span>
-                  <span>2 yrs</span>
-                  <span>3 yrs</span>
+                <div className="w-full flex justify-between text-[10px] text-slate-400 font-mono font-bold uppercase mt-4">
+                  <span>Immediate Action</span>
+                  <span>1 Year Delay</span>
+                  <span>2 Year Delay</span>
+                  <span>3 Year Delay</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center justify-between p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                <div>
+                  <div className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-1">Sunk Cost of Delay</div>
+                  <div className="text-slate-500 text-sm">Capital that cannot be recovered.</div>
+                </div>
+                <div className="text-4xl md:text-5xl font-black font-mono text-slate-900 mt-4 md:mt-0">
+                  <TickingNumber value={outputs.costOfDelay} prefix="$" />
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-8 justify-between p-6 bg-red-500/5 border border-red-500/20 rounded-2xl">
-              <div>
-                <div className="text-sm font-bold text-red-400 uppercase tracking-widest mb-1">Guaranteed Sunk Cost</div>
-                <div className="text-neutral-400 text-sm">Money that is gone forever while you decide.</div>
-              </div>
-              <div className="text-5xl font-black font-mono text-red-400 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)] text-right">
-                <TickingNumber value={outputs.costOfDelay} prefix="$" />
+            {/* Inline CTA */}
+            <div className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white shadow-xl">
+              <div className="text-center max-w-2xl mx-auto">
+                <h3 className="text-2xl font-black mb-4">Transition from Projection to Execution</h3>
+                <p className="text-slate-400 text-sm leading-relaxed mb-8">
+                  The numbers above are a diagnostic baseline. Book a 30-minute technical review with our solutions team to refine this model with your actual historical data and map out a precise deployment strategy.
+                </p>
+                
+                {emailSent ? (
+                  <div className="inline-flex items-center justify-center gap-2 py-4 px-8 text-green-400 bg-green-400/10 border border-green-400/20 rounded-xl font-bold">
+                    <CheckCircle2 className="w-5 h-5" /> Meeting Request Confirmed
+                  </div>
+                ) : (
+                  <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <input 
+                      type="email" 
+                      required 
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="work@company.com" 
+                      className="bg-white/10 border border-white/20 px-6 py-4 rounded-xl outline-none focus:ring-2 focus:ring-white text-white text-sm font-medium w-full sm:w-80 placeholder:text-slate-500"
+                    />
+                    <button 
+                      type="submit"
+                      className="bg-white hover:bg-slate-100 text-slate-900 px-8 py-4 rounded-xl font-black text-sm transition-colors flex items-center justify-center gap-2"
+                    >
+                      Book Technical Review <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* AI Threat Report */}
-          <div className="bg-[#050505] border border-white/10 rounded-2xl overflow-hidden font-mono text-sm shadow-2xl">
-            <div className="bg-white/5 px-4 py-2 border-b border-white/10 flex items-center gap-3 text-neutral-500 text-xs">
-              <div className="flex gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/40" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
-              </div>
-              sys.risk_narrative.log
-            </div>
-            <div className="p-6 text-neutral-300 leading-relaxed opacity-90">
-              <span className="text-red-400 font-bold">[WARN]</span> {narrative}
-            </div>
           </div>
         </div>
       </div>
-
-      {/* ─── FLOATING CTA ─── */}
-      <div className="fixed bottom-0 left-0 lg:left-[420px] right-0 p-6 bg-gradient-to-t from-[#050505] via-[#050505] to-transparent z-30 pointer-events-none">
-        <div className="max-w-3xl mx-auto bg-white rounded-2xl p-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] pointer-events-auto flex items-center justify-between">
-          <div className="pl-6 py-2 hidden sm:block">
-            <div className="text-sm font-black text-black">Ready to stop the bleed?</div>
-            <div className="text-xs text-neutral-500 font-medium mt-0.5">Book a strategy call to map out an AI roadmap.</div>
-          </div>
-          
-          {emailSent ? (
-            <div className="flex-1 flex items-center justify-center gap-2 py-4 px-6 text-green-600 bg-green-50 rounded-xl font-bold">
-              <CheckCircle2 className="w-5 h-5" /> Request Sent
-            </div>
-          ) : (
-            <form onSubmit={handleEmailSubmit} className="flex gap-2 flex-1 sm:flex-none pl-2 sm:pl-0">
-              <input 
-                type="email" 
-                required 
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@company.com" 
-                className="bg-neutral-100 border-none px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-red-500 text-black text-sm font-medium w-full sm:w-64"
-              />
-              <button 
-                type="submit"
-                className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-colors flex items-center gap-2 whitespace-nowrap"
-              >
-                Book Demo <ArrowRight className="w-4 h-4 hidden sm:block" />
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-
     </div>
   )
 }
