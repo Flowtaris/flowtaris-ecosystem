@@ -659,7 +659,9 @@ function Results({ result, answers, assessmentId }: { result: AssessmentResult; 
         <div className="flex items-start justify-between gap-8 flex-wrap">
           <div className="flex-1 min-w-0">
             <h2 className="text-4xl text-white font-black leading-tight mb-4">Your roadmap is ready.</h2>
-            <p className="text-slate-400 text-lg leading-relaxed max-w-lg">{result.summary}</p>
+            <p className="text-slate-400 text-lg leading-relaxed max-w-lg">
+              Based on your inputs (including <strong>{answers.erp || 'your ERP'}</strong> and processing <strong>{answers.volume.invoicesPerMonth * 12} invoices/yr</strong>), our engine has generated this customized, sequenced action plan. Here is exactly what you should build, in what order, and the financial impact it will have.
+            </p>
           </div>
           <div className="flex items-center gap-6 bg-[#111827]/80 border border-white/10 rounded-2xl p-6 flex-shrink-0">
             <div className="text-center">
@@ -861,11 +863,22 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
   }, [transitioning])
 
   // Auto-advance single-select steps
+  const lastAns = useRef(answers)
   useEffect(() => {
     if (step !== 0 && [1, 4, 5, 6].includes(step) && canGo && step < 6 && !transitioning) {
-      const t = setTimeout(() => go('f'), 350)
-      return () => clearTimeout(t)
+      const changed =
+        lastAns.current.erp !== answers.erp ||
+        lastAns.current.currentState !== answers.currentState ||
+        lastAns.current.techMaturity !== answers.techMaturity ||
+        lastAns.current.urgency !== answers.urgency;
+      
+      if (changed) {
+        const t = setTimeout(() => go('f'), 350)
+        lastAns.current = answers
+        return () => clearTimeout(t)
+      }
     }
+    lastAns.current = answers
   }, [answers.erp, answers.currentState, answers.techMaturity, answers.urgency, step, canGo, transitioning, go])
 
   // Keyboard nav

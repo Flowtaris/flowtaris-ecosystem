@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
-import FlowtarisGuide from "../components/onboarding/FlowtarisGuide";
 import SiteHeader from "../components/SiteHeader";
 import "./globals.css";
 
@@ -180,7 +179,6 @@ export default async function RootLayout({
         {/* Header receives server-fetched config — admin changes propagate within 60s */}
         <SiteHeader config={headerConfig} />
         {children}
-        <FlowtarisGuide />
       </body>
     </html>
   );
