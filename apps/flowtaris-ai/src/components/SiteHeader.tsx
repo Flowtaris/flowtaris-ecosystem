@@ -34,7 +34,7 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
     group
     ${active
       ? 'text-white bg-white/[0.12] font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
-      : 'text-white/50 hover:text-white hover:bg-white/[0.06] font-normal'
+      : 'text-white/85 hover:text-white hover:bg-white/[0.06] font-normal'
     }
   `
 
@@ -131,7 +131,7 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
             <CheckCircle2
               strokeWidth={isActive('/assessment') ? 2.5 : 2}
               className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
-                ${isActive('/assessment') ? 'text-white' : 'text-white/35 group-hover:text-white/80'}`}
+                ${isActive('/assessment') ? 'text-white' : 'text-white/70 group-hover:text-white'}`}
             />
             <span className="hidden sm:inline">Assessment</span>
           </Link>
@@ -141,7 +141,7 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
             <TrendingUp
               strokeWidth={isActive('/roi-calculator') ? 2.5 : 2}
               className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
-                ${isActive('/roi-calculator') ? 'text-white' : 'text-white/35 group-hover:text-white/80'}`}
+                ${isActive('/roi-calculator') ? 'text-white' : 'text-white/70 group-hover:text-white'}`}
             />
             <span className="hidden sm:inline">ROI</span>
           </Link>
@@ -151,7 +151,7 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
             <AlertTriangle
               strokeWidth={isActive('/cost-of-inaction') ? 2.5 : 2}
               className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
-                ${isActive('/cost-of-inaction') ? 'text-amber-400' : 'text-white/35 group-hover:text-amber-400/80'}`}
+                ${isActive('/cost-of-inaction') ? 'text-amber-400' : 'text-amber-400/60 group-hover:text-amber-400'}`}
             />
             <span className="hidden md:inline">Cost of Inaction</span>
             <span className="hidden sm:inline md:hidden">COI</span>
