@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
@@ -33,20 +33,22 @@ export default function CtaTerminalSection() {
   useEffect(() => {
     if (!hasStarted) return
 
-    let currentTimeout: NodeJS.Timeout
+    const timeouts: NodeJS.Timeout[] = []
     let cumulativeDelay = 0
 
     TERMINAL_LINES.forEach((line, index) => {
       cumulativeDelay += line.delay
-      setTimeout(() => {
+      const t = setTimeout(() => {
         setLinesVisible(index + 1)
         if (index === TERMINAL_LINES.length - 1) {
-          setTimeout(() => setShowButtons(true), 800)
+          const btnT = setTimeout(() => setShowButtons(true), 800)
+          timeouts.push(btnT)
         }
       }, cumulativeDelay)
+      timeouts.push(t)
     })
 
-    return () => clearTimeout(currentTimeout)
+    return () => timeouts.forEach(clearTimeout)
   }, [hasStarted])
 
   return (
