@@ -1,379 +1,329 @@
-﻿'use client'
+'use client'
 
-import React, { useState, useEffect, useRef, useMemo, FormEvent } from 'react'
-import { calculateROI, type ROIInputs, sensitivityAnalysis } from '@flowtaris/roi-engine'
+import React, { useState, useMemo, useEffect } from 'react'
+import { calculateROI } from '@flowtaris/roi-engine'
 import { insertROICalculation } from '@flowtaris/supabase-client'
 import { analytics } from '@flowtaris/analytics'
+import { ChevronDown, BarChart3, PieChart, ShieldAlert, Users, FileText, Zap } from 'lucide-react'
 
-// ─── Constants ──────────────────────────────────────────────────────────────
-const PLATFORMS = ['NetSuite', 'Coupa', 'SAP', 'Workday', 'Salesforce']
+// ─── Data ───────────────────────────────────────────────────────────────────
+const PLATFORMS = ['NetSuite', 'SAP', 'Coupa', 'Workday', 'Salesforce']
 const USE_CASES = [
-  { id: 'ap-automation', label: 'AP Automation' },
-  { id: 'po-matching', label: 'PO Matching' },
-  { id: 'expense-audit', label: 'Expense Audit' },
-]
-const SIZES = [
-  { id: 'small', label: '5-25 (Small)', vol: 12000, hrs: 15, hrRate: 45, err: 4.2, attr: 18, rec: 22000, comp: 35000 },
-  { id: 'mid', label: '25-100 (Mid)', vol: 65000, hrs: 12, hrRate: 55, err: 3.5, attr: 15, rec: 35000, comp: 120000 },
-  { id: 'large', label: '100-500 (Enterprise)', vol: 180000, hrs: 10, hrRate: 65, err: 2.8, attr: 12, rec: 50000, comp: 280000 },
-  { id: 'xl', label: '500+ (Global)', vol: 420000, hrs: 8, hrRate: 75, err: 2.2, attr: 10, rec: 65000, comp: 500000 },
+  { id: 'ap-automation', label: 'AP Automation & Invoicing' },
+  { id: 'po-matching', label: 'PO Reconciliation' },
+  { id: 'expense-audit', label: 'Expense & Audit' },
 ]
 
-// ─── Typewriter Effect ──────────────────────────────────────────────────────
-function Typewriter({ text, speed = 30, onComplete }: { text: string; speed?: number; onComplete?: () => void }) {
-  const [disp, setDisp] = useState('')
-  const [done, setDone] = useState(false)
+// Base defaults based on company size index (0 to 100)
+// 0 = small, 100 = global enterprise
+function deriveMetrics(sizeIndex: number) {
+  // Volume ranges from 10k to 500k
+  const vol = 10000 + Math.pow(sizeIndex / 100, 2) * 490000
+  // Minutes per unit ranges from 15 down to 5
+  const mins = 15 - (sizeIndex / 100) * 10
+  // Hourly rate ranges from $45 to $85
+  const rate = 45 + (sizeIndex / 100) * 40
+  // Error rate ranges from 5% down to 2%
+  const err = 0.05 - (sizeIndex / 100) * 0.03
   
-  useEffect(() => {
-    setDisp('')
-    setDone(false)
-    let i = 0
-    const t = setInterval(() => {
-      setDisp(text.substring(0, i + 1))
-      i++
-      if (i >= text.length) {
-        clearInterval(t)
-        setDone(true)
-        if (onComplete) onComplete()
-      }
-    }, speed)
-    return () => clearInterval(t)
-  }, [text, speed, onComplete])
+  const attritionCost = (vol * (mins / 60) / 1920) * 0.15 * 0.3 * (25000 + sizeIndex * 300)
+  const complianceCost = 25000 + Math.pow(sizeIndex / 100, 2) * 475000
 
-  return <span>{disp}{!done && <span style={{ animation: 'blink 1s step-end infinite', marginLeft: 2 }}>█</span>}</span>
-}
-
-// ─── Blueprint Node Component ───────────────────────────────────────────────
-function BlueprintNode({ x, y, label, state, value, delay = 0 }: { x: number, y: number, label: string, state: 'idle' | 'bottleneck' | 'ai', value?: string, delay?: number }) {
-  const colors = {
-    idle: { stroke: 'rgba(255,255,255,0.2)', fill: 'rgba(255,255,255,0.02)', text: 'rgba(255,255,255,0.4)' },
-    bottleneck: { stroke: '#ef4444', fill: 'rgba(239,68,68,0.1)', text: '#ef4444' },
-    ai: { stroke: '#06b6d4', fill: 'rgba(6,182,212,0.1)', text: '#06b6d4' }
+  return {
+    vol: Math.round(vol),
+    hrs: mins / 60,
+    rate: Math.round(rate),
+    err,
+    attritionCost: Math.round(attritionCost),
+    complianceCost: Math.round(complianceCost)
   }
-  const c = colors[state]
-
-  return (
-    <g transform={`translate(${x}, ${y})`} style={{ transition: 'all 0.5s ease-in-out', transitionDelay: `${delay}ms` }}>
-      {state === 'bottleneck' && (
-        <rect x={-80} y={-30} width={160} height={60} rx={4} fill="none" stroke="#ef4444" strokeWidth={1} strokeDasharray="4 4" style={{ animation: 'spin 10s linear infinite', opacity: 0.5 }} />
-      )}
-      <rect x={-75} y={-25} width={150} height={50} rx={2} fill={c.fill} stroke={c.stroke} strokeWidth={1.5} />
-      {/* Circuit lines */}
-      <path d="M -75 -15 L -85 -15 M -75 15 L -85 15 M 75 -15 L 85 -15 M 75 15 L 85 15" stroke={c.stroke} strokeWidth={1} opacity={0.5} />
-      
-      <text x={0} y={value ? -4 : 4} textAnchor="middle" fill={c.text} fontSize={11} fontFamily="'Geist_Mono', monospace" fontWeight={600} letterSpacing="0.05em">
-        {label.toUpperCase()}
-      </text>
-      {value && (
-        <text x={0} y={12} textAnchor="middle" fill="#fff" fontSize={13} fontFamily="'Geist_Mono', monospace" fontWeight={700}>
-          {value}
-        </text>
-      )}
-    </g>
-  )
 }
 
-function BlueprintLine({ start, end, state, delay = 0 }: { start: [number, number], end: [number, number], state: 'idle' | 'bottleneck' | 'ai', delay?: number }) {
-  const c = state === 'ai' ? '#06b6d4' : state === 'bottleneck' ? '#ef4444' : 'rgba(255,255,255,0.1)'
-  const w = state === 'ai' ? 2 : 1
+// ─── Helpers ────────────────────────────────────────────────────────────────
+const fmt = (v: number) => `$${Math.round(v).toLocaleString()}`
+const fmtM = (v: number) => `$${(v / 1000000).toFixed(2)}M`
+const fmtK = (v: number) => `$${Math.round(v / 1000)}k`
+
+// ─── Custom SVG Area Chart ──────────────────────────────────────────────────
+function ProjectionChart({ baseCost, newCost }: { baseCost: number, newCost: number }) {
+  // We plot 3 years (Years 1, 2, 3)
+  // Base cost grows by 10% each year (Cost of Inaction)
+  const b1 = baseCost, b2 = baseCost * 1.1, b3 = baseCost * 1.21
+  // New cost includes implementation in Y1, then stabilizes
+  const n1 = newCost, n2 = newCost * 0.8, n3 = newCost * 0.82
+
+  const maxVal = Math.max(b3) * 1.1
   
-  // Create an orthogonal path
-  const midX = start[0] + (end[0] - start[0]) / 2
-  const path = `M ${start[0]} ${start[1]} L ${midX} ${start[1]} L ${midX} ${end[1]} L ${end[0]} ${end[1]}`
+  const h = 280
+  const w = 600
   
+  const getY = (val: number) => h - (val / maxVal) * h
+  
+  // Points
+  const pB = `0,${getY(b1)} ${w/2},${getY(b2)} ${w},${getY(b3)}`
+  const pN = `0,${getY(n1)} ${w/2},${getY(n2)} ${w},${getY(n3)}`
+
   return (
-    <g style={{ transition: 'all 0.5s', transitionDelay: `${delay}ms` }}>
-      <path d={path} fill="none" stroke={c} strokeWidth={w} />
-      {state === 'ai' && (
-        <circle r={3} fill="#fff">
-          <animateMotion dur="2s" repeatCount="indefinite" path={path} />
-        </circle>
-      )}
-    </g>
+    <div className="relative w-full h-[280px] mt-8">
+      {/* Y-Axis Labels */}
+      <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[11px] text-white/30 font-medium">
+        <span>{fmtM(maxVal)}</span>
+        <span>{fmtM(maxVal/2)}</span>
+        <span>$0</span>
+      </div>
+      
+      <svg width="100%" height="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="ml-12 overflow-visible">
+        {/* Grid lines */}
+        <line x1="0" y1="0" x2={w} y2="0" stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
+        <line x1="0" y1={h/2} x2={w} y2={h/2} stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
+        <line x1="0" y1={h} x2={w} y2={h} stroke="rgba(255,255,255,0.1)" />
+        
+        {/* Cost of Inaction (Red Area) */}
+        <path d={`M 0,${h} L ${pB} L ${w},${h} Z`} fill="url(#gradRed)" opacity={0.3} className="transition-all duration-700 ease-out" />
+        <polyline points={pB} fill="none" stroke="#ef4444" strokeWidth={2} className="transition-all duration-700 ease-out" />
+        
+        {/* Flowtaris AI (Green Area) */}
+        <path d={`M 0,${h} L ${pN} L ${w},${h} Z`} fill="url(#gradGreen)" opacity={0.5} className="transition-all duration-700 ease-out" />
+        <polyline points={pN} fill="none" stroke="#10b981" strokeWidth={3} className="transition-all duration-700 ease-out" />
+        
+        {/* Data Points */}
+        <circle cx={w} cy={getY(b3)} r={4} fill="#ef4444" />
+        <circle cx={w} cy={getY(n3)} r={4} fill="#10b981" />
+        
+        {/* Gap label (Savings) */}
+        <line x1={w} y1={getY(b3)} x2={w} y2={getY(n3)} stroke="rgba(255,255,255,0.2)" strokeDasharray="2 2" />
+        
+        <defs>
+          <linearGradient id="gradRed" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      </svg>
+      
+      {/* X-Axis Labels */}
+      <div className="absolute left-12 right-0 -bottom-6 flex justify-between text-[11px] text-white/40 font-medium">
+        <span>Year 1</span>
+        <span>Year 2</span>
+        <span>Year 3</span>
+      </div>
+    </div>
   )
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 export default function ROICalculatorClient({ initialConfig }: { initialConfig: any }) {
-  const [step, setStep] = useState(0) // 0=init, 1=erp, 2=usecase, 3=size, 4=ready, 5=executed, 6=lead
-  const [logs, setLogs] = useState<React.ReactNode[]>([])
-  
-  const [erp, setErp] = useState('')
-  const [useCase, setUseCase] = useState('')
-  const [sizeId, setSizeId] = useState('')
+  const [erp, setErp] = useState(PLATFORMS[0])
+  const [useCase, setUseCase] = useState(USE_CASES[0].id)
+  const [sizeIndex, setSizeIndex] = useState(50) // 0-100 scale
   const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
 
-  const scrollRef = useRef<HTMLDivElement>(null)
+  // 1. Derive base metrics
+  const m = useMemo(() => deriveMetrics(sizeIndex), [sizeIndex])
+  const manCost = m.vol * m.hrs * m.rate
+  const errCost = m.vol * m.err * m.hrs * m.rate * 3
+  const currentTotal = manCost + errCost + m.attritionCost + m.complianceCost
 
-  // Scroll to bottom of terminal
+  // 2. Run Engine
+  const res = useMemo(() => calculateROI({
+    annualVolume: m.vol, avgManualHoursPerUnit: m.hrs, hourlyCost: m.rate, errorRate: m.err,
+    platform: erp, useCase: useCase, attritionRate: 0.15, avgRecruitmentCost: 25000 + sizeIndex * 300,
+    complianceFinesPerYear: m.complianceCost
+  }), [m, erp, useCase, sizeIndex])
+
+  // Pie Math
+  const pMan = (manCost / currentTotal) * 100
+  const pErr = (errCost / currentTotal) * 100
+  const pAttr = (m.attritionCost / currentTotal) * 100
+  const pComp = (m.complianceCost / currentTotal) * 100
+
+  // 3. Analytics
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [logs])
+    analytics.roi.open({ source: 'executive-dashboard' })
+  }, [])
 
-  // Initial boot sequence
-  useEffect(() => {
-    if (step === 0) {
-      const boot = async () => {
-        await new Promise(r => setTimeout(r, 500))
-        setLogs(prev => [...prev, <div key="boot1" className="text-brand-cyan-400"># SYSTEM BOOT...</div>])
-        await new Promise(r => setTimeout(r, 600))
-        setLogs(prev => [...prev, <div key="boot2" className="text-brand-cyan-400"># INITIALIZING FINANCIAL X-RAY PROTOCOL v2.4.1</div>])
-        await new Promise(r => setTimeout(r, 800))
-        setStep(1)
-      }
-      boot()
-    }
-  }, [step])
-
-  // Step triggers
-  useEffect(() => {
-    if (step === 1) {
-      setLogs(prev => [...prev, 
-        <div key="s1" className="mt-6 text-neutral-300">
-          <span className="text-brand-cyan-400">❯</span> <Typewriter text="TARGET ERP SYSTEM:" speed={20} />
-        </div>
-      ])
-    } else if (step === 2) {
-      setLogs(prev => [...prev, 
-        <div key="s2a" className="text-brand-green-400 mt-2">✓ LINK ESTABLISHED: {erp.toUpperCase()}</div>,
-        <div key="s2b" className="mt-6 text-neutral-300">
-          <span className="text-brand-cyan-400">❯</span> <Typewriter text="PRIMARY AUTOMATION VECTOR:" speed={20} />
-        </div>
-      ])
-    } else if (step === 3) {
-      setLogs(prev => [...prev, 
-        <div key="s3a" className="text-brand-green-400 mt-2">✓ VECTOR LOCKED: {USE_CASES.find(u=>u.id===useCase)?.label.toUpperCase()}</div>,
-        <div key="s3b" className="mt-6 text-neutral-300">
-          <span className="text-brand-cyan-400">❯</span> <Typewriter text="INPUT FINANCE ORG SIZE TO INJECT BENCHMARKS:" speed={20} />
-        </div>
-      ])
-    } else if (step === 4) {
-      setLogs(prev => [...prev, 
-        <div key="s4a" className="text-brand-green-400 mt-2">✓ BENCHMARKS INJECTED.</div>,
-        <div key="s4b" className="mt-6 text-neutral-300">
-          <span className="text-brand-cyan-400">❯</span> <Typewriter text="ANALYZING CURRENT MANUAL BOTTLENECKS..." speed={20} onComplete={() => {
-            setTimeout(() => setStep(4.5), 1500)
-          }} />
-        </div>
-      ])
-    } else if (step === 4.5) {
-      setLogs(prev => [...prev, 
-        <div key="s4c" className="text-brand-red-400 mt-2">! SEVERE INEFFICIENCIES DETECTED IN WORKFLOW.</div>,
-        <div key="s4d" className="mt-6 text-neutral-300">
-          <span className="text-brand-cyan-400">❯</span> <Typewriter text="AWAITING COMMAND TO DEPLOY FLOWTARIS AI..." speed={20} />
-        </div>
-      ])
-    } else if (step === 5) {
-      setLogs(prev => [...prev, 
-        <div key="s5a" className="text-brand-cyan-400 mt-2 font-bold">✓ EXECUTING FLOWTARIS OVERRIDE.</div>,
-        <div key="s5b" className="mt-6 text-neutral-300">
-          <span className="text-brand-cyan-400">❯</span> <Typewriter text="CALCULATING 3-YEAR ROI PROJECTIONS..." speed={20} onComplete={() => {
-            setTimeout(() => setStep(6), 2000)
-          }}/>
-        </div>
-      ])
-    } else if (step === 6) {
-      setLogs(prev => [...prev, 
-        <div key="s6a" className="text-brand-green-400 mt-2">✓ PROJECTIONS FINALIZED.</div>,
-        <div key="s6b" className="mt-6 text-neutral-300">
-          <span className="text-brand-cyan-400">❯</span> <Typewriter text="INPUT EMAIL TO TRANSMIT EXECUTIVE BUSINESS CASE:" speed={20} />
-        </div>
-      ])
-    }
-  }, [step])
-
-  // ─── Math ───────────────────────────────────────────────────────────────────
-  const activeSize = SIZES.find(s => s.id === sizeId)
-  
-  const diagnosis = useMemo(() => {
-    if (!activeSize) return null
-    const v = activeSize.vol
-    const h = activeSize.hrs / 60
-    const hr = activeSize.hrRate
-    const err = activeSize.err / 100
-    
-    const manCost = Math.round(v * h * hr)
-    const errCost = Math.round(v * err * h * hr * 3)
-    const attrCost = Math.round((v * h / 1920) * (activeSize.attr / 100) * 0.3 * activeSize.rec)
-    const compCost = activeSize.comp
-    return { manCost, errCost, attrCost, compCost, total: manCost + errCost + attrCost + compCost }
-  }, [activeSize])
-
-  const fix = useMemo(() => {
-    if (!activeSize) return null
-    const result = calculateROI({
-      annualVolume: activeSize.vol, avgManualHoursPerUnit: activeSize.hrs / 60, hourlyCost: activeSize.hrRate,
-      errorRate: activeSize.err / 100, platform: erp || 'NetSuite', useCase: useCase || 'ap-automation',
-      attritionRate: activeSize.attr / 100, avgRecruitmentCost: activeSize.rec, complianceFinesPerYear: activeSize.comp
+  const handleExport = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+    setSent(true)
+    await insertROICalculation({
+      inputs: { erp, useCase, sizeIndex } as any,
+      outputs: { res } as any,
+      email,
+      assessment_id: null
     })
-    return result
-  }, [activeSize, erp, useCase])
-
-  const fmt = (v: number) => `$${Math.round(v).toLocaleString()}`
-
-  // ─── Blueprint States ───────────────────────────────────────────────────────
-  // Depending on step, nodes are idle, bottleneck, or ai
-  const nodeState = step >= 5 ? 'ai' : step >= 4.5 ? 'bottleneck' : 'idle'
+  }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#0a0a0f] text-neutral-300 font-mono text-sm">
+    <div className="min-h-screen bg-[#050508] relative overflow-hidden flex flex-col pt-[80px]">
       
-      {/* ═════════════════════════════════════════════════════════════════════════
-          LEFT PANE: TERMINAL
-      ═════════════════════════════════════════════════════════════════════════ */}
-      <div className="w-full md:w-[35%] lg:w-[30%] border-b md:border-b-0 md:border-r border-white/10 flex flex-col h-[50vh] md:h-screen relative z-10 bg-[#0a0a0f]">
-        
-        {/* Terminal Header */}
-        <div className="h-12 border-b border-white/10 flex items-center px-4 justify-between bg-black/40">
-          <div className="flex gap-2">
-            <div className="w-3 h-3 rounded-full bg-brand-red-500/50" />
-            <div className="w-3 h-3 rounded-full bg-brand-amber-500/50" />
-            <div className="w-3 h-3 rounded-full bg-brand-green-500/50" />
+      {/* Background Ambience */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-brand-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-brand-emerald-500/10 blur-[150px] rounded-full pointer-events-none" />
+
+      {/* ── TOP CONTROL BAR ── */}
+      <div className="w-full max-w-7xl mx-auto px-6 py-6 z-10">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col lg:flex-row gap-6 items-center backdrop-blur-xl">
+          
+          <div className="flex-1 w-full">
+            <label className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2 block">Enterprise Platform</label>
+            <div className="relative">
+              <select value={erp} onChange={e => setErp(e.target.value)} className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-medium focus:border-brand-cyan-500 outline-none transition-colors">
+                {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+            </div>
           </div>
-          <div className="text-xs text-neutral-500 tracking-widest font-semibold uppercase">sys.terminal</div>
-        </div>
 
-        {/* Terminal Output */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-2 scroll-smooth">
-          {logs}
-          
-          {/* Inputs */}
-          {step === 1 && (
-            <div className="mt-4 flex flex-wrap gap-2 animate-in fade-in duration-500 delay-500 fill-mode-both">
-              {PLATFORMS.map(p => (
-                <button key={p} onClick={() => { setErp(p); setStep(2) }} className="px-4 py-2 border border-brand-cyan-500/30 text-brand-cyan-400 hover:bg-brand-cyan-500/10 transition-colors">
-                  {p}
-                </button>
-              ))}
+          <div className="flex-1 w-full">
+            <label className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2 block">Primary Focus</label>
+            <div className="relative">
+              <select value={useCase} onChange={e => setUseCase(e.target.value)} className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-medium focus:border-brand-cyan-500 outline-none transition-colors">
+                {USE_CASES.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
             </div>
-          )}
+          </div>
 
-          {step === 2 && (
-            <div className="mt-4 flex flex-col gap-2 animate-in fade-in duration-500 delay-500 fill-mode-both">
-              {USE_CASES.map(u => (
-                <button key={u.id} onClick={() => { setUseCase(u.id); setStep(3) }} className="px-4 py-3 border border-brand-cyan-500/30 text-brand-cyan-400 hover:bg-brand-cyan-500/10 text-left transition-colors">
-                  {u.label}
-                </button>
-              ))}
+          <div className="flex-[2] w-full px-4">
+            <div className="flex justify-between items-end mb-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Scale (Volume & Headcount)</label>
+              <span className="text-brand-cyan-400 font-mono text-sm font-bold">{m.vol.toLocaleString()} docs/yr</span>
             </div>
-          )}
-
-          {step === 3 && (
-            <div className="mt-4 flex flex-col gap-2 animate-in fade-in duration-500 delay-500 fill-mode-both">
-              {SIZES.map(s => (
-                <button key={s.id} onClick={() => { setSizeId(s.id); setStep(4) }} className="px-4 py-3 border border-brand-cyan-500/30 text-brand-cyan-400 hover:bg-brand-cyan-500/10 text-left flex justify-between transition-colors">
-                  <span>{s.label}</span>
-                </button>
-              ))}
+            <input type="range" min="0" max="100" value={sizeIndex} onChange={e => setSizeIndex(parseInt(e.target.value))} 
+              className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-cyan-500" 
+            />
+            <div className="flex justify-between mt-2 text-[10px] text-white/30 uppercase tracking-wider">
+              <span>SMB</span>
+              <span>Mid-Market</span>
+              <span>Global Enterprise</span>
             </div>
-          )}
-
-          {step === 4.5 && (
-            <div className="mt-8 animate-in fade-in duration-500 delay-500 fill-mode-both">
-              <button onClick={() => setStep(5)} className="w-full py-4 bg-brand-cyan-500 text-[#0a0a0f] font-bold tracking-widest hover:bg-brand-cyan-400 transition-colors uppercase">
-                Execute Flowtaris AI
-              </button>
-            </div>
-          )}
-
-          {step >= 6 && !email && (
-            <form onSubmit={e => { e.preventDefault(); setEmail((e.target as any).email.value) }} className="mt-4 flex gap-2 animate-in fade-in duration-500 delay-500 fill-mode-both">
-              <span className="text-brand-cyan-400 py-2">❯</span>
-              <input name="email" type="email" placeholder="CFO@company.com" required className="flex-1 bg-transparent border-b border-brand-cyan-500/50 text-white outline-none focus:border-brand-cyan-400 py-2" />
-              <button type="submit" className="px-4 py-2 bg-brand-cyan-500/20 text-brand-cyan-400 border border-brand-cyan-500/50 hover:bg-brand-cyan-500/30">SEND</button>
-            </form>
-          )}
-
-          {step >= 6 && email && (
-            <div className="mt-4 text-brand-green-400">
-              ✓ BUSINESS CASE TRANSMITTED TO {email.toUpperCase()}
-            </div>
-          )}
-          
-          <div className="h-8" />
+          </div>
         </div>
       </div>
 
-      {/* ═════════════════════════════════════════════════════════════════════════
-          RIGHT PANE: INTERACTIVE BLUEPRINT
-      ═════════════════════════════════════════════════════════════════════════ */}
-      <div className="flex-1 relative bg-[#050508] overflow-hidden flex flex-col h-[50vh] md:h-screen">
+      {/* ── MAIN STAGE ── */}
+      <div className="flex-1 w-full max-w-7xl mx-auto px-6 pb-12 z-10 flex flex-col">
         
-        {/* Blueprint Grid Background */}
-        <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        
-        {/* Header HUD */}
-        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-20 pointer-events-none">
-          <div>
-            <div className="text-[10px] text-brand-cyan-400 tracking-[0.2em] uppercase mb-1">Architecture State</div>
-            <div className="text-xl text-white font-bold tracking-widest">{nodeState === 'ai' ? 'OPTIMIZED' : nodeState === 'bottleneck' ? 'CRITICAL BLEED' : 'AWAITING INPUTS'}</div>
-          </div>
-          <div className="text-right">
-            <div className="text-[10px] text-brand-cyan-400 tracking-[0.2em] uppercase mb-1">Total Annual Bleed</div>
-            <div className={`text-3xl font-bold font-mono transition-colors duration-1000 ${nodeState === 'bottleneck' ? 'text-brand-red-500' : 'text-neutral-500'}`}>
-              {diagnosis ? fmt(diagnosis.total) : '$---,---'}
+        <div className="bg-black/60 border border-white/10 rounded-3xl p-8 backdrop-blur-2xl flex-1 flex flex-col shadow-2xl shadow-black/50">
+          
+          <div className="flex flex-col lg:flex-row gap-12 flex-1">
+            
+            {/* Left Col: The Breakdown */}
+            <div className="w-full lg:w-1/3 flex flex-col">
+              <h2 className="text-xl text-white font-bold mb-1 flex items-center gap-2"><PieChart className="w-5 h-5 text-brand-amber-500" /> Cost of Inaction Breakdown</h2>
+              <p className="text-sm text-white/40 mb-8">Your current annual bleed rate.</p>
+              
+              <div className="flex-1 flex flex-col gap-4 justify-center">
+                
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-brand-cyan-500 rounded-full" />
+                    <div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-semibold">Manual Labor</div>
+                      <div className="text-lg font-bold text-white">{fmt(manCost)}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-mono text-brand-cyan-400 bg-brand-cyan-500/10 px-2 py-1 rounded">{pMan.toFixed(1)}%</div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-brand-amber-500 rounded-full" />
+                    <div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-semibold">Error Rework</div>
+                      <div className="text-lg font-bold text-white">{fmt(errCost)}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-mono text-brand-amber-400 bg-brand-amber-500/10 px-2 py-1 rounded">{pErr.toFixed(1)}%</div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-brand-purple-500 rounded-full" />
+                    <div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-semibold">Team Attrition</div>
+                      <div className="text-lg font-bold text-white">{fmt(m.attritionCost)}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-mono text-brand-purple-400 bg-brand-purple-500/10 px-2 py-1 rounded">{pAttr.toFixed(1)}%</div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-brand-red-500 rounded-full" />
+                    <div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-semibold">Compliance Risk</div>
+                      <div className="text-lg font-bold text-white">{fmt(m.complianceCost)}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-mono text-brand-red-400 bg-brand-red-500/10 px-2 py-1 rounded">{pComp.toFixed(1)}%</div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Right Col: The Projection */}
+            <div className="w-full lg:w-2/3 flex flex-col">
+              <div className="flex justify-between items-end mb-8">
+                <div>
+                  <h2 className="text-xl text-white font-bold mb-1 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-brand-emerald-500" /> 3-Year Projection</h2>
+                  <p className="text-sm text-white/40">Status Quo vs Flowtaris Agentic AI</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-1">Total Addressable Spend</div>
+                  <div className="text-2xl font-bold font-mono text-brand-red-400">{fmt(currentTotal)} / yr</div>
+                </div>
+              </div>
+
+              <div className="flex-1 w-full flex items-center justify-center">
+                <ProjectionChart baseCost={currentTotal} newCost={currentTotal - res.annualSavings} />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* The SVG Canvas */}
-        <div className="flex-1 w-full h-full relative z-10">
-          <svg width="100%" height="100%" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Lines */}
-            <BlueprintLine start={[200, 200]} end={[350, 200]} state={nodeState} delay={100} />
-            <BlueprintLine start={[500, 200]} end={[650, 200]} state={nodeState} delay={200} />
-            <BlueprintLine start={[800, 200]} end={[800, 350]} state={nodeState} delay={300} />
-            <BlueprintLine start={[800, 350]} end={[650, 350]} state={nodeState} delay={400} />
-            <BlueprintLine start={[500, 350]} end={[350, 350]} state={nodeState} delay={500} />
-
-            {/* Nodes */}
-            <BlueprintNode x={200} y={200} label="Ingestion / Intake" state={step >= 4 ? (nodeState==='ai'?'ai':'idle') : 'idle'} />
+          {/* ── BOTTOM METRICS PANEL ── */}
+          <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
             
-            <BlueprintNode x={500} y={200} label="Manual Validation" state={nodeState} delay={100} value={diagnosis ? `Cost: ${fmt(diagnosis.manCost)}` : undefined} />
-            
-            <BlueprintNode x={800} y={200} label="Exception Handling" state={nodeState} delay={200} value={diagnosis ? `Error Tax: ${fmt(diagnosis.errCost)}` : undefined} />
-            
-            <BlueprintNode x={800} y={350} label="Compliance / Audit" state={nodeState} delay={300} value={diagnosis ? `Exposure: ${fmt(diagnosis.compCost)}` : undefined} />
-            
-            <BlueprintNode x={500} y={350} label="ERP Sync" state={step >= 4 ? (nodeState==='ai'?'ai':'idle') : 'idle'} delay={400} />
+            <div className="col-span-1 border-r border-white/10">
+              <div className="text-[11px] text-brand-emerald-400 uppercase tracking-widest font-bold mb-2 flex items-center gap-1"><Zap className="w-3 h-3" /> Net Annual Savings</div>
+              <div className="text-4xl lg:text-5xl font-black font-mono text-white tracking-tighter">{fmt(res.annualSavings)}</div>
+            </div>
 
-            {/* Giant ROI Overlays (Only visible when AI deployed) */}
-            {step >= 5 && fix && (
-              <g className="animate-in fade-in zoom-in duration-1000 delay-1000" style={{ transformOrigin: '200px 400px' }}>
-                <rect x={100} y={400} width={300} height={120} fill="rgba(6,182,212,0.1)" stroke="#06b6d4" strokeWidth={1} rx={8} filter="url(#glow)" />
-                <text x={250} y={440} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize={12} letterSpacing="0.1em">NET ANNUAL SAVINGS</text>
-                <text x={250} y={490} textAnchor="middle" fill="#06b6d4" fontSize={42} fontWeight={800} letterSpacing="-0.02em">{fmt(fix.annualSavings)}</text>
-              </g>
-            )}
+            <div className="col-span-1 border-r border-white/10 pl-6">
+              <div className="text-[11px] text-white/40 uppercase tracking-widest font-bold mb-2">Payback Period</div>
+              <div className="text-3xl font-bold text-white">{res.paybackMonths.toFixed(1)} <span className="text-lg text-white/40">mo</span></div>
+            </div>
 
-            {step >= 5 && fix && (
-              <g className="animate-in fade-in zoom-in duration-1000 delay-1500" style={{ transformOrigin: '550px 450px' }}>
-                <rect x={450} y={420} width={200} height={100} fill="rgba(16,185,129,0.1)" stroke="#10b981" strokeWidth={1} rx={8} filter="url(#glow)" />
-                <text x={550} y={455} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize={11} letterSpacing="0.1em">PAYBACK PERIOD</text>
-                <text x={550} y={495} textAnchor="middle" fill="#10b981" fontSize={32} fontWeight={800}>{fix.paybackMonths.toFixed(1)} MO</text>
-              </g>
-            )}
+            <div className="col-span-1 pl-6">
+              <div className="text-[11px] text-white/40 uppercase tracking-widest font-bold mb-2">FTE Capacity Freed</div>
+              <div className="text-3xl font-bold text-white">{res.fteFreed.toFixed(1)} <span className="text-lg text-white/40">heads</span></div>
+            </div>
 
-             {step >= 5 && fix && (
-              <g className="animate-in fade-in zoom-in duration-1000 delay-2000" style={{ transformOrigin: '780px 450px' }}>
-                <rect x={680} y={420} width={200} height={100} fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth={1} rx={8} filter="url(#glow)" />
-                <text x={780} y={455} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize={11} letterSpacing="0.1em">FTE CAPACITY FREED</text>
-                <text x={780} y={495} textAnchor="middle" fill="#6366f1" fontSize={32} fontWeight={800}>{fix.fteFreed.toFixed(1)}</text>
-              </g>
-            )}
-          </svg>
+            <div className="col-span-1 flex justify-end">
+              {!sent ? (
+                <form onSubmit={handleExport} className="w-full max-w-sm flex flex-col gap-2">
+                  <input type="email" placeholder="Enter work email for PDF report" required onChange={e => setEmail(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-brand-emerald-500 outline-none transition-colors"
+                  />
+                  <button type="submit" className="w-full bg-brand-emerald-500 hover:bg-brand-emerald-400 text-black font-bold py-3 rounded-lg flex justify-center items-center gap-2 transition-colors">
+                    <FileText className="w-4 h-4" /> Export Business Case
+                  </button>
+                </form>
+              ) : (
+                <div className="w-full max-w-sm bg-brand-emerald-500/10 border border-brand-emerald-500/20 text-brand-emerald-400 p-4 rounded-lg text-center text-sm font-bold flex items-center justify-center gap-2">
+                  ✓ Report Sent
+                </div>
+              )}
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>
