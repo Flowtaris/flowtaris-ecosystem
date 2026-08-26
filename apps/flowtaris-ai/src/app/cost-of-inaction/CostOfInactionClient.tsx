@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, useSpring, useTransform } from 'framer-motion'
-import { AlertCircle, Shield, TrendingUp, DollarSign, Timer, ArrowRight, Info, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
-import { calculateInaction, breakEvenAnalysis, generateRiskNarrative, type InactionInputs, type InactionOutputs } from '@flowtaris/inaction-engine'
+import { Shield, TrendingUp, DollarSign, Timer, ArrowRight, Info, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import { calculateInaction, type InactionInputs, type InactionOutputs } from '@flowtaris/inaction-engine'
 import { analytics } from '@flowtaris/analytics'
 
 // ─── TYPES & DATA ────────────────────────────────────────────────────────────
