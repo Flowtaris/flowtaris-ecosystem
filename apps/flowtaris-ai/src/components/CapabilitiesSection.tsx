@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 
 const CAPABILITIES = [
@@ -206,7 +206,7 @@ function GovernanceVisual({ accent }: { accent: string }) {
   )
 }
 
-type VisualComponent = ({ accent }: { accent: string }) => JSX.Element
+type VisualComponent = React.FC<{ accent: string }>
 const VISUALS: VisualComponent[] = [DocIntelVisual, WorkflowVisual, AnalyticsVisual, ConversationalVisual, MonitoringVisual, GovernanceVisual]
 
 type Cap = typeof CAPABILITIES[0]
