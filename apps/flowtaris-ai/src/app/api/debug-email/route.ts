@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         message: 'Resend rejected the email. See error details.',
         error,
         hint: error.message?.includes('domain') || error.message?.includes('from')
-          ? 'Your FROM domain is not verified. Use onboarding@resend.dev or verify flowtaris.com in the Resend dashboard.'
+          ? 'Your FROM domain is not verified. Use onboarding@resend.dev or verify flowtaris.ai in the Resend dashboard.'
           : error.message?.includes('sandbox')
           ? 'You are in Sandbox mode. RESEND_TO_EMAIL must be the exact email you signed up with on Resend.'
           : 'Check Resend dashboard logs for more detail.',

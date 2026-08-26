@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
             <p><strong>Use Case:</strong> ${inputs.useCase}</p>
           </div>
           
-          <p>Ready to deploy AI to your finance workflows? <a href="https://flowtaris.com/demo" style="color: #10b981; font-weight: bold;">Schedule a live demo with an engineer.</a></p>
+          <p>Ready to deploy AI to your finance workflows? <a href="https://flowtaris.ai/demo" style="color: #10b981; font-weight: bold;">Schedule a live demo with an engineer.</a></p>
           <hr style="border: 1px solid #e4e4e7; margin: 30px 0;" />
           <p style="font-size: 12px; color: #71717a;">Flowtaris AI - Intelligent Finance Operations</p>
         </div>

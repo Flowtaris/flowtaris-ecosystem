@@ -104,14 +104,14 @@ export async function POST(request: NextRequest) {
 
             <!-- CTA Buttons -->
             <div style="text-align: center; margin-bottom: 32px;">
-              <a href="https://flowtaris.com/roi-calculator?erp=${encodeURIComponent(answers?.erp || '')}" style="display: inline-block; background: #06b6d4; color: #000; font-weight: 700; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-size: 14px; margin: 0 8px 12px;">Calculate Full ROI</a>
-              <a href="https://flowtaris.com/demo" style="display: inline-block; background: #0f172a; color: #f9fafb; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-size: 14px; border: 1px solid #374151; margin: 0 8px 12px;">Book a Live Demo</a>
+              <a href="https://flowtaris.ai/roi-calculator?erp=${encodeURIComponent(answers?.erp || '')}" style="display: inline-block; background: #06b6d4; color: #000; font-weight: 700; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-size: 14px; margin: 0 8px 12px;">Calculate Full ROI</a>
+              <a href="https://flowtaris.ai/demo" style="display: inline-block; background: #0f172a; color: #f9fafb; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-size: 14px; border: 1px solid #374151; margin: 0 8px 12px;">Book a Live Demo</a>
             </div>
 
             <!-- Footer -->
             <div style="text-align: center; color: #4b5563; font-size: 12px; border-top: 1px solid #1f2937; padding-top: 24px;">
               <div style="margin-bottom: 8px; font-weight: 600; color: #6b7280;">Flowtaris AI — Intelligent Finance Operations</div>
-              <div>You received this because you completed an AI Readiness Assessment on flowtaris.com</div>
+              <div>You received this because you completed an AI Readiness Assessment on flowtaris.ai</div>
             </div>
           </div>
         </body>

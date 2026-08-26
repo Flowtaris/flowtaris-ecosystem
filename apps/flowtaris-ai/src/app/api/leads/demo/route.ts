@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1a1a2e;">
               <h2 style="margin: 0 0 8px;">Hi ${name || 'there'},</h2>
               <p style="color: #374151; line-height: 1.7;">Thank you for requesting a demo of <strong>Flowtaris AI</strong>. Our solutions team will be in touch within 1 business day to schedule your technical review.</p>
-              <p style="color: #374151; line-height: 1.7;">In the meantime, you can explore more about how we automate finance operations at <a href="https://flowtaris.com" style="color: #0ea5e9;">flowtaris.com</a>.</p>
+              <p style="color: #374151; line-height: 1.7;">In the meantime, you can explore more about how we automate finance operations at <a href="https://flowtaris.ai" style="color: #0ea5e9;">flowtaris.ai</a>.</p>
               <p style="color: #94a3b8; font-size: 13px; margin-top: 32px;">— The Flowtaris Team</p>
             </div>
           `,
