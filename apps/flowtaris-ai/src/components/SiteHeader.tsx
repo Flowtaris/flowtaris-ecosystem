@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { ArrowUpRight, CheckCircle2, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2, TrendingUp, AlertTriangle } from 'lucide-react'
 
 interface HeaderConfig {
   logoUrl?: string
@@ -26,6 +26,17 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
 
   const isActive = (path: string) =>
     pathname === path || (pathname?.startsWith(path + '/') && path !== '/')
+
+  const navItem = (href: string, active: boolean) => `
+    relative flex items-center gap-2 px-4 py-2.5 rounded-full
+    text-[13px] tracking-wide transition-all duration-300
+    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20
+    group
+    ${active
+      ? 'text-white bg-white/[0.12] font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
+      : 'text-white/50 hover:text-white hover:bg-white/[0.06] font-normal'
+    }
+  `
 
   return (
     <header
@@ -116,47 +127,34 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
           aria-label="Main navigation links"
         >
           {/* Assessment */}
-          <Link
-            href="/assessment"
-            className={`
-              relative flex items-center gap-2 px-4 py-2.5 rounded-full
-              text-[13px] tracking-wide transition-all duration-300
-              focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20
-              group
-              ${isActive('/assessment')
-                ? 'text-white bg-white/[0.08] font-medium'
-                : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
-              }
-            `}
-          >
+          <Link href="/assessment" className={navItem('/assessment', isActive('/assessment'))}>
             <CheckCircle2
               strokeWidth={isActive('/assessment') ? 2.5 : 2}
               className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
-                ${isActive('/assessment') ? 'text-white' : 'text-white/40 group-hover:text-white/80'}`}
+                ${isActive('/assessment') ? 'text-white' : 'text-white/35 group-hover:text-white/80'}`}
             />
             <span className="hidden sm:inline">Assessment</span>
           </Link>
 
           {/* ROI Calculator */}
-          <Link
-            href="/roi-calculator"
-            className={`
-              relative flex items-center gap-2 px-4 py-2.5 rounded-full
-              text-[13px] tracking-wide transition-all duration-300
-              focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20
-              group
-              ${isActive('/roi-calculator')
-                ? 'text-white bg-white/[0.08] font-medium'
-                : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
-              }
-            `}
-          >
+          <Link href="/roi-calculator" className={navItem('/roi-calculator', isActive('/roi-calculator'))}>
             <TrendingUp
-              strokeWidth={isActive('/calculator') ? 2.5 : 2}
+              strokeWidth={isActive('/roi-calculator') ? 2.5 : 2}
               className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
-                ${isActive('/roi-calculator') ? 'text-white' : 'text-white/40 group-hover:text-white/80'}`}
+                ${isActive('/roi-calculator') ? 'text-white' : 'text-white/35 group-hover:text-white/80'}`}
             />
             <span className="hidden sm:inline">ROI</span>
+          </Link>
+
+          {/* Cost of Inaction */}
+          <Link href="/cost-of-inaction" className={navItem('/cost-of-inaction', isActive('/cost-of-inaction'))}>
+            <AlertTriangle
+              strokeWidth={isActive('/cost-of-inaction') ? 2.5 : 2}
+              className={`w-4 h-4 flex-shrink-0 transition-colors duration-300
+                ${isActive('/cost-of-inaction') ? 'text-amber-400' : 'text-white/35 group-hover:text-amber-400/80'}`}
+            />
+            <span className="hidden md:inline">Cost of Inaction</span>
+            <span className="hidden sm:inline md:hidden">COI</span>
           </Link>
         </nav>
 
@@ -165,7 +163,7 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
 
         {/* ── CORPORATE LINK ── */}
         <a
-          href="https://flowtaris.com"
+          href="https://flowtaris.ai"
           target="_blank"
           rel="noopener noreferrer"
           className="

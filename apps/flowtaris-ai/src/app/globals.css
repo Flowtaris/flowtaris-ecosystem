@@ -27,6 +27,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Prevent white flash during navigation and page load */
+    background-color: #0d0b14;
   }
 
   body {

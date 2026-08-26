@@ -65,7 +65,7 @@ export const Default: Story = {
       { platform: 'linkedin', href: 'https://linkedin.com/company/flowtaris', label: 'LinkedIn' },
       { platform: 'discord', href: 'https://discord.gg/flowtaris', label: 'Discord' },
     ],
-    copyright: '© 2024 Flowtaris AI. All rights reserved.',
+    copyright: '© 2026 Flowtaris AI. All rights reserved.',
   },
 }
 
