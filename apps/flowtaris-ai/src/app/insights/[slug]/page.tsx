@@ -336,7 +336,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: 'Insight Not Found' }
 
   return {
-    title: \`\${data.title} | Flowtaris AI Insights\`,
+    title: `${data.title} | Flowtaris AI Insights`,
     description: data.excerpt,
   }
 }

@@ -124,9 +124,9 @@ export default function InsightsClient({ insights, categories }: { insights: any
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[#38bdf8] animate-ping" style={{ animationDelay: \`\${i * 0.2}s\` }} />
+                        <div className="w-2 h-2 rounded-full bg-[#38bdf8] animate-ping" style={{ animationDelay: `${i * 0.2}s` }} />
                         <div className="h-3 bg-neutral-200 rounded w-full overflow-hidden">
-                          <div className="h-full bg-[#c084fc]" style={{ width: \`\${90 - i * 15}%\`, transition: 'width 1s ease' }} />
+                          <div className="h-full bg-[#c084fc]" style={{ width: `${90 - i * 15}%`, transition: 'width 1s ease' }} />
                         </div>
                       </div>
                     ))}
