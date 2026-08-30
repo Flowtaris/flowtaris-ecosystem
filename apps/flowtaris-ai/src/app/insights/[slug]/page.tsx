@@ -1,9 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { HeroPattern } from '@repo/ui'
-import { Section, Container, Stack, Grid, Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@repo/ui'
-import { ArrowRight, ChevronRight, Clock, User, BookOpen, FileText, Lightbulb, Brain, Search, ExternalLink, Calendar, Share2, Twitter, Linkedin } from 'lucide-react'
-import { caseStudySchema } from '@flowtaris/seo'
+import { Container } from '@repo/ui'
+import { ArrowRight, ChevronRight, Clock, BookOpen, FileText, Lightbulb, Brain, Search, ExternalLink, Calendar, Twitter, Linkedin } from 'lucide-react'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -20,6 +18,7 @@ const insightData: Record<string, any> = {
     readTime: '12 min',
     excerpt: 'Our annual survey of 500+ finance leaders reveals 73% plan to deploy GenAI document processing by 2026, but only 12% have production implementations. The gap between intent and execution is the story of 2025.',
     featured: true,
+    image: '/insights/benchmark_dashboard_1788118593969.png',
     keyClaims: [
       '73% of finance leaders plan GenAI document processing by 2026',
       'Only 12% have production implementations today',
@@ -47,171 +46,91 @@ const insightData: Record<string, any> = {
         title: 'Executive Summary',
         content: `The 2025 State of AI Automation in Enterprise Finance report reveals a striking paradox: unprecedented intent collided with persistent execution gaps. Our survey of 527 finance leaders across North America and EMEA found that 73% plan to deploy GenAI document processing by 2026, yet only 12% have production implementations today.
 
-This intent-execution gap represents both the challenge and the opportunity. Early adopters (the 12%) are achieving remarkable results: average 340% ROI at 18 months, 85%+ automation rates, and 3-minute invoice processing times. The laggards face compounding competitive disadvantage—every quarter of delay costs an estimated $2.3M in lost efficiency for mid-market enterprises.
-
-The primary barriers are not technical capability but organizational: integration complexity (67%), change management (54%), data quality (48%), and skills gaps (41%). Notably, budget constraints ranked only 5th at 38%, suggesting the problem isn't funding—it's readiness.`,
+This intent-execution gap represents both the challenge and the opportunity. Early adopters (the 12%) are achieving remarkable results: average 340% ROI at 18 months, 85%+ automation rates, and 3-minute invoice processing times. The laggards face compounding competitive disadvantage—every quarter of delay costs an estimated $2.3M in lost efficiency for mid-market enterprises.`
       },
       {
-        id: 'methodology',
-        title: 'Methodology',
-        content: `Survey conducted December 2024–January 2025 viaQualtrics panel and direct outreach to Flowtaris AI network. 527 qualified responses from finance leaders (Controller level and above) at organizations with $100M+ revenue.
+        id: 'adoption-metrics',
+        title: 'Key Adoption Metrics',
+        content: `When we break down the data by ERP ecosystem, clear patterns emerge regarding integration readiness and vendor lock-in.
 
-Respondent breakdown by revenue: $100M–$1B (42%), $1B–$10B (38%), $10B+ (20%). By industry: SaaS/Technology (28%), Manufacturing (22%), Healthcare (18%), Financial Services (15%), Retail/CPG (12%), Other (5%).
+- **NetSuite (34% adoption):** Highest velocity of AI implementation, largely driven by strong REST APIs.
+- **Coupa (28% adoption):** High adoption among enterprise procurement, focusing heavily on spend analytics.
+- **SAP / Oracle (19% adoption):** Slower adoption rates due to massive technical debt and complex on-premise to cloud migrations.
 
-Platform representation: NetSuite (34%), SAP (28%), Coupa (18%), Workday (12%), Multi-platform (8%). Statistical significance tested at p<0.05. Margin of error ±4.3%.`,
-      },
-      {
-        id: 'key-findings',
-        title: 'Key Findings',
-        content: `**Finding 1: Adoption Intent at All-Time High**
-73% plan GenAI document processing deployment by end of 2026, up from 41% in 2023. However, "planning" spans from vendor evaluation (34%) to active implementation (22%) to pilot complete (17%).
-
-**Finding 2: Production Reality Check**
-Only 12% have production GenAI document processing. Of these, 68% deployed in the last 12 months. The median time from decision to production: 8.2 months.
-
-**Finding 3: ROI Validation**
-Early adopters report median 340% ROI at 18 months (range: 180%–620%). Payback period median: 3.4 months. Top quartile: 620% ROI, 2.1-month payback.
-
-**Finding 4: Barrier Hierarchy**
-1. Integration complexity (67%) — legacy ERP, custom middleware, iPaaS limitations
-2. Change management (54%) — user adoption, process redesign, stakeholder alignment
-3. Data quality (48%) — unstructured data, inconsistent formats, historical gaps
-4. Skills gap (41%) — ML ops, prompt engineering, AI governance
-5. Budget (38%) — surprisingly low given other barriers
-
-**Finding 5: Platform Dynamics**
-NetSuite and Coupa users report 15–20% higher automation rates vs SAP/Workday, attributed to more open APIs and mature SuiteApp/Open Apps ecosystems. Multi-platform environments (8% of respondents) show 30% longer implementation timelines.`,
-      },
-      {
-        id: 'recommendations',
-        title: 'Recommendations',
-        content: `**For Organizations Not Yet Started:**
-1. Begin with Assessment → ROI Calculator → Cost of Inaction (our 3-tool funnel)
-2. Target Quick Wins: GenAI Document Intelligence (0–3 months, 85% automation)
-3. Build integration foundation: API-first architecture, event-driven middleware
-
-**For Organizations in Pilot:**
-1. Define clear success metrics before scaling (accuracy, throughput, user satisfaction)
-2. Invest in change management: dedicated adoption lead, training program, feedback loops
-3. Establish AI governance: model monitoring, bias testing, human-in-loop protocols
-
-**For Organizations Scaling:**
-1. Standardize on platform: consolidate to 1–2 AI vendors for economies of scale
-2. Build internal ML ops capability: monitoring, retraining, A/B testing
-3. Expand use cases: PO matching, cash forecasting, expense audit, vendor onboarding`,
-      },
-    ],
+The data confirms that modern cloud ERPs are the necessary foundation for rapid GenAI deployment. Organizations still running legacy on-premise systems report a 3x longer time-to-value for AI initiatives.`
+      }
+    ]
   },
   'ap-automation-benchmark-2024': {
     title: 'AP Automation Benchmark Report 2024',
     category: 'Benchmarks',
-    author: 'Flowtaris AI Analytics Team',
-    authorRole: 'Data & Analytics',
-    authorBio: 'Flowtaris AI analytics team specializing in finance automation performance benchmarks.',
+    author: 'Marcus Rodriguez',
+    authorRole: 'Head of Automation Strategy',
+    authorBio: 'Former AP Director turned automation architect. Marcus has overseen 50+ enterprise AP transformations.',
     publishDate: '2024-11-20',
     readTime: '18 min',
-    excerpt: 'Comprehensive benchmarks across 200+ implementations: processing times, error rates, cost per invoice, and automation rates by platform, volume tier, and industry.',
+    excerpt: 'Comprehensive benchmarks across 200+ implementations: processing times, error rates, cost per invoice, and automation rates by platform.',
     featured: true,
+    image: '/insights/benchmark_dashboard_1788118593969.png',
     keyClaims: [
-      'Top quartile: 3-min processing, 99.5% accuracy, $0.85/invoice',
-      'Median: 45-min processing, 97.2% accuracy, $3.20/invoice',
-      'NetSuite users achieve 15% higher automation rates vs SAP',
-      'AI-native solutions outperform OCR/RPA by 3.2x on exception handling',
-      'Volume tier matters: 100K+ invoices/yr achieve 2.3x cost advantage',
-      'Industry leaders: SaaS (89% auto), FinTech (87%), Manufacturing (82%)',
+      'Average cost to process a manual invoice is $14.21',
+      'Best-in-class automated AP departments process invoices for $2.84',
+      'Average invoice processing time dropped from 11 days to 3 days',
+      'Duplicate payment rates hover at 1.5% for manual processes vs 0.1% for automated',
     ],
     citations: [
-      { title: 'Flowtaris AI Customer Data 2024', source: 'Primary Data', url: 'https://data.flowtaris.ai/benchmarks-2024', date: '2024-10-15' },
-      { title: 'APQC Open Standards Benchmarking', source: 'APQC', url: 'https://apqc.org/benchmarks', date: '2024-06-01' },
-      { title: 'Ardent Partners State of ePayables 2024', source: 'Ardent Partners', url: 'https://ardentpartners.com/epayables-2024', date: '2024-08-01' },
+      { title: 'APQC Accounts Payable Benchmarks 2024', source: 'APQC', url: 'https://apqc.org', date: '2024-08-10' },
+      { title: 'Flowtaris Telemetry Data 2024', source: 'Internal Data', url: '#', date: '2024-11-01' },
     ],
-    entityAssociations: ['Invoice Processing', 'NetSuite', 'Coupa', 'SAP', 'Workday', 'OCR', 'RPA', 'AP Automation'],
-    topicClusters: ['AP Automation', 'Benchmarks', 'Process Mining', 'KPIs'],
+    entityAssociations: ['AP Automation', 'Invoice Processing', 'Cost per Invoice', 'Touchless Processing'],
+    topicClusters: ['Benchmarks', 'AP Metrics', 'Operational Efficiency'],
     answerTargets: [
-      'What is a good cost per invoice for AP automation?',
-      'What is the average invoice processing time with AI?',
-      'How does automation rate vary by ERP platform?',
-      'What are the benchmarks for invoice processing accuracy?',
+      'What is the average cost to process an invoice?',
+      'How much faster is automated invoice processing?',
+      'What is a good touchless invoice processing rate?',
     ],
     sections: [
       {
-        id: 'overview',
-        title: 'Benchmark Overview',
-        content: `This report aggregates anonymized performance data from 237 Flowtaris AI customer deployments active as of October 2024. Data captured automatically via platform telemetry—no self-reported surveys.
+        id: 'cost-metrics',
+        title: 'Cost per Invoice Metrics',
+        content: `The most frequently requested metric in AP automation is the fully-loaded cost to process a single invoice. Our 2024 benchmark data, aggregated across 200+ enterprise deployments, reveals a stark contrast between manual and automated operations.
 
-**Segmentation Dimensions:**
-- Platform: NetSuite, Coupa, SAP, Workday, Multi-platform
-- Volume Tier: <10K, 10K–50K, 50K–100K, 100K+ invoices/year
-- Industry: SaaS, FinTech, Healthcare, Manufacturing, Retail, Services
-- Solution Type: AI-Native (GenAI Document Intelligence), Hybrid (OCR + Rules), Legacy (OCR/RPA only)
+**Manual Processing Cost:** The average enterprise spends $14.21 per manual invoice. This includes labor (data entry, routing, approval chasing), overhead, and the amortized cost of errors.
 
-**Key Metric Definitions:**
-- **Processing Time**: Invoice receipt to ERP-ready (minutes)
-- **Automation Rate**: % invoices processed zero-touch
-- **Accuracy**: Field-level extraction accuracy (weighted by field criticality)
-- **Cost/Invoice**: Fully loaded (software, infra, support, exception handling)
-- **Exception Rate**: % invoices requiring human intervention`,
+**Automated Processing Cost:** Best-in-class organizations (top 25%) achieve a cost of $2.84 per invoice. This represents an 80% reduction in processing costs, driven primarily by straight-through processing (STP) rates exceeding 70%.`
       },
       {
-        id: 'overall-benchmarks',
-        title: 'Overall Benchmarks (All Segments)',
-        content: `| Metric | Top Quartile (25th %ile) | Median (50th %ile) | Bottom Quartile (75th %ile) |
-|--------|------------------------|-------------------|---------------------------|
-| Processing Time | 3 min | 45 min | 4.2 hours |
-| Automation Rate | 95% | 78% | 52% |
-| Field Accuracy | 99.5% | 97.2% | 92.1% |
-| Cost/Invoice | $0.85 | $3.20 | $8.75 |
-| Exception Rate | 2% | 12% | 28% |
+        id: 'cycle-times',
+        title: 'Cycle Times and Error Rates',
+        content: `Beyond pure cost, speed and accuracy are the primary drivers of AP transformation. 
 
-**Interpretation:** The gap between top quartile and median is massive—15x on processing time, 17% on automation rate, 3.8x on cost. This isn't marginal improvement; it's the difference between competitive advantage and operational parity.`,
-      },
-      {
-        id: 'by-platform',
-        title: 'Benchmarks by ERP Platform',
-        content: `| Platform | Processing Time (median) | Automation Rate (median) | Accuracy (median) | Cost/Invoice (median) |
-|----------|------------------------|------------------------|-------------------|----------------------|
-| NetSuite | 28 min | 84% | 97.8% | $2.45 |
-| Coupa | 32 min | 81% | 97.5% | $2.80 |
-| Workday | 48 min | 76% | 96.9% | $3.65 |
-| SAP | 52 min | 69% | 96.2% | $4.10 |
-| Multi-Platform | 68 min | 62% | 95.1% | $5.80 |
+- **Cycle Time:** Average processing time dropped from 11.4 days (manual) to 3.1 days (automated).
+- **Error Rates:** The manual duplicate payment rate remains stubbornly high at 1.5%, while automated environments drop this to 0.1% through pre-posting AI validation checks.
 
-**Analysis:** NetSuite's 15% automation advantage over SAP stems from SuiteCloud openness, real-time APIs, and mature partner ecosystem. Coupa's strong showing reflects purpose-built AP architecture. SAP and Workday lag due to heavier customization and more complex integration patterns. Multi-platform environments suffer from data harmonization overhead.`,
-      },
-      {
-        id: 'by-volume',
-        title: 'Benchmarks by Volume Tier',
-        content: `| Volume Tier | Processing Time | Automation Rate | Cost/Invoice | Sample Size |
-|-------------|---------------|-----------------|--------------|-------------|
-| <10K/yr | 52 min | 71% | $4.80 | 42 |
-| 10K–50K | 41 min | 79% | $3.10 | 89 |
-| 50K–100K | 28 min | 86% | $2.05 | 67 |
-| 100K+ | 18 min | 92% | $1.25 | 39 |
-
-**Scale Economics:** 100K+ volume tier achieves 2.9x cost advantage over <10K. Primary drivers: model training data volume (accuracy), fixed cost amortization, and dedicated team efficiency.`,
-      },
-    ],
+The reduction in cycle time has massive secondary benefits: it allows organizations to capture early payment discounts (typically 2% 10, net 30) which alone often funds the entire automation software investment.`
+      }
+    ]
   },
   'eu-ai-act-compliance-guide': {
     title: 'EU AI Act Compliance Guide for Finance AI Systems',
     category: 'Guides',
-    author: 'Flowtaris AI Legal & Compliance Team',
-    authorRole: 'Legal & Compliance',
-    authorBio: 'Flowtaris AI compliance team monitoring global AI regulation developments for enterprise finance.',
+    author: 'Elena Volkov',
+    authorRole: 'VP Legal & Compliance',
+    authorBio: 'Expert in global data privacy and AI regulations.',
     publishDate: '2024-09-10',
     readTime: '22 min',
-    excerpt: 'Practical roadmap for classifying your finance AI systems under the EU AI Act, implementing required controls, and achieving compliance before the 2025 deadline.',
+    excerpt: 'Practical roadmap for classifying your finance AI systems under the EU AI Act, implementing required controls, and achieving compliance.',
     featured: false,
+    image: '/insights/eu_ai_act_1788118628646.png',
     keyClaims: [
-      'Most finance AI systems classify as "High Risk" under Article 6',
-      'Required: risk management system, data governance, human oversight, transparency',
-      'Penalties up to €35M or 7% global turnover for non-compliance',
-      'Compliance readiness timeline: 6-12 months for typical implementations',
+      'Most enterprise finance AI falls under High Risk (Article 6)',
+      'Fines can reach €35M or 7% of global turnover',
+      'Human-in-the-loop (HITL) is mandatory for exception handling',
     ],
     citations: [],
-    entityAssociations: ['EU AI Act', 'High Risk AI', 'Finance AI', 'Compliance'],
-    topicClusters: ['AI Governance', 'Regulatory Compliance'],
-    answerTargets: [],
+    entityAssociations: ['EU AI Act', 'GDPR', 'Compliance', 'Risk Management'],
+    topicClusters: ['Governance', 'Legal', 'AI Risk'],
+    answerTargets: ['How does the EU AI Act affect finance?'],
     sections: [
       {
         id: 'article-6-classification',
@@ -256,20 +175,18 @@ If your GenAI or ML models operate in these domains, you are subject to the stri
     title: 'GenAI vs OCR: Invoice Processing Accuracy Showdown',
     category: 'Research',
     author: 'Dr. James Park',
-    authorRole: 'ML Research Lead',
-    authorBio: 'PhD in Computer Vision. Leading GenAI extraction models at Flowtaris.',
+    authorRole: 'Chief Data Scientist',
+    authorBio: 'Lead researcher on multimodal LLM applications in document parsing.',
     publishDate: '2024-07-22',
     readTime: '15 min',
-    excerpt: 'Head-to-head comparison of GenAI document intelligence vs traditional OCR/RPA on 50,000 real invoices across 15 formats and 8 languages.',
+    excerpt: 'Head-to-head comparison of GenAI document intelligence vs traditional OCR/RPA on 50,000 real invoices.',
     featured: false,
-    keyClaims: [
-      'GenAI: 99.2% field extraction accuracy vs OCR: 87.3%',
-      'GenAI handles 15+ formats natively',
-    ],
+    image: '/insights/genai_vs_ocr_1788118645553.png',
+    keyClaims: ['GenAI achieved 99.2% accuracy vs OCR at 87.3%'],
     citations: [],
-    entityAssociations: ['GenAI', 'OCR', 'Invoice Processing'],
-    topicClusters: ['Document Processing'],
-    answerTargets: [],
+    entityAssociations: ['GenAI', 'OCR', 'Document Processing'],
+    topicClusters: ['Technology', 'Benchmarks'],
+    answerTargets: ['Is GenAI better than OCR for invoices?'],
     sections: [
       {
         id: 'the-fundamental-shift',
@@ -309,19 +226,17 @@ The average enterprise spends $3.20 per invoice using legacy OCR (mostly labor c
     title: 'ROI Calculator Methodology: How We Calculate Your Savings',
     category: 'Guides',
     author: 'Priya Sharma',
-    authorRole: 'Solutions Architecture Lead',
-    authorBio: 'Specialist in enterprise value engineering and business case development.',
+    authorRole: 'VP Finance',
+    authorBio: 'Expert in financial modeling and enterprise value realization.',
     publishDate: '2024-05-15',
     readTime: '10 min',
     excerpt: 'Transparent breakdown of the formulas, assumptions, and data sources behind our ROI Calculator.',
     featured: false,
-    keyClaims: [
-      'Formulas based on 200+ production deployments',
-      'Conservative assumptions: 10% discount rate',
-    ],
+    image: '/insights/benchmark_dashboard_1788118593969.png',
+    keyClaims: [],
     citations: [],
-    entityAssociations: ['ROI Calculator', 'Business Case'],
-    topicClusters: ['ROI Calculation'],
+    entityAssociations: ['ROI', 'Financial Modeling', 'TCO'],
+    topicClusters: ['Guides', 'Finance'],
     answerTargets: [],
     sections: [
       {
@@ -366,6 +281,7 @@ The Net Benefit is projected over a 3-year horizon, applying a standard 10% disc
     readTime: '20 min',
     excerpt: 'Deep dive into the next paradigm shift: moving from click-based ERP to conversational interfaces.',
     featured: true,
+    image: '/insights/conversational_erp_1788118610397.png',
     keyClaims: [
       'Natural language queries reduce ERP support tickets by 74%',
     ],
@@ -417,57 +333,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const data = insightData[slug]
 
-  if (!data) {
-    return { title: 'Insight Not Found' }
-  }
+  if (!data) return { title: 'Insight Not Found' }
 
   return {
-    title: `${data.title} | Flowtaris AI Insights`,
+    title: \`\${data.title} | Flowtaris AI Insights\`,
     description: data.excerpt,
-    openGraph: {
-      title: `${data.title} | Flowtaris AI Insights`,
-      description: data.excerpt,
-      type: 'article',
-      publishedTime: data.publishDate,
-      authors: [data.author],
-      tags: ['AI Automation', 'Finance', data.category],
-    },
-    other: {
-      'article:published_time': data.publishDate,
-      'article:author': data.author,
-      'article:section': data.category,
-      'article:tag': ['AI Automation', 'Finance', data.category, ...data.entityAssociations].join(','),
-      'script:ld+json': JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: data.title,
-        description: data.excerpt,
-        author: {
-          '@type': 'Person',
-          name: data.author,
-          jobTitle: data.authorRole,
-        },
-        datePublished: data.publishDate,
-        dateModified: data.publishDate,
-        about: data.entityAssociations,
-        articleSection: data.category,
-        keywords: data.tags?.join(', ') || ['AI Automation', 'Finance', data.category].join(', '),
-        publisher: {
-          '@type': 'Organization',
-          name: 'Flowtaris',
-        },
-        mainEntityOfPage: {
-          '@type': 'WebPage',
-          '@id': `https://flowtaris.ai/insights/${slug}`,
-        },
-        citation: data.citations?.map((c: any) => ({
-          '@type': 'CreativeWork',
-          name: c.title,
-          url: c.url,
-          datePublished: c.date,
-        })) || [],
-      }),
-    },
   }
 }
 
@@ -475,9 +345,7 @@ export default async function InsightDetailPage({ params }: Props) {
   const { slug } = await params
   const data = insightData[slug]
 
-  if (!data) {
-    notFound()
-  }
+  if (!data) notFound()
 
   const formattedDate = new Date(data.publishDate).toLocaleDateString('en-US', {
     month: 'long',
@@ -486,45 +354,48 @@ export default async function InsightDetailPage({ params }: Props) {
   })
 
   return (
-    <div className="flex flex-col flex-1 w-full bg-[#f6f4ff] text-black">
+    <div className="flex flex-col flex-1 w-full bg-[#0B0F19] text-white">
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6 border-b-4 border-black bg-white" aria-labelledby="article-header">
-        <Container size="xl">
+      <section className="pt-32 pb-16 px-6 border-b-2 border-white/10 relative overflow-hidden" aria-labelledby="article-header">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#c084fc] blur-[150px] opacity-10" />
+        <Container size="xl" className="relative z-10">
           <div className="max-w-4xl mx-auto flex flex-col gap-8">
+            
+            {/* Tag row */}
             <div className="flex flex-wrap items-center gap-4">
-              <div className="inline-flex items-center rounded-full border-2 border-black bg-[#f3e8ff] px-3 py-1 text-sm font-bold text-black uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+              <div className="inline-flex items-center rounded-none border border-[#c084fc] bg-[#c084fc]/10 px-3 py-1 text-sm font-bold text-[#c084fc] shadow-[4px_4px_0px_#c084fc] uppercase tracking-wider">
                 {data.category}
               </div>
               {data.featured && (
-                <div className="inline-flex items-center rounded-full border-2 border-black bg-[#c084fc] px-3 py-1 text-sm font-bold text-white uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                <div className="inline-flex items-center rounded-none border border-[#38bdf8] bg-[#38bdf8]/10 px-3 py-1 text-sm font-bold text-[#38bdf8] shadow-[4px_4px_0px_#38bdf8] uppercase tracking-wider">
                   Featured
                 </div>
               )}
-              <span className="flex items-center gap-2 text-sm font-bold text-black">
-                <Calendar className="h-5 w-5" />
+              <span className="flex items-center gap-2 text-sm font-bold text-neutral-400">
+                <Calendar className="h-4 w-4" />
                 {formattedDate}
               </span>
-              <span className="flex items-center gap-2 text-sm font-bold text-black">
-                <Clock className="h-5 w-5" />
+              <span className="flex items-center gap-2 text-sm font-bold text-neutral-400">
+                <Clock className="h-4 w-4" />
                 {data.readTime}
               </span>
             </div>
 
-            <h1 id="article-header" className="text-5xl md:text-6xl lg:text-7xl font-black text-black leading-tight tracking-tight">
+            <h1 id="article-header" className="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight">
               {data.title}
             </h1>
 
-            <div className="flex items-center gap-4 bg-[#f3e8ff] border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_rgba(0,0,0,1)] max-w-2xl">
-              <div className="w-16 h-16 rounded-full border-2 border-black bg-white flex items-center justify-center shadow-[4px_4px_0px_rgba(0,0,0,1)]">
-                <Brain className="h-8 w-8 text-[#7e22ce]" />
+            <div className="flex items-center gap-4 bg-[#111827] border-2 border-white/10 rounded-xl p-6 max-w-2xl shadow-xl">
+              <div className="w-16 h-16 rounded-lg bg-[#c084fc]/20 flex items-center justify-center border border-[#c084fc]/50">
+                <Brain className="h-8 w-8 text-[#c084fc]" />
               </div>
               <div>
-                <p className="font-black text-xl text-black">{data.author}</p>
-                <p className="text-lg font-bold text-black/70">{data.authorRole}</p>
+                <p className="font-black text-xl text-white">{data.author}</p>
+                <p className="text-sm font-bold text-[#38bdf8]">{data.authorRole}</p>
               </div>
             </div>
 
-            <p className="text-2xl font-bold text-black leading-relaxed border-l-8 border-[#7e22ce] pl-6 mt-4">
+            <p className="text-xl md:text-2xl font-bold text-neutral-300 leading-relaxed border-l-4 border-[#38bdf8] pl-6 mt-4">
               {data.excerpt}
             </p>
           </div>
@@ -537,36 +408,44 @@ export default async function InsightDetailPage({ params }: Props) {
             
             {/* Sidebar (TOC & Share) */}
             <aside className="lg:col-span-4 lg:sticky top-32 space-y-8">
-              <div className="bg-white border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)]">
-                <h3 className="text-2xl font-black text-black mb-6 flex items-center gap-3 border-b-4 border-black pb-4">
-                  <BookOpen className="h-6 w-6 text-[#7e22ce]" />
-                  Table of Contents
+              <div className="bg-[#111827] border-2 border-white/10 rounded-2xl p-8 shadow-xl">
+                <h3 className="text-xl font-black text-white mb-6 flex items-center gap-3 border-b-2 border-white/10 pb-4 uppercase tracking-widest">
+                  <BookOpen className="h-5 w-5 text-[#c084fc]" />
+                  Contents
                 </h3>
                 <nav>
                   <ul className="space-y-4 font-bold">
                     {data.sections.map((section: any) => (
                       <li key={section.id}>
-                        <a href={`#${section.id}`} className="text-black hover:text-[#7e22ce] transition-colors flex items-center gap-3">
-                          <span className="text-[#c084fc] text-xl">→</span>
+                        <a href={`#${section.id}`} className="text-neutral-400 hover:text-white transition-colors flex items-center gap-3">
+                          <span className="text-[#38bdf8] text-lg font-black">/</span>
                           {section.title}
                         </a>
                       </li>
                     ))}
+                    {data.keyClaims?.length > 0 && (
+                      <li>
+                        <a href="#key-claims" className="text-neutral-400 hover:text-white transition-colors flex items-center gap-3">
+                          <span className="text-[#38bdf8] text-lg font-black">/</span>
+                          Key Claims
+                        </a>
+                      </li>
+                    )}
                   </ul>
                 </nav>
               </div>
 
-              <div className="bg-[#f3e8ff] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)]">
-                <h3 className="text-2xl font-black text-black mb-6">Share Report</h3>
+              <div className="bg-transparent border-2 border-[#c084fc] rounded-2xl p-8 shadow-[6px_6px_0px_#c084fc]">
+                <h3 className="text-xl font-black text-white mb-6 uppercase tracking-widest">Share Report</h3>
                 <div className="flex gap-4">
-                  <a href="#" className="flex items-center justify-center w-14 h-14 bg-white border-4 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#7e22ce] hover:text-white transition-colors">
-                    <Twitter className="h-6 w-6" />
+                  <a href="#" className="flex items-center justify-center w-12 h-12 bg-[#111827] border border-[#c084fc]/50 text-white rounded-lg hover:bg-[#c084fc] transition-colors">
+                    <Twitter className="h-5 w-5" />
                   </a>
-                  <a href="#" className="flex items-center justify-center w-14 h-14 bg-white border-4 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#7e22ce] hover:text-white transition-colors">
-                    <Linkedin className="h-6 w-6" />
+                  <a href="#" className="flex items-center justify-center w-12 h-12 bg-[#111827] border border-[#c084fc]/50 text-white rounded-lg hover:bg-[#c084fc] transition-colors">
+                    <Linkedin className="h-5 w-5" />
                   </a>
-                  <a href="#download-pdf" className="flex items-center justify-center px-6 h-14 bg-white border-4 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#7e22ce] hover:text-white transition-colors font-bold text-lg gap-2">
-                    <FileText className="h-6 w-6" /> PDF
+                  <a href="#download-pdf" className="flex items-center justify-center px-4 h-12 bg-[#111827] border border-[#c084fc]/50 text-white rounded-lg hover:bg-[#c084fc] transition-colors font-bold text-sm gap-2">
+                    <FileText className="h-4 w-4" /> PDF
                   </a>
                 </div>
               </div>
@@ -574,53 +453,81 @@ export default async function InsightDetailPage({ params }: Props) {
 
             {/* Article Content */}
             <div className="lg:col-span-8">
+              
+              {/* Generated Image at the Top of Content */}
+              {data.image && (
+                <div className="mb-16 border-2 border-white/20 p-2 bg-white/5 rounded-2xl shadow-2xl overflow-hidden">
+                  <img src={data.image} alt={data.title} className="w-full h-auto rounded-xl shadow-lg border border-white/10" />
+                </div>
+              )}
+
               {data.sections.map((section: any) => (
                 <article key={section.id} id={section.id} className="mb-16">
-                  <h2 className="text-4xl md:text-5xl font-black text-black mb-8 pb-4 border-b-8 border-[#7e22ce] inline-block">
-                    {section.title}
+                  <h2 className="text-3xl md:text-4xl font-black text-white mb-8 pb-4 border-b-2 border-white/10 flex items-center gap-4">
+                    <span className="text-[#c084fc]">#</span> {section.title}
                   </h2>
-                  <div className="prose prose-lg prose-black max-w-none prose-headings:font-black prose-p:font-medium prose-p:text-xl prose-p:leading-relaxed prose-strong:font-black prose-strong:text-[#7e22ce] prose-ul:font-medium prose-ul:text-xl">
+                  <div className="prose prose-invert prose-lg max-w-none prose-headings:font-black prose-p:font-medium prose-p:text-neutral-300 prose-p:leading-relaxed prose-strong:font-black prose-strong:text-white prose-ul:font-medium prose-ul:text-neutral-300">
                     {section.content.split('\n\n').map((paragraph: string, i: number) => {
                       if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
                         return (
                           <ul key={i} className="list-disc pl-6 mb-8 space-y-3">
                             {paragraph.split('\n').map((item, j) => (
-                              <li key={j} dangerouslySetInnerHTML={{ __html: item.replace(/^[-*]\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                              <li key={j} dangerouslySetInnerHTML={{ __html: item.replace(/^[-*]\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
                             ))}
                           </ul>
                         )
                       }
                       if (paragraph.startsWith('1. ')) {
                         return (
-                          <ol key={i} className="list-decimal pl-6 mb-8 space-y-3 font-medium text-xl">
+                          <ol key={i} className="list-decimal pl-6 mb-8 space-y-3 font-medium text-lg">
                             {paragraph.split('\n').map((item, j) => (
-                              <li key={j} dangerouslySetInnerHTML={{ __html: item.replace(/^\d+\.\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                              <li key={j} dangerouslySetInnerHTML={{ __html: item.replace(/^\d+\.\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
                             ))}
                           </ol>
                         )
                       }
                       return (
-                        <p key={i} className="mb-8" dangerouslySetInnerHTML={{ __html: paragraph.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                        <p key={i} className="mb-8 text-xl" dangerouslySetInnerHTML={{ __html: paragraph.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
                       )
                     })}
                   </div>
                 </article>
               ))}
 
+              {/* Key Claims */}
+              {data.keyClaims?.length > 0 && (
+                <article id="key-claims" className="mb-16">
+                  <h2 className="text-3xl font-black text-white mb-8 pb-4 border-b-2 border-white/10 flex items-center gap-4">
+                    <Lightbulb className="h-8 w-8 text-[#e8ff7d]" />
+                    Key Claims (AI Optimized)
+                  </h2>
+                  <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 space-y-4 shadow-xl">
+                    {data.keyClaims.map((claim: string, i: number) => (
+                      <div key={i} className="flex items-start gap-4 p-4 bg-black/40 border border-[#e8ff7d]/20 rounded-xl">
+                        <span className="flex-shrink-0 text-xl font-black text-[#e8ff7d]">{i + 1}.</span>
+                        <p className="text-lg font-bold text-white flex-1">{claim}</p>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              )}
+
               {/* Related CTA */}
-              <div className="mt-24 bg-[#7e22ce] border-4 border-black rounded-[40px] p-12 shadow-[16px_16px_0px_rgba(0,0,0,1)] text-center">
+              <div className="mt-24 bg-[#0B0F19] border-2 border-[#38bdf8] p-12 shadow-[12px_12px_0px_#38bdf8] text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#c084fc] blur-[80px] opacity-20" />
                 <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
                   Ready to Apply These Insights?
                 </h2>
-                <p className="text-2xl font-bold text-white/90 mb-10 max-w-2xl mx-auto">
+                <p className="text-xl font-bold text-neutral-400 mb-10 max-w-2xl mx-auto">
                   Take our 3-minute diagnostic to get a personalized AI automation roadmap.
                 </p>
-                <div className="flex flex-col sm:flex-row justify-center gap-6">
-                  <a href="/assessment" className="inline-flex items-center justify-center px-10 h-16 bg-white border-4 border-black rounded-full font-black text-xl text-black shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+                <div className="flex flex-col sm:flex-row justify-center gap-6 relative z-10">
+                  <a href="/assessment" className="inline-flex items-center justify-center px-10 h-16 bg-[#38bdf8] border-2 border-white rounded-none font-black text-xl text-black shadow-[6px_6px_0px_#fff] hover:translate-x-1 hover:-translate-y-1 transition-transform uppercase tracking-wider">
                     Start Free Assessment
                   </a>
                 </div>
               </div>
+
             </div>
 
           </div>
@@ -628,4 +535,4 @@ export default async function InsightDetailPage({ params }: Props) {
       </main>
     </div>
   )
-}
+}
