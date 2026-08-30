@@ -98,16 +98,16 @@ export default function NewPlatformPage() {
     logo_emoji: '',
     short_description: '',
     description: '',
-    capabilities: '[]',
-    integrations: '[]',
-    certifications: '[]',
+    capabilities: '[\n  {\n    "id": "doc-ai",\n    "name": "Document AI"\n  }\n]',
+    integrations: '[\n  "API",\n  "Webhooks"\n]',
+    certifications: '[\n  "SOC2",\n  "ISO27001"\n]',
     case_study_ids: '[]',
     demo_url: '',
     docs_url: '',
-    metrics: '{}',
-    faq: '[]',
-    architecture: '[]',
-    seo: '{}'
+    metrics: '{\n  "uptime": "99.99%",\n  "users": "1M+"\n}',
+    faq: '[\n  {\n    "question": "Q?",\n    "answer": "A"\n  }\n]',
+    architecture: '[\n  "Cloud Native",\n  "Microservices"\n]',
+    seo: '{\n  "title": "Platform Name | Flowtaris",\n  "description": "Learn about this platform."\n}'
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -172,7 +172,7 @@ export default function NewPlatformPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           New Platform
         </h1>
-        <a href="/admin/admin/platforms" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
+        <a href="/admin/platforms" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
           ← Back to Platforms
         </a>
       </div>

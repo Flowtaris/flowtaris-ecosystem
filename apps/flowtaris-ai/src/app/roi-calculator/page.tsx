@@ -80,6 +80,7 @@ export default async function ROICalculatorPage() {
       <Script id="software-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
       <Script id="faq-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       
+      <h1 className="sr-only">Enterprise AI Automation ROI Calculator</h1>
       <ROICalculatorClient initialConfig={roiConfig} />
 
       {/* AEO / Semantic HTML Section for Web Crawlers */}

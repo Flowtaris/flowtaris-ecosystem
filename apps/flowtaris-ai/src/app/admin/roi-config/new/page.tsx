@@ -44,10 +44,10 @@ type NewRoiConfigFormData = {
 
 export default function NewRoiConfigPage() {
   const [formData, setFormData] = useState<NewRoiConfigFormData>({
-    assumptions: '{}',
-    formulas: '{}',
-    benchmarks: '{}',
-    platform_multipliers: '{}'
+    assumptions: '{\n  "hourly_rate": 50,\n  "working_hours_per_year": 2080\n}',
+    formulas: '{\n  "time_saved_value": "(time_saved_hours * hourly_rate)"\n}',
+    benchmarks: '{\n  "avg_processing_time": 15\n}',
+    platform_multipliers: '{\n  "netsuite": 1.2,\n  "sap": 1.0\n}'
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -95,7 +95,7 @@ export default function NewRoiConfigPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           New ROI Config
         </h1>
-        <a href="/admin/admin/roi-config" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
+        <a href="/admin/roi-config" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
           ← Back to ROI Configs
         </a>
       </div>

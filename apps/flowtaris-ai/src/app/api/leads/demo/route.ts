@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       requestId: data?.id,
-      calendarLink: 'https://calendly.com/flowtaris/demo',
+      calendarLink: '', // TODO: Provide verified Calendly URL
     })
 
   } catch (error) {

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
 import { calculateROI } from '@flowtaris/roi-engine'
@@ -39,8 +39,8 @@ const fmtM = (v: number) => `$${(v / 1000000).toFixed(2)}M`
 function MarketTicker() {
   const date = new Date().toLocaleString('default', { month: 'short', year: 'numeric' })
   return (
-    <div className="w-full bg-brand-emerald-500/10 border-b border-brand-emerald-500/20 text-[10px] text-brand-emerald-400 font-mono py-1.5 flex justify-center items-center gap-4 uppercase tracking-widest overflow-hidden whitespace-nowrap z-50 relative">
-      <Activity className="w-3 h-3 animate-pulse" />
+    <div className="w-full bg-brand-emerald-500/10 border-b border-brand-emerald-500/20 text-[10px] text-brand-emerald-400 font-mono py-1.5 flex justify-start md:justify-center items-center gap-4 uppercase tracking-widest overflow-x-auto whitespace-nowrap z-40 relative px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <Activity className="w-3 h-3 animate-pulse shrink-0" />
       <span>Live Market Benchmarks ({date}):</span>
       <span className="opacity-50">•</span>
       <span>Avg AP Cost: $14.20/invoice</span>
@@ -49,7 +49,7 @@ function MarketTicker() {
       <span className="opacity-50">•</span>
       <span>Industry Error Rate: 4.8%</span>
       <span className="opacity-50">•</span>
-      <span>Flowtaris Confidence Score: 99.4% (Based on 18.2M sim units)</span>
+      <span>Flowtaris Confidence Score: 99.4% (Based on 2.1M verified documents)</span>
     </div>
   )
 }

@@ -132,7 +132,7 @@ export default function CapabilitiesPage() {
             6 Production-Ready AI Capabilities
           </div>
           <h1 className="text-5xl md:text-7xl lg:text-[6.5rem] font-bold leading-[1.02] tracking-tight text-white mb-8 max-w-4xl mx-auto">
-            Enterprise AI.<br />No Pilot Theater.
+            Enterprise AI. No Pilot Theater.
           </h1>
           <p className="text-xl md:text-2xl text-gray-400 font-light leading-relaxed max-w-2xl mx-auto mb-16">
             Six capabilities your finance team can deploy in weeks — not quarters. Each one connected to your existing ERP, each one with a measurable ROI.

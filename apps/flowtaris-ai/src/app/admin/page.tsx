@@ -39,6 +39,24 @@ export default function Dashboard() {
           </div>
         </Link>
         
+        {/* Dual Vision Config Card */}
+        <Link href="/admin/dual-vision" className="group">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Dual Vision Config</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Manage the dual vision architecture graphics and content
+                </p>
+              </div>
+              <Layout className="h-8 w-8 text-gray-400 group-hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+            </div>
+            <div className="mt-4">
+              <Activity className="h-6 w-6 text-gray-300" />
+            </div>
+          </div>
+        </Link>
+        
         {/* Platforms Card */}
         <Link href="/admin/platforms" className="group">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow group-hover:shadow-xl">

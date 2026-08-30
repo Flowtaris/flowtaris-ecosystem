@@ -66,7 +66,7 @@ export default function ContactForm() {
           className: 'text-display-xl text-gradient-brand text-balance',
         }}
         subheadline={{
-          text: 'Ready to transform your finance operations? Request a live demo, start a guided assessment, or ask us anything. We typically respond within 4 business hours.',
+          text: 'Ready to transform your finance operations? Request a live demo, start a guided assessment, or ask us anything. We typically respond within 48 hours.',
           shape: 'wave',
           className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
         }}
@@ -93,7 +93,7 @@ export default function ContactForm() {
                 <Card className="glass-card">
                   <CardHeader>
                     <CardTitle className="text-headline-lg">Send Us a Message</CardTitle>
-                    <p className="text-body-md text-neutral-400">We'll route your inquiry to the right team and respond within 4 business hours.</p>
+                    <p className="text-body-md text-neutral-400">We'll route your inquiry to the right team and respond within 48 hours.</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {showForm && (
@@ -212,7 +212,7 @@ export default function ContactForm() {
                           <CheckCircle className="h-8 w-8 text-brand-green-400" />
                         </div>
                         <h3 className="text-headline-lg text-brand-green-400 mb-2">Message Sent!</h3>
-                        <p className="text-body-md text-neutral-300 mb-6">Thanks for reaching out. Our team will respond within 4 business hours.</p>
+                        <p className="text-body-md text-neutral-300 mb-6">Thanks for reaching out. Our team will respond within 48 hours.</p>
                         <Button variant="outline" className="glass" onClick={handleReset}>
                           Send Another Message
                         </Button>
@@ -237,8 +237,8 @@ export default function ContactForm() {
                         <h4 className="text-headline-sm text-white">Schedule a Call</h4>
                         <p className="text-body-sm text-neutral-400">Book 30 min with a solutions architect</p>
                         <Button variant="ghost" size="sm" className="mt-2" asChild>
-                          <a href="https://calendly.com/flowtaris-ai" target="_blank" rel="noopener noreferrer">
-                            Book on Calendly
+                          <a href="#contact-form">
+                            Contact Us to Schedule
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </a>
                         </Button>
@@ -261,21 +261,7 @@ export default function ContactForm() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-brand-green-500/20 flex items-center justify-center flex-shrink-0">
-                        <Building2 className="h-5 w-5 text-brand-green-400" />
-                      </div>
-                      <div>
-                        <h4 className="text-headline-sm text-white">Partner Program</h4>
-                        <p className="text-body-sm text-neutral-400">iPaaS, SI, and technology partnerships</p>
-                        <Button variant="ghost" size="sm" className="mt-2" asChild>
-                          <a href="/partners">
-                            Learn More
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
+
                   </CardContent>
                 </Card>
 
@@ -284,29 +270,20 @@ export default function ContactForm() {
                     <CardTitle className="text-headline-lg">Global Offices</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {offices.map((office) => (
-                      <div key={office.name} className="border-t border-white/10 pt-6 first:border-0 first:pt-0">
-                        <h4 className="text-headline-sm text-white flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-brand-cyan-400" />
-                          {office.name} — {office.location}
-                        </h4>
-                        <div className="space-y-2 mt-2 text-body-sm text-neutral-300">
-                          <p>{office.address}</p>
-                          <p className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            <a href={`tel:${office.phone}`} className="hover:text-brand-cyan-400 transition-colors">{office.phone}</a>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            <a href={`mailto:${office.email}`} className="hover:text-brand-cyan-400 transition-colors">{office.email}</a>
-                          </p>
-                          <p className="flex items-center gap-2 text-neutral-400">
-                            <Clock className="h-4 w-4" />
-                            {office.hours}
-                          </p>
-                        </div>
+                    <div className="border-t border-white/10 pt-6 first:border-0 first:pt-0">
+                      <h4 className="text-headline-sm text-white flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-brand-cyan-400" />
+                        General Inquiries
+                      </h4>
+                      <div className="space-y-2 mt-2 text-body-sm text-neutral-300">
+                        <p className="flex items-center gap-2">
+                          <a href="mailto:contact@flowtaris.com" className="hover:text-brand-cyan-400 transition-colors">contact@flowtaris.com</a>
+                        </p>
+                        <p className="text-neutral-400">
+                          Reach out directly and we'll route your request to the appropriate team.
+                        </p>
                       </div>
-                    ))}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -330,7 +307,7 @@ export default function ContactForm() {
                   { q: 'What\'s the typical implementation timeline?', a: 'Quick Wins (GenAI Document Intelligence): 3-4 weeks. Full platform: 8-12 weeks. Multi-platform: 12-16 weeks.' },
                   { q: 'Do you offer a free trial or POC?', a: 'Yes. Qualified enterprises can run a 4-week Proof of Concept on their own data with full platform access.' },
                   { q: 'How does pricing work?', a: 'Platform subscription + volume-based processing fees. Volume discounts at 50K, 100K, 500K+ invoices/year. Contact us for a custom quote.' },
-                  { q: 'What\'s your data security posture?', a: 'SOC2 Type II, ISO 27001, GDPR, CCPA compliant. EU AI Act ready. Data encrypted at rest (AES-256) and in transit (TLS 1.3). Never used for model training.' },
+                  { q: 'What\'s your data security posture?', a: 'SOC2 Type II (Pending), ISO 27001 (Pending), GDPR, CCPA compliant. EU AI Act (Pending). Data encrypted at rest (AES-256) and in transit (TLS 1.3). Never used for model training.' },
                   { q: 'Can you integrate with our iPaaS (MuleSoft, Boomi, Celigo)?', a: 'Yes. We have certified connectors for MuleSoft, Boomi, Celigo, and Workato. Also native APIs for custom integrations.' },
                 ].map((faq, i) => (
                   <Card key={i} className="glass-card">
@@ -379,20 +356,7 @@ export default function ContactForm() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/contact" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Contact</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-              <a href="/roi-calculator" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">ROI Calculator</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }

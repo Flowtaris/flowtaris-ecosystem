@@ -685,29 +685,7 @@ export default function InnovationLabClient() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="https://github.com/flowtaris-ai" target="_blank" rel="noopener noreferrer" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors flex items-center gap-1">
-                <Github className="h-4 w-4" />
-                GitHub
-              </a>
-              <a href="https://twitter.com/flowtaris_ai" target="_blank" rel="noopener noreferrer" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors flex items-center gap-1">
-                <Twitter className="h-4 w-4" />
-                Twitter
-              </a>
-              <a href="https://linkedin.com/company/flowtaris-ai" target="_blank" rel="noopener noreferrer" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors flex items-center gap-1">
-                <Linkedin className="h-4 w-4" />
-                LinkedIn
-              </a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }

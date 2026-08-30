@@ -98,17 +98,17 @@ export default function NewCapabilityPage() {
     short_description: '',
     description: '',
     icon: '',
-    key_metrics: '[]',
-    features: '[]',
-    use_cases: '[]',
+    key_metrics: '[\n  {\n    "label": "Accuracy",\n    "value": "99.9%"\n  }\n]',
+    features: '[\n  "Automated extraction",\n  "Real-time sync"\n]',
+    use_cases: '[\n  "Invoice Processing",\n  "Contract Analysis"\n]',
     supported_platform_ids: '[]',
     timeline: '',
-    prerequisites: '[]',
+    prerequisites: '[\n  "ERP API Access",\n  "Historical Data"\n]',
     demo_url: '',
     docs_url: '',
     related_capability_ids: '[]',
     case_study_ids: '[]',
-    seo: '{}'
+    seo: '{\n  "title": "Document Intelligence AI Capability | Flowtaris",\n  "description": "Learn about our Document Intelligence capability."\n}'
   })
   const [platforms, setPlatforms] = useState<Array<{id: string; name: string}>>([])
   const [loading, setLoading] = useState(false)
@@ -187,7 +187,7 @@ export default function NewCapabilityPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           New AI Capability
         </h1>
-        <a href="/admin/admin/capabilities" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
+        <a href="/admin/capabilities" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
           ← Back to Capabilities
         </a>
       </div>

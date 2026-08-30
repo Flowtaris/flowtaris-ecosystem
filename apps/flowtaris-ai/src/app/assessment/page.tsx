@@ -4,6 +4,7 @@ import AssessmentWizardClient from './AssessmentWizardClient'
 export const metadata: Metadata = {
   title: 'AI Readiness Assessment | Flowtaris AI',
   description: 'Free 3-minute diagnostic → Personalized roadmap with Quick Wins (0-3mo), Strategic initiatives (3-9mo), and Innovation opportunities (9-18mo).',
+  alternates: { canonical: 'https://flowtaris.ai/assessment' },
   openGraph: {
     title: 'AI Readiness Assessment | Flowtaris AI',
     description: 'Free 3-minute diagnostic → Personalized roadmap with Quick Wins, Strategic initiatives, and Innovation opportunities.',

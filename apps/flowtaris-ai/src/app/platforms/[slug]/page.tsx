@@ -42,7 +42,7 @@ const platformData: Record<string, any> = {
       { name: 'Boomi', type: 'partner', description: 'Dell Boomi integration platform' },
       { name: 'MuleSoft', type: 'partner', description: 'Salesforce MuleSoft Anypoint Platform' },
     ],
-    certifications: ['SuiteApp Certified', 'SuiteCloud Developer Network', 'Oracle Cloud Marketplace', 'SOC2 Type II'],
+    certifications: ['SuiteApp Certified', 'SuiteCloud Developer Network', 'Oracle Cloud Marketplace', 'SOC2 Type II (Pending)'],
     faq: [
       { q: 'How long does NetSuite deployment take?', a: 'Typical Quick Win deployment: 3-4 weeks for GenAI Document Intelligence. Full platform: 8-12 weeks depending on customization complexity.' },
       { q: 'Does it work with SuiteScript customizations?', a: 'Yes. Our connector respects all SuiteScript customizations, user event scripts, and workflow triggers. Bi-directional sync preserves your business logic.' },
@@ -73,7 +73,7 @@ const platformData: Record<string, any> = {
       { name: 'Autonomous Workflow Engine', status: 'production', description: 'Self-healing workflows for Coupa approval chains', metrics: ['Dynamic routing', 'SLA tracking', 'Exception auto-resolve'] },
       { name: 'Integration Health Monitoring', status: 'production', description: 'Coupa API health & Community Intelligence sync', metrics: ['Real-time monitoring', 'Benchmark alerts', 'API quota management'] },
       { name: 'Expense Audit & Compliance', status: 'pilot', description: 'AI-powered expense policy enforcement', metrics: ['88% auto-approval', 'Risk scoring', 'Receipt validation'] },
-      { name: 'AI Governance & Compliance', status: 'research', description: 'SOC2 + Coupa compliance automation', metrics: ['Continuous monitoring', 'Audit trails', 'Policy as code'] },
+      { name: 'AI Governance & Compliance', status: 'research', description: 'SOC2 (Pending) + Coupa compliance automation', metrics: ['Continuous monitoring', 'Audit trails', 'Policy as code'] },
     ],
     integrations: [
       { name: 'Coupa Open APIs', type: 'native', description: 'REST APIs for invoices, POs, expenses, suppliers' },
@@ -83,7 +83,7 @@ const platformData: Record<string, any> = {
       { name: 'SAP Integration', type: 'partner', description: 'Coupa-SAP certified connector' },
       { name: 'Workday Integration', type: 'partner', description: 'Coupa-Workday HCM/Finance sync' },
     ],
-    certifications: ['Coupa Link Certified', 'Coupa App Marketplace', 'SOC2 Type II', 'ISO 27001'],
+    certifications: ['Coupa Link Certified', 'Coupa App Marketplace', 'SOC2 Type II (Pending)', 'ISO 27001 (Pending)'],
     faq: [
       { q: 'How does Coupa Link integration work?', a: 'Our Coupa Link certified connector provides pre-mapped fields for invoices, POs, and expenses. Configuration is point-and-click via Coupa Setup > Integrations > Coupa Link.' },
       { q: 'Can you leverage Community Intelligence?', a: 'Yes. We enrich extraction with Community Intelligence benchmarks for vendor validation, pricing analysis, and fraud detection.' },
@@ -123,7 +123,7 @@ const platformData: Record<string, any> = {
       { name: 'SAP Integration Suite', type: 'partner', description: 'Cloud Integration (CPI) for complex landscapes' },
       { name: 'SAP Signavio', type: 'partner', description: 'Process mining & optimization' },
     ],
-    certifications: ['SAP Certified Integration', 'SAP BTP Certified', 'SAP Build Partner', 'SOC2 Type II'],
+    certifications: ['SAP Certified Integration', 'SAP BTP Certified', 'SAP Build Partner', 'SOC2 Type II (Pending)'],
     faq: [
       { q: 'Does this require S/4HANA Cloud?', a: 'Supports both S/4HANA Cloud (Public/Private) and On-Premise 2021+. On-premise requires SAP Cloud Connector for BTP connectivity.' },
       { q: 'How are authorization objects handled?', a: 'Full authorization object compliance. Our connector respects SAP user roles, authorization objects (F_BKPF_KOAR, etc.), and client-dependent data segregation.' },
@@ -163,7 +163,7 @@ const platformData: Record<string, any> = {
       { name: 'Workday RaaS', type: 'native', description: 'Report-as-a-Service for custom queries' },
       { name: 'MuleSoft', type: 'partner', description: 'Salesforce MuleSoft for Workday' },
     ],
-    certifications: ['Workday Cloud Connect Certified', 'Workday Extend Partner', 'SOC2 Type II', 'ISO 27001'],
+    certifications: ['Workday Cloud Connect Certified', 'Workday Extend Partner', 'SOC2 Type II (Pending)', 'ISO 27001 (Pending)'],
     faq: [
       { q: 'Does this work with Workday HCM?', a: 'Yes. Our connector leverages the unified Workday data model across Finance and HCM for employee-centric processes (expenses, travel, procurement).' },
       { q: 'What about Workday Extend apps?', a: 'We provide a Workday Extend app for GenAI Document Intelligence with point-and-click configuration. No Workday Studio development required.' },
@@ -205,7 +205,7 @@ const platformData: Record<string, any> = {
       { name: 'Celonis', type: 'partner', description: 'Process mining across platforms' },
       { name: 'Custom Legacy', type: 'partner', description: 'Mainframe, AS/400, custom APIs' },
     ],
-    certifications: ['SOC2 Type II', 'ISO 27001', 'Platform certifications per ERP'],
+    certifications: ['SOC2 Type II (Pending)', 'ISO 27001 (Pending)', 'Platform certifications per ERP'],
     faq: [
       { q: 'How do you handle different data models?', a: 'Our canonical data model normalizes invoices, POs, vendors, and payments across all platforms. Platform-specific fields preserved in extensions.' },
       { q: 'Can workflows span multiple ERPs?', a: 'Yes. Autonomous Workflow Engine supports saga-pattern orchestration across NetSuite → Coupa → SAP with compensation transactions for rollback.' },
@@ -644,20 +644,7 @@ export default async function PlatformDetailPage({ params }: Props) {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/platforms" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">All Platforms</a>
-              <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }

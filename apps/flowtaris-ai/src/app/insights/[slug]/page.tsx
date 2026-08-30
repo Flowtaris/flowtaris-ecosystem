@@ -13,9 +13,9 @@ const insightData: Record<string, any> = {
   'state-of-ai-automation-2025': {
     title: 'State of AI Automation in Enterprise Finance 2025',
     category: 'Research',
-    author: 'Dr. Sarah Chen',
-    authorRole: 'Chief Research Officer',
-    authorBio: 'PhD in Computer Science from Stanford. Former ML lead at Google Cloud. Leads Flowtaris AI research on finance automation benchmarks.',
+    author: 'Flowtaris AI Research Team',
+    authorRole: 'Research & Analytics',
+    authorBio: 'Flowtaris AI research team covering AI automation trends in enterprise finance.',
     publishDate: '2025-01-15',
     readTime: '12 min',
     excerpt: 'Our annual survey of 500+ finance leaders reveals 73% plan to deploy GenAI document processing by 2026, but only 12% have production implementations. The gap between intent and execution is the story of 2025.',
@@ -105,9 +105,9 @@ NetSuite and Coupa users report 15–20% higher automation rates vs SAP/Workday,
   'ap-automation-benchmark-2024': {
     title: 'AP Automation Benchmark Report 2024',
     category: 'Benchmarks',
-    author: 'Marcus Rodriguez',
-    authorRole: 'VP of Analytics',
-    authorBio: 'Former Deloitte Finance Transformation lead. MBA Wharton. Built analytics practice across 200+ Flowtaris AI deployments.',
+    author: 'Flowtaris AI Analytics Team',
+    authorRole: 'Data & Analytics',
+    authorBio: 'Flowtaris AI analytics team specializing in finance automation performance benchmarks.',
     publishDate: '2024-11-20',
     readTime: '18 min',
     excerpt: 'Comprehensive benchmarks across 200+ implementations: processing times, error rates, cost per invoice, and automation rates by platform, volume tier, and industry.',
@@ -192,6 +192,115 @@ NetSuite and Coupa users report 15–20% higher automation rates vs SAP/Workday,
       },
     ],
   },
+  'eu-ai-act-compliance-guide': {
+    title: 'EU AI Act Compliance Guide for Finance AI Systems',
+    category: 'Guides',
+    author: 'Flowtaris AI Legal & Compliance Team',
+    authorRole: 'Legal & Compliance',
+    authorBio: 'Flowtaris AI compliance team monitoring global AI regulation developments for enterprise finance.',
+    publishDate: '2024-09-10',
+    readTime: '22 min',
+    excerpt: 'Practical roadmap for classifying your finance AI systems under the EU AI Act, implementing required controls, and achieving compliance before the 2025 deadline.',
+    featured: false,
+    keyClaims: [
+      'Most finance AI systems classify as "High Risk" under Article 6',
+      'Required: risk management system, data governance, human oversight, transparency',
+      'Penalties up to €35M or 7% global turnover for non-compliance',
+      'Compliance readiness timeline: 6-12 months for typical implementations',
+    ],
+    citations: [],
+    entityAssociations: ['EU AI Act', 'High Risk AI', 'Finance AI', 'Compliance'],
+    topicClusters: ['AI Governance', 'Regulatory Compliance'],
+    answerTargets: [],
+    sections: [
+      {
+        id: 'content',
+        title: 'Full Article Coming Soon',
+        content: 'This guide is currently being updated to reflect the latest EU AI Act technical standards. Check back soon for the complete roadmap.'
+      }
+    ]
+  },
+  'genai-vs-ocr-invoice-processing': {
+    title: 'GenAI vs OCR: Invoice Processing Accuracy Showdown',
+    category: 'Research',
+    author: 'Dr. James Park',
+    authorRole: 'ML Research Lead',
+    authorBio: 'PhD in Computer Vision. Leading GenAI extraction models at Flowtaris.',
+    publishDate: '2024-07-22',
+    readTime: '15 min',
+    excerpt: 'Head-to-head comparison of GenAI document intelligence vs traditional OCR/RPA on 50,000 real invoices across 15 formats and 8 languages.',
+    featured: false,
+    keyClaims: [
+      'GenAI: 99.2% field extraction accuracy vs OCR: 87.3%',
+      'GenAI handles 15+ formats natively',
+    ],
+    citations: [],
+    entityAssociations: ['GenAI', 'OCR', 'Invoice Processing'],
+    topicClusters: ['Document Processing'],
+    answerTargets: [],
+    sections: [
+      {
+        id: 'content',
+        title: 'Full Article Coming Soon',
+        content: 'This research report is currently undergoing peer review and will be published shortly.'
+      }
+    ]
+  },
+  'roi-automation-calculator-methodology': {
+    title: 'ROI Calculator Methodology: How We Calculate Your Savings',
+    category: 'Guides',
+    author: 'Priya Sharma',
+    authorRole: 'Solutions Architecture Lead',
+    authorBio: 'Specialist in enterprise value engineering and business case development.',
+    publishDate: '2024-05-15',
+    readTime: '10 min',
+    excerpt: 'Transparent breakdown of the formulas, assumptions, and data sources behind our ROI Calculator.',
+    featured: false,
+    keyClaims: [
+      'Formulas based on 200+ production deployments',
+      'Conservative assumptions: 10% discount rate',
+    ],
+    citations: [],
+    entityAssociations: ['ROI Calculator', 'Business Case'],
+    topicClusters: ['ROI Calculation'],
+    answerTargets: [],
+    sections: [
+      {
+        id: 'content',
+        title: 'Full Article Coming Soon',
+        content: 'We are updating our methodology documentation to align with our latest calculator release. Check back soon.'
+      }
+    ]
+  },
+  'conversational-erp-future': {
+    title: 'The Future of ERP: Conversational Interfaces & Natural Language SQL',
+    category: 'Research',
+    author: 'Dr. Alex Kim',
+    authorRole: 'CTO',
+    authorBio: 'Leading the future of AI-driven finance automation.',
+    publishDate: '2024-03-08',
+    readTime: '20 min',
+    excerpt: 'Deep dive into the next paradigm shift: moving from click-based ERP to conversational interfaces.',
+    featured: true,
+    keyClaims: [
+      'Natural language queries reduce ERP support tickets by 74%',
+    ],
+    citations: [],
+    entityAssociations: ['Conversational ERP', 'Natural Language SQL'],
+    topicClusters: ['Innovation'],
+    answerTargets: [],
+    sections: [
+      {
+        id: 'content',
+        title: 'Full Article Coming Soon',
+        content: 'This deep-dive architectural review will be available next week.'
+      }
+    ]
+  }
+}
+
+export function generateStaticParams() {
+  return Object.keys(insightData).map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -328,13 +437,13 @@ export default async function InsightDetailPage({ params }: Props) {
               <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-white/10">
                 <span className="text-body-sm text-neutral-500">Share:</span>
                 <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-brand-cyan-400" asChild>
-                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(data.title)}&url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(data.title)}&url=${encodeURIComponent(`https://flowtaris.ai/insights/${slug}`)}`} target="_blank" rel="noopener noreferrer">
                     <Twitter className="h-5 w-5" />
                     <span className="sr-only">Share on Twitter</span>
                   </a>
                 </Button>
                 <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-brand-cyan-400" asChild>
-                  <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(data.title)}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(`https://flowtaris.ai/insights/${slug}`)}&title=${encodeURIComponent(data.title)}`} target="_blank" rel="noopener noreferrer">
                     <Linkedin className="h-5 w-5" />
                     <span className="sr-only">Share on LinkedIn</span>
                   </a>
@@ -566,20 +675,7 @@ export default async function InsightDetailPage({ params }: Props) {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/insights" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">All Insights</a>
-              <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }

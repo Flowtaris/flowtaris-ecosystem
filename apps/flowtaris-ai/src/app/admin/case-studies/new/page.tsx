@@ -88,15 +88,15 @@ export default function NewCaseStudyPage() {
     slug: '',
     client: '',
     industry: 'Financial Services',
-    platforms: '[]',
+    platforms: '[\n  "NetSuite",\n  "Salesforce"\n]',
     challenge: '',
     solution: '',
-    results: '[]',
+    results: '[\n  {\n    "label": "Time Saved",\n    "value": "40hrs/week"\n  }\n]',
     timeline: '',
     testimonial: '',
     hero_image_url: '',
-    seo: '{}',
-    geo_signals: '{}',
+    seo: '{\n  "title": "Case Study | Flowtaris",\n  "description": "Read our latest case study."\n}',
+    geo_signals: '{\n  "region": "North America"\n}',
     related_capability_ids: '[]'
   })
   const [capabilities, setCapabilities] = useState<Array<{id: string; name: string}>>([])
@@ -172,7 +172,7 @@ export default function NewCaseStudyPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           New Case Study
         </h1>
-        <a href="/admin/admin/case-studies" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
+        <a href="/admin/case-studies" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
           ← Back to Case Studies
         </a>
       </div>

@@ -43,9 +43,9 @@ type NewAssessmentConfigFormData = {
 
 export default function NewAssessmentConfigPage() {
   const [formData, setFormData] = useState<NewAssessmentConfigFormData>({
-    questions: '[]',
-    recommendation_rules: '{}',
-    capability_mapping: '{}'
+    questions: '[\n  {\n    "id": "q1",\n    "text": "What is your primary goal?",\n    "options": [\n      { "value": "a", "label": "Automation" },\n      { "value": "b", "label": "Accuracy" }\n    ]\n  }\n]',
+    recommendation_rules: '{\n  "high_automation": {\n    "condition": "score > 80",\n    "recommendation": "doc-ai"\n  }\n}',
+    capability_mapping: '{\n  "doc-ai": "Document Intelligence"\n}'
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -92,7 +92,7 @@ export default function NewAssessmentConfigPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           New Assessment Config
         </h1>
-        <a href="/admin/admin/assessment-config" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
+        <a href="/admin/assessment-config" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
           ← Back to Assessment Configs
         </a>
       </div>

@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { ArrowUpRight, CheckCircle2, TrendingUp, AlertTriangle } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowUpRight, CheckCircle2, TrendingUp, AlertTriangle, Menu, X } from 'lucide-react'
 
 interface HeaderConfig {
   logoUrl?: string
@@ -18,6 +19,7 @@ interface SiteHeaderProps {
 
 export default function SiteHeader({ config }: SiteHeaderProps = {}) {
   const pathname = usePathname()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const logoUrl   = config?.logoUrl   ?? '/images/flowtaris-logo.png'
   const brandName = config?.brandName ?? 'Flowtaris'
@@ -163,7 +165,7 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
 
         {/* ── CORPORATE LINK ── */}
         <a
-          href="https://flowtaris.ai"
+          href="https://www.flowtaris.com/"
           target="_blank"
           rel="noopener noreferrer"
           className="
@@ -183,7 +185,85 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
             className="w-3.5 h-3.5 text-[#D4A847]/70 group-hover:text-[#f0c97a] group-hover:translate-x-[2px] group-hover:-translate-y-[2px] transition-all duration-300 flex-shrink-0"
           />
         </a>
+        {/* ── MOBILE MENU BUTTON ── */}
+        <button
+          onClick={() => setMobileOpen(o => !o)}
+          className="sm:hidden relative flex items-center justify-center w-9 h-9 rounded-full text-white/70 hover:text-white hover:bg-white/[0.06] transition-all duration-200 flex-shrink-0"
+          aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </button>
       </div>
+
+      {/* ── MOBILE DRAWER ── */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 sm:hidden"
+          aria-modal="true"
+          role="dialog"
+          aria-label="Mobile navigation"
+        >
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Drawer */}
+          <nav
+            className="absolute top-0 right-0 w-[75vw] max-w-[300px] h-screen bg-[#0a0b12] border-l border-white/[0.08] shadow-2xl flex flex-col pt-20 pb-8 px-6 overflow-y-auto"
+            aria-label="Mobile navigation links"
+          >
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-5 right-5 text-white/50 hover:text-white transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1">
+              {[
+                { href: '/assessment', label: 'Assessment' },
+                { href: '/roi-calculator', label: 'ROI Calculator' },
+                { href: '/cost-of-inaction', label: 'Cost of Inaction' },
+                { href: '/capabilities', label: 'Capabilities' },
+                { href: '/platforms', label: 'Platforms' },
+                { href: '/case-studies', label: 'Case Studies' },
+                { href: '/insights', label: 'Insights' },
+                { href: '/about', label: 'About' },
+                { href: '/contact', label: 'Contact' },
+              ].map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                    pathname === href || pathname?.startsWith(href + '/')
+                      ? 'bg-white/[0.10] text-white font-semibold'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-auto pt-8 border-t border-white/[0.08]">
+              <a
+                href="https://www.flowtaris.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-[#D4A847] font-medium hover:bg-white/[0.04] transition-all"
+                onClick={() => setMobileOpen(false)}
+              >
+                Corporate Site
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }

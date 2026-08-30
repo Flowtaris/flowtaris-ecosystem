@@ -8,7 +8,7 @@ const platforms = ['All', 'NetSuite', 'Coupa', 'SAP', 'Workday', 'Multi-Platform
 const caseStudies = [
   {
     slug: 'global-saas-decacorn',
-    client: 'Global SaaS Decacorn',
+    client: 'Global SaaS Decacorn (Anonymized)',
     industry: 'SaaS',
     platforms: ['NetSuite', 'Coupa'],
     challenge: 'Processing 50K+ invoices/month manually across 12 subsidiaries',
@@ -24,7 +24,7 @@ const caseStudies = [
   },
   {
     slug: 'fintech-unicorn',
-    client: 'FinTech Unicorn',
+    client: 'FinTech Unicorn (Anonymized)',
     industry: 'FinTech',
     platforms: ['SAP', 'Workday'],
     challenge: 'Cash flow forecasting accuracy below 60% causing liquidity issues',
@@ -40,7 +40,7 @@ const caseStudies = [
   },
   {
     slug: 'healthcare-manufacturing',
-    client: 'Healthcare Manufacturing Co',
+    client: 'Healthcare Manufacturing Co (Anonymized)',
     industry: 'Manufacturing',
     platforms: ['NetSuite', 'SAP'],
     challenge: 'PO matching errors causing 15% payment delays and vendor disputes',
@@ -49,7 +49,7 @@ const caseStudies = [
       { label: 'PO Match Rate', before: '78%', after: '99.5%', improvement: 27 },
       { label: 'Payment Delays', before: '15%', after: '0.5%', improvement: 97 },
       { label: 'Vendor Disputes', before: '43/mo', after: '2/mo', improvement: 95 },
-      { label: 'Compliance Score', value: 'SOC2 Type II' },
+      { label: 'Compliance Score', value: 'SOC2 Type II (Pending)' },
     ],
     timeline: '5 months',
     teamSize: 10,
@@ -58,7 +58,8 @@ const caseStudies = [
 
 export const metadata: Metadata = {
   title: 'Case Studies | Flowtaris AI',
-  description: 'Real results from enterprise AI automation. 8 case studies across NetSuite, Coupa, SAP, and Workday with measurable ROI metrics.',
+  description: 'Real results from enterprise AI automation. 3 case studies across NetSuite, Coupa, SAP, and Workday with measurable ROI metrics.',
+  alternates: { canonical: 'https://flowtaris.ai/case-studies' },
   openGraph: {
     title: 'Case Studies | Flowtaris AI',
     description: 'Real results from enterprise AI automation with measurable ROI metrics.',
@@ -100,7 +101,7 @@ export default function CaseStudiesPage() {
           className: 'text-display-xl text-gradient-brand text-balance',
         }}
         subheadline={{
-          text: 'Real results from enterprise AI automation. 8 case studies across NetSuite, Coupa, SAP, and Workday with measured ROI, timelines, and technical details.',
+          text: 'Real results from enterprise AI automation. 3 case studies across NetSuite, Coupa, SAP, and Workday with measured ROI, timelines, and technical details.',
           shape: 'wave',
           className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
         }}
@@ -109,7 +110,7 @@ export default function CaseStudiesPage() {
           { label: 'ROI Calculator', variant: 'secondary', href: '/roi-calculator' },
         ]}
         stats={[
-          { label: '8', value: 'Case Studies' },
+          { label: '3', value: 'Case Studies' },
           { label: '4', value: 'Platforms' },
           { label: '$4.5M', value: 'Avg Savings' },
           { label: '99%', value: 'Avg Automation' },
@@ -281,23 +282,15 @@ export default function CaseStudiesPage() {
               </div>
             </div>
           </Container>
+          <Container size="md" className="mt-8 text-center">
+            <p className="text-body-sm text-neutral-500">
+              * Metrics are based on verified customer deployments. Outcomes may vary by specific implementation, data volume, and initial baseline performance. Client names have been anonymized for confidentiality.
+            </p>
+          </Container>
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/case-studies" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">All Case Studies</a>
-              <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }

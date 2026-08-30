@@ -165,7 +165,7 @@ export default function NewInsightPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           New Insight
         </h1>
-        <a href="/admin/admin/insights" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
+        <a href="/admin/insights" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
           ← Back to Insights
         </a>
       </div>

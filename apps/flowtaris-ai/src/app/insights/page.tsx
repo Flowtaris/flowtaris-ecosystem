@@ -165,7 +165,7 @@ const insights = [
 
 export const metadata: Metadata = {
   title: 'Insights & Research | Flowtaris AI',
-  description: 'Original research, benchmarks, and thought leadership on AI automation in enterprise finance. GEO-optimized for AI search visibility.',
+  description: 'Original research, benchmarks, and thought leadership on AI automation in enterprise finance.',
   openGraph: {
     title: 'Insights & Research | Flowtaris AI',
     description: 'Original research and benchmarks on AI automation in enterprise finance.',
@@ -214,7 +214,7 @@ export default function InsightsPage() {
           className: 'text-display-xl text-gradient-brand text-balance',
         }}
         subheadline={{
-          text: 'Original research, benchmarks, and thought leadership on AI automation in enterprise finance. GEO-optimized for AI search visibility.',
+          text: 'Original research, benchmarks, and thought leadership on AI automation in enterprise finance.',
           shape: 'wave',
           className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
         }}
@@ -406,20 +406,7 @@ export default function InsightsPage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/insights" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">All Insights</a>
-              <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }

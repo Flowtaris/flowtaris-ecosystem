@@ -120,7 +120,7 @@ export default function CaseStudiesPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           Case Studies
         </h1>
-        <Link href="/admin/admin/case-studies/new" className="bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded">
+        <Link href="/admin/case-studies/new" className="bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded">
           New Case Study
         </Link>
       </div>

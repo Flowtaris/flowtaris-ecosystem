@@ -129,12 +129,9 @@ export default function CostOfInactionClient({ initialConfig }: { initialConfig:
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100">
       
       {/* ─── HEADER ─── */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="font-black text-xl tracking-tight text-slate-900">
-            Flowtaris
-          </a>
-          <div className="text-sm font-bold text-slate-500 uppercase tracking-widest hidden sm:block">
+      <header className="border-b border-slate-200 bg-white sticky top-16 z-30">
+        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
+          <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">
             Cost of Inaction Analysis
           </div>
         </div>
@@ -310,6 +307,9 @@ export default function CostOfInactionClient({ initialConfig }: { initialConfig:
               </div>
               <p className="text-slate-500 mt-4 max-w-lg mx-auto text-sm leading-relaxed">
                 This figure represents the total compounded cost of manual operations, error remediation, and competitive disadvantage if automation is entirely ignored over a 36-month horizon.
+              </p>
+              <p className="text-slate-400 mt-2 max-w-lg mx-auto text-xs">
+                * Projections are estimates based on industry benchmarks and your inputs. Actual results will vary. Not financial advice.
               </p>
             </div>
 

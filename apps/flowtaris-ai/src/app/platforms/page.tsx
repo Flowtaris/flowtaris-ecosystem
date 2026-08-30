@@ -30,7 +30,7 @@ const platforms = [
       { name: 'Conversational ERP Interface', status: 'research' },
     ],
     integrations: ['SuiteCloud', 'SuiteFlow', 'SuiteAnalytics', 'Celigo', 'Boomi', 'MuleSoft'],
-    certifications: ['SuiteApp Certified', 'SuiteCloud Developer Network', 'Oracle Cloud Marketplace', 'SOC2 Type II'],
+    certifications: ['SuiteApp Certified', 'SuiteCloud Developer Network', 'Oracle Cloud Marketplace', 'SOC2 Type II (Pending)'],
     caseStudies: ['global-saas-decacorn', 'healthcare-manufacturing'],
     demoUrl: 'https://demo.flowtaris.ai/netsuite',
     docsUrl: 'https://docs.flowtaris.ai/platforms/netsuite',
@@ -52,7 +52,7 @@ const platforms = [
       { name: 'AI Governance & Compliance', status: 'research' },
     ],
     integrations: ['Coupa Open APIs', 'Coupa Link', 'Community Intelligence', 'Coupa Pay', 'SAP Integration', 'Workday Integration'],
-    certifications: ['Coupa Link Certified', 'Coupa App Marketplace', 'SOC2 Type II', 'ISO 27001'],
+    certifications: ['Coupa Link Certified', 'Coupa App Marketplace', 'SOC2 Type II (Pending)', 'ISO 27001 (Pending)'],
     caseStudies: ['global-saas-decacorn'],
     demoUrl: 'https://demo.flowtaris.ai/coupa',
     docsUrl: 'https://docs.flowtaris.ai/platforms/coupa',
@@ -74,7 +74,7 @@ const platforms = [
       { name: 'AI Governance & Compliance', status: 'pilot' },
     ],
     integrations: ['SAP BTP', 'OData V4 APIs', 'SAP Build Process Automation', 'SAP AI Core', 'SAP Integration Suite', 'SAP Signavio'],
-    certifications: ['SAP Certified Integration', 'SAP BTP Certified', 'SAP Build Partner', 'SOC2 Type II'],
+    certifications: ['SAP Certified Integration', 'SAP BTP Certified', 'SAP Build Partner', 'SOC2 Type II (Pending)'],
     caseStudies: ['fintech-unicorn', 'healthcare-manufacturing'],
     demoUrl: 'https://demo.flowtaris.ai/sap',
     docsUrl: 'https://docs.flowtaris.ai/platforms/sap',
@@ -96,7 +96,7 @@ const platforms = [
       { name: 'Conversational ERP Interface', status: 'research' },
     ],
     integrations: ['Workday Cloud Connect', 'Workday Extend', 'Workday Prism Analytics', 'Adaptive Planning', 'Workday RaaS', 'MuleSoft'],
-    certifications: ['Workday Cloud Connect Certified', 'Workday Extend Partner', 'SOC2 Type II', 'ISO 27001'],
+    certifications: ['Workday Cloud Connect Certified', 'Workday Extend Partner', 'SOC2 Type II (Pending)', 'ISO 27001 (Pending)'],
     caseStudies: ['fintech-unicorn'],
     demoUrl: 'https://demo.flowtaris.ai/workday',
     docsUrl: 'https://docs.flowtaris.ai/platforms/workday',
@@ -118,7 +118,7 @@ const platforms = [
       { name: 'AI Governance & Compliance', status: 'pilot' },
     ],
     integrations: ['NetSuite', 'Coupa', 'SAP', 'Workday', 'MuleSoft', 'Boomi', 'Celonis', 'Custom Legacy'],
-    certifications: ['SOC2 Type II', 'ISO 27001', 'Platform certifications per ERP'],
+    certifications: ['SOC2 Type II (Pending)', 'ISO 27001 (Pending)', 'Platform certifications per ERP'],
     caseStudies: ['healthcare-manufacturing'],
     demoUrl: 'https://demo.flowtaris.ai/multi-platform',
     docsUrl: 'https://docs.flowtaris.ai/platforms/multi-platform',
@@ -286,18 +286,7 @@ export default function PlatformsPage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">Built with Flowtaris AI Design System</p>
-            <div className="flex items-center gap-6">
-              <a href="/platforms" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">All Platforms</a>
-              <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }

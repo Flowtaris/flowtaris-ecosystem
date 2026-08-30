@@ -111,7 +111,7 @@ export default function PlatformsPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           Platforms
         </h1>
-        <Link href="/admin/admin/platforms/new" className="bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded">
+        <Link href="/admin/platforms/new" className="bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded">
           New Platform
         </Link>
       </div>

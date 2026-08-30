@@ -41,23 +41,6 @@ export default function Home() {
       {/* ── CTA: Cost of Inaction Counter ── */}
       <CtaCostSection />
 
-      {/* ── Footer ── */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '40px 24px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px', justifyContent: 'center' }}>
-            {['Capabilities', 'Case Studies', 'Assessment', 'ROI Calculator', 'Insights', 'Platforms', 'About', 'Contact'].map((link) => (
-              <a key={link} href={`/${link.toLowerCase().replace(/ /g, '-')}`}
-                className="text-body-sm"
-                style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color 0.2s' }}>
-                {link}
-              </a>
-            ))}
-          </div>
-          <p className="text-body-sm" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            © 2024 Flowtaris AI. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }

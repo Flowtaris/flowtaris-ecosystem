@@ -10,7 +10,7 @@ interface Props {
 
 const caseStudyData: Record<string, any> = {
   'global-saas-decacorn': {
-    client: 'Global SaaS Decacorn',
+    client: 'Global SaaS Decacorn (Anonymized)',
     industry: 'SaaS',
     platforms: ['NetSuite', 'Coupa'],
     challenge: 'Processing 50K+ invoices/month manually across 12 subsidiaries with 4-day cycle times',
@@ -53,7 +53,7 @@ const caseStudyData: Record<string, any> = {
     },
   },
   'fintech-unicorn': {
-    client: 'FinTech Unicorn',
+    client: 'FinTech Unicorn (Anonymized)',
     industry: 'FinTech',
     platforms: ['SAP', 'Workday'],
     challenge: 'Cash flow forecasting accuracy below 60% causing liquidity events and emergency borrowing',
@@ -96,7 +96,7 @@ const caseStudyData: Record<string, any> = {
     },
   },
   'healthcare-manufacturing': {
-    client: 'Healthcare Manufacturing Co',
+    client: 'Healthcare Manufacturing Co (Anonymized)',
     industry: 'Manufacturing',
     platforms: ['NetSuite', 'SAP'],
     challenge: 'PO matching errors causing 15% payment delays and 43 vendor disputes/month',
@@ -105,7 +105,7 @@ const caseStudyData: Record<string, any> = {
       { label: 'PO Match Rate', before: '78%', after: '99.5%', improvement: 27, unit: 'improvement' },
       { label: 'Payment Delays', before: '15%', after: '0.5%', improvement: 97, unit: 'reduction' },
       { label: 'Vendor Disputes', before: '43/mo', after: '2/mo', improvement: 95, unit: 'reduction' },
-      { label: 'Compliance Score', value: 'SOC2 Type II', unit: 'certification' },
+      { label: 'Compliance Score', value: 'SOC2 Type II (Pending)', unit: 'certification' },
       { label: 'Audit Findings', before: '12/yr', after: '0/yr', improvement: 100, unit: 'reduction' },
       { label: 'Processing Cost', value: '$2.8M/yr saved', unit: 'currency' },
     ],
@@ -125,7 +125,7 @@ const caseStudyData: Record<string, any> = {
         '97% reduction in payment delays (15% → 0.5%)',
         '95% reduction in vendor disputes (43 → 2/month)',
         'Zero audit findings in first year post-deployment',
-        'Achieved SOC2 Type II + ISO 27001 certification',
+        'Achieved SOC2 Type II (Pending) + ISO 27001 (Pending) certification',
         '$2.8M annual processing cost reduction',
       ],
       technicalHighlights: [
@@ -427,20 +427,7 @@ export default async function CaseStudyDetailPage({ params }: Props) {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-12 px-6">
-        <Container size="xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-body-sm text-neutral-500 dark:text-neutral-400">
-              Built with Flowtaris AI Design System
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="/case-studies" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">All Case Studies</a>
-              <a href="/capabilities" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Capabilities</a>
-              <a href="/assessment" className="text-body-sm text-neutral-500 hover:text-brand-cyan-400 transition-colors">Assessment</a>
-            </div>
-          </div>
-        </Container>
-      </footer>
+
     </div>
   )
 }
