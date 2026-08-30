@@ -188,38 +188,40 @@ export default function InsightsClient({ insights, categories }: { insights: any
                     </h2>
                     <div className="flex flex-col gap-8">
                       {items.map((insight: any) => (
-                        <article key={insight.slug} className="group relative flex flex-col bg-[#111827] border-2 border-white/10 rounded-2xl p-8 shadow-xl transition-all duration-300 hover:border-[#c084fc] hover:shadow-[8px_8px_0px_#c084fc] hover:-translate-y-1">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="inline-flex items-center bg-[#c084fc]/10 px-3 py-1 text-xs font-bold text-[#c084fc] uppercase tracking-wider rounded-sm">
-                              {insight.category}
+                        <article key={insight.slug} className="group relative bg-[#111827] border-2 border-white/10 rounded-2xl shadow-xl transition-all duration-300 hover:border-[#c084fc] hover:shadow-[8px_8px_0px_#c084fc] hover:-translate-y-1 overflow-hidden">
+                          <a href={`/insights/${insight.slug}`} className="flex flex-col p-8 h-full w-full outline-none">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="inline-flex items-center bg-[#c084fc]/10 px-3 py-1 text-xs font-bold text-[#c084fc] uppercase tracking-wider rounded-sm">
+                                {insight.category}
+                              </div>
+                              <span className="text-sm font-bold text-neutral-400 flex items-center gap-1">
+                                <Clock className="h-4 w-4" /> {insight.readTime}
+                              </span>
                             </div>
-                            <span className="text-sm font-bold text-neutral-400 flex items-center gap-1">
-                              <Clock className="h-4 w-4" /> {insight.readTime}
-                            </span>
-                          </div>
 
-                          <a href={`/insights/${insight.slug}`} className="block mb-4">
-                            <h3 className="text-2xl md:text-3xl font-black text-white group-hover:text-[#c084fc] transition-colors leading-snug">
-                              {insight.title}
-                            </h3>
+                            <div className="block mb-4">
+                              <h3 className="text-2xl md:text-3xl font-black text-white group-hover:text-[#c084fc] transition-colors leading-snug">
+                                {insight.title}
+                              </h3>
+                            </div>
+
+                            <p className="text-neutral-400 font-medium text-lg leading-relaxed mb-6 max-w-3xl flex-1">
+                              {insight.excerpt}
+                            </p>
+
+                            <div className="flex items-center justify-between mt-auto pt-6 border-t border-white/10">
+                              <div className="flex items-center gap-2 text-sm font-bold text-neutral-300">
+                                <BookOpen className="h-4 w-4 text-[#38bdf8]" />
+                                <span>{insight.author}</span>
+                                <span className="mx-2 text-neutral-600">•</span>
+                                <span className="text-neutral-500">{new Date(insight.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                              </div>
+                              
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#111827] border-2 border-white/20 text-white group-hover:bg-[#c084fc] group-hover:border-[#c084fc] group-hover:text-white transition-all shadow-lg group-hover:shadow-[4px_4px_0px_#38bdf8]">
+                                <ArrowRight className="h-5 w-5" />
+                              </div>
+                            </div>
                           </a>
-
-                          <p className="text-neutral-400 font-medium text-lg leading-relaxed mb-6 max-w-3xl">
-                            {insight.excerpt}
-                          </p>
-
-                          <div className="flex items-center justify-between mt-auto pt-6 border-t border-white/10">
-                            <div className="flex items-center gap-2 text-sm font-bold text-neutral-300">
-                              <BookOpen className="h-4 w-4 text-[#38bdf8]" />
-                              <span>{insight.author}</span>
-                              <span className="mx-2 text-neutral-600">•</span>
-                              <span className="text-neutral-500">{new Date(insight.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                            </div>
-                            
-                            <a href={`/insights/${insight.slug}`} className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#111827] border-2 border-white/20 text-white group-hover:bg-[#c084fc] group-hover:border-[#c084fc] group-hover:text-white transition-all shadow-lg group-hover:shadow-[4px_4px_0px_#38bdf8]">
-                              <ArrowRight className="h-5 w-5" />
-                            </a>
-                          </div>
                         </article>
                       ))}
                     </div>
