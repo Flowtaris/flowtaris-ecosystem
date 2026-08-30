@@ -1,156 +1,232 @@
-'use client';
+'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { getInsights } from '@/lib/supabase'
+import { getInsights, deleteInsight } from '@/lib/supabase'
+import { BookOpen, Clock, Calendar, Tag, Pencil, Trash2, Plus, ExternalLink } from 'lucide-react'
 
-// Simple UI components for admin panel (using Tailwind directly)
-const SimpleButton = ({ children, type = 'button', disabled = false, className = '' }: { children: React.ReactNode; type?: 'button' | 'submit' | 'reset'; disabled?: boolean; className?: string }) => (
-  <button type={type} disabled={disabled} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-    {children}
-  </button>
-)
-
-const SimpleInput = ({ label, value, onChange, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; className?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <input
-      type="text"
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-    />
-  </div>
-)
-
-const SimpleTextarea = ({ label, value, onChange, className = '', rows = 4, placeholder = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void; className?: string; rows?: number; placeholder?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <textarea
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-      rows={rows}
-      placeholder={placeholder}
-    />
-  </div>
-)
-
-const SimpleSelect = ({ label, value, onChange, options, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: Array<{ value: string; label: string }>; className?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <select
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-    >
-      {options.map(option => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </div>
-)
-
-type InsightFormData = {
-  id: string
-  slug: string
-  title: string
-  author: string
-  excerpt: string
-  rich_text: string // JSON string (portable text)
-  topic_clusters: string // JSON string
-  faq_items: string // JSON string
-  citations: string // JSON string
-  related_capability_ids: string // JSON string (array of UUIDs)
-  published_at: string | null
-  seo: string // JSON string
-  geo_signals: string // JSON string
-}
-
-export default function InsightsPage() {
-  const [insights, setInsights] = useState<InsightFormData[]>([])
+export default function InsightsAdminPage() {
+  const [insights, setInsights] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; title: string } | null>(null)
 
-  // Fetch insights on load
-  useEffect(() => {
-    const fetchInsights = async () => {
-      try {
-        setLoading(true)
-        const data = await getInsights()
-        // Convert the data to our form format, ensuring JSON fields are strings and handling UUID arrays
-        const formData: InsightFormData[] = data.map((insight: any) => ({
-          id: insight.id,
-          slug: insight.slug || '',
-          title: insight.title || '',
-          author: insight.author || '',
-          excerpt: insight.excerpt || '',
-          rich_text: JSON.stringify(insight.rich_text, null, 2),
-          topic_clusters: JSON.stringify(insight.topic_clusters, null, 2),
-          faq_items: JSON.stringify(insight.faq_items, null, 2),
-          citations: JSON.stringify(insight.citations, null, 2),
-          related_capability_ids: JSON.stringify(insight.related_capability_ids || []),
-          published_at: insight.published_at || null,
-          seo: JSON.stringify(insight.seo, null, 2),
-          geo_signals: JSON.stringify(insight.geo_signals, null, 2),
-        }))
-        setInsights(formData)
-      } catch (err: any) {
-        setError('Failed to load insights')
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchInsights = async () => {
+    try {
+      setLoading(true)
+      const data = await getInsights()
+      setInsights(data || [])
+    } catch (err: any) {
+      setError('Failed to load insights. Check your Supabase connection.')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchInsights()
-  }, [])
+  useEffect(() => { fetchInsights() }, [])
 
-  if (loading) return <div className="p-6">Loading...</div>
-  if (error) return <div className="p-6 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>
+  const handleDelete = async (id: string) => {
+    setDeletingId(id)
+    try {
+      await deleteInsight(id)
+      setInsights(prev => prev.filter(i => i.id !== id))
+    } catch (err: any) {
+      setError('Failed to delete insight.')
+    } finally {
+      setDeletingId(null)
+      setConfirmDelete(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-16">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading insights from database...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          Insights & Blog
-        </h1>
-        <Link href="/admin/insights/new" className="bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded">
-          New Insight
+    <div className="max-w-5xl mx-auto p-6 pb-20">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Insights & Blog</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {insights.length} article{insights.length !== 1 ? 's' : ''} in the database — all changes go live within 60 seconds.
+          </p>
+        </div>
+        <Link
+          href="/admin/insights/new"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold transition shadow-md"
+        >
+          <Plus className="w-4 h-4" /> New Article
         </Link>
       </div>
-      
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/40 border border-red-400 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-6 text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Legend / Field Map */}
+      <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700 rounded-2xl p-5 mb-8">
+        <h3 className="text-sm font-bold text-violet-700 dark:text-violet-300 mb-3">📍 Where each field appears on the live site</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs text-gray-600 dark:text-gray-400">
+          <div><strong className="text-gray-800 dark:text-gray-200">Title →</strong> Article page H1 heading + browser tab + article card</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">Image →</strong> Article card thumbnail + article hero banner</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">Category →</strong> Purple tag on card + sidebar filter group</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">Excerpt →</strong> Preview text on article card (main insights page)</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">Author →</strong> Card footer + article title area + author bio box</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">Key Claims →</strong> "Key Takeaways" box at top of article</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">Sections →</strong> Main article body blocks (heading + content)</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">FAQs →</strong> FAQ accordion at bottom of article + Google Schema</div>
+          <div><strong className="text-gray-800 dark:text-gray-200">Topic Clusters →</strong> Sidebar category filter on insights page</div>
+        </div>
+      </div>
+
       {insights.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">No insights found. Create your first insight.</p>
+        <div className="text-center py-20 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
+          <BookOpen className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 font-medium mb-4">No insights in the database yet.</p>
+          <Link href="/admin/insights/new" className="inline-flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400 hover:underline font-semibold">
+            <Plus className="w-4 h-4" /> Create your first article
+          </Link>
         </div>
       ) : (
         <div className="space-y-4">
-          {insights.map((insight) => (
-            <div key={insight.id} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">{insight.title}</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                    {insight.author && <span className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded">{insight.author}</span>}
-                    {insight.published_at && <span className="ml-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded">{new Date(insight.published_at).toLocaleDateString()}</span>}
-                  </p>
-                  {insight.excerpt && <p className="text-body-sm text-gray-600 dark:text-gray-300">{insight.excerpt.substring(0, 100)}...</p>}
-                </div>
-                <div className="space-x-2">
-                  <Link href={`/insights/${insight.id}/edit`} className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
-                    Edit
-                  </Link>
+          {insights.map((insight) => {
+            const richText = insight.rich_text || {}
+            const image = richText.image || null
+            const category = richText.category || '—'
+            const readTime = richText.readTime || '—'
+            const faqCount = (insight.faq_items || []).length
+            const sectionCount = (richText.sections || []).length
+
+            return (
+              <div key={insight.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition overflow-hidden">
+                <div className="flex gap-0">
+                  {/* Thumbnail */}
+                  <div className="w-36 shrink-0 bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                    {image ? (
+                      <img src={image} alt={insight.title} className="w-full h-full object-cover" onError={e => (e.currentTarget.style.display = 'none')} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600">
+                        <BookOpen className="w-8 h-8" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 p-5 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-md">
+                            {category}
+                          </span>
+                          {richText.featured && (
+                            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md">
+                              ⭐ Featured
+                            </span>
+                          )}
+                        </div>
+                        <h2 className="text-base font-bold text-gray-900 dark:text-white leading-snug truncate">{insight.title}</h2>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <a
+                          href={`/insights/${insight.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg text-gray-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition"
+                          title="View live article"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                        <Link
+                          href={`/admin/insights/${insight.id}/edit`}
+                          className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition"
+                          title="Edit article"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => setConfirmDelete({ id: insight.id, title: insight.title })}
+                          className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
+                          title="Delete article"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {insight.excerpt && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">{insight.excerpt}</p>
+                    )}
+
+                    {/* Metadata Row */}
+                    <div className="flex items-center gap-4 flex-wrap text-xs text-gray-400 dark:text-gray-500">
+                      {insight.author && (
+                        <span className="flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" /> {insight.author}
+                        </span>
+                      )}
+                      {insight.published_at && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" /> {new Date(insight.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      )}
+                      {readTime !== '—' && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {readTime}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" /> {sectionCount} sections · {faqCount} FAQs
+                      </span>
+                    </div>
+
+                    {/* Slug */}
+                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                      <code className="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 px-2 py-0.5 rounded">
+                        /insights/{insight.slug}
+                      </code>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Slug: <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">{insight.slug}</code>
-                </p>
-              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete this article?</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              You are about to permanently delete <strong className="text-gray-800 dark:text-gray-200">"{confirmDelete.title}"</strong>. This cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmDelete(null)} className="px-5 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete.id)}
+                disabled={deletingId === confirmDelete.id}
+                className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold disabled:opacity-60 transition"
+              >
+                {deletingId === confirmDelete.id ? 'Deleting...' : 'Yes, Delete'}
+              </button>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

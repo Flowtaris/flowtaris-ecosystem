@@ -1,246 +1,300 @@
-'use client';
-import { useEffect, useState } from 'react'
+'use client'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getInsights, getAICapabilities, createInsight } from '@/lib/supabase'
+import { createInsight } from '@/lib/supabase'
 
-// Simple UI components for admin panel (using Tailwind directly)
-const SimpleButton = ({ children, type = 'submit', disabled = false, className = '' }: { children: React.ReactNode; type?: 'button' | 'submit' | 'reset'; disabled?: boolean; className?: string }) => (
-  <button type={type} disabled={disabled} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-    {children}
-  </button>
-)
+// ─── Shared Field Components ──────────────────────────────────────────────────
 
-const SimpleInput = ({ label, value, onChange, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; className?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <input
-      type="text"
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-    />
-  </div>
-)
-
-const SimpleTextarea = ({ label, value, onChange, className = '', rows = 4, placeholder = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void; className?: string; rows?: number; placeholder?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <textarea
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-      rows={rows}
-      placeholder={placeholder}
-    />
-  </div>
-)
-
-const SimpleSelect = ({ label, value, onChange, options, className = '' }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: Array<{ value: string; label: string }>; className?: string }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <select
-      value={value}
-      onChange={e => onChange(e)}
-      className={`border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-cyan-500 ${className}`}
-    >
-      {options.map(option => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </div>
-)
-
-// Default topic cluster options (common AI/tech topics)
-const TOPIC_CLUSTER_OPTIONS = [
-  { value: 'AI Automation', label: 'AI Automation' },
-  { value: 'Document Intelligence', label: 'Document Intelligence' },
-  { value: 'Workflow Automation', label: 'Workflow Automation' },
-  { value: 'Predictive Analytics', label: 'Predictive Analytics' },
-  { value: 'ERP Systems', label: 'ERP Systems' },
-  { value: 'Finance Transformation', label: 'Finance Transformation' },
-  { value: 'AI Governance', label: 'AI Governance' },
-  { value: 'Digital Transformation', label: 'Digital Transformation' }
-]
-
-type NewInsightFormData = {
-  title: string
-  slug: string
-  author: string
-  excerpt: string
-  rich_text: string // JSON string (portable text)
-  topic_clusters: string // JSON string
-  faq_items: string // JSON string
-  citations: string // JSON string
-  related_capability_ids: string // JSON string (array of UUIDs)
-  published_at: string | null
-  seo: string // JSON string
-  geo_signals: string // JSON string
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">{label}</label>
+      {hint && <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 italic">{hint}</p>}
+      {children}
+    </div>
+  )
 }
 
+const inputCls = 'w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition'
+const textareaCls = inputCls + ' resize-y'
+
+// ─── Dynamic List Editors ─────────────────────────────────────────────────────
+
+function StringListEditor({ label, hint, value, onChange }: { label: string; hint?: string; value: string[]; onChange: (v: string[]) => void }) {
+  const add = () => onChange([...value, ''])
+  const update = (i: number, v: string) => { const n = [...value]; n[i] = v; onChange(n) }
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
+
+  return (
+    <Field label={label} hint={hint}>
+      <div className="space-y-2">
+        {value.map((item, i) => (
+          <div key={i} className="flex gap-2">
+            <input value={item} onChange={e => update(i, e.target.value)} className={inputCls + ' flex-1'} placeholder={`Item ${i + 1}`} />
+            <button type="button" onClick={() => remove(i)} className="px-3 py-2 rounded-lg bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-200 transition">✕</button>
+          </div>
+        ))}
+        <button type="button" onClick={add} className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-800 font-semibold transition">
+          <span className="text-lg leading-none">+</span> Add item
+        </button>
+      </div>
+    </Field>
+  )
+}
+
+type FAQ = { question: string; answer: string }
+function FaqEditor({ value, onChange }: { value: FAQ[]; onChange: (v: FAQ[]) => void }) {
+  const add = () => onChange([...value, { question: '', answer: '' }])
+  const update = (i: number, field: keyof FAQ, v: string) => {
+    const n = [...value]; n[i] = { ...n[i], [field]: v }; onChange(n)
+  }
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
+
+  return (
+    <Field label="FAQs" hint="These populate the FAQ accordion at the bottom of the article and are automatically injected as JSON-LD schema data (FAQPage) for Google Featured Snippets and AI Overview answers.">
+      <div className="space-y-4">
+        {value.map((faq, i) => (
+          <div key={i} className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 bg-gray-50 dark:bg-gray-800/60 space-y-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">FAQ #{i + 1}</span>
+              <button type="button" onClick={() => remove(i)} className="text-red-500 text-xs hover:text-red-700 font-bold">Remove</button>
+            </div>
+            <input value={faq.question} onChange={e => update(i, 'question', e.target.value)} placeholder="Question (e.g. What is AP automation?)" className={inputCls} />
+            <textarea value={faq.answer} onChange={e => update(i, 'answer', e.target.value)} placeholder="Answer (write 2-4 sentences that directly answer the question)" rows={3} className={textareaCls} />
+          </div>
+        ))}
+        <button type="button" onClick={add} className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-800 font-semibold transition">
+          <span className="text-lg leading-none">+</span> Add FAQ
+        </button>
+      </div>
+    </Field>
+  )
+}
+
+type Section = { id: string; title: string; content: string }
+function SectionsEditor({ value, onChange }: { value: Section[]; onChange: (v: Section[]) => void }) {
+  const add = () => onChange([...value, { id: `section-${value.length + 1}`, title: '', content: '' }])
+  const update = (i: number, field: keyof Section, v: string) => {
+    const n = [...value]; n[i] = { ...n[i], [field]: v }; onChange(n)
+  }
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
+
+  return (
+    <Field label="Article Sections" hint="These are the main content blocks of the article. Each section has a heading and body text. You can use **bold**, *italic*, and bullet lists with - item in the content.">
+      <div className="space-y-4">
+        {value.map((section, i) => (
+          <div key={i} className="border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl p-5 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">Section #{i + 1}</span>
+              <button type="button" onClick={() => remove(i)} className="text-red-500 text-xs hover:text-red-700 font-bold">Remove</button>
+            </div>
+            <input value={section.title} onChange={e => update(i, 'title', e.target.value)} placeholder="Section Heading (e.g. Executive Summary)" className={inputCls} />
+            <textarea value={section.content} onChange={e => update(i, 'content', e.target.value)} placeholder="Write your section content here..." rows={6} className={textareaCls} />
+          </div>
+        ))}
+        <button type="button" onClick={add} className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-800 font-semibold transition">
+          <span className="text-lg leading-none">+</span> Add Section
+        </button>
+      </div>
+    </Field>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function NewInsightPage() {
-  const [formData, setFormData] = useState<NewInsightFormData>({
-    title: '',
-    slug: '',
-    author: '',
-    excerpt: '',
-    rich_text: '{}',
-    topic_clusters: '[]',
-    faq_items: '[]',
-    citations: '[]',
-    related_capability_ids: '[]',
-    published_at: null,
-    seo: '{}',
-    geo_signals: '{}'
-  })
-  const [capabilities, setCapabilities] = useState<Array<{id: string; name: string}>>([])
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const router = useRouter()
 
-  // Fetch capabilities for the related_capability_ids multi-select
+  // Core fields
+  const [title, setTitle] = useState('')
+  const [slug, setSlug] = useState('')
+  const [author, setAuthor] = useState('')
+  const [authorRole, setAuthorRole] = useState('')
+  const [authorBio, setAuthorBio] = useState('')
+  const [category, setCategory] = useState('Research')
+  const [readTime, setReadTime] = useState('10 min')
+  const [publishDate, setPublishDate] = useState(new Date().toISOString().slice(0, 10))
+  const [featured, setFeatured] = useState(false)
+  const [excerpt, setExcerpt] = useState('')
+
+  // Image
+  const [image, setImage] = useState('')
+
+  // Dynamic arrays
+  const [keyClaims, setKeyClaims] = useState<string[]>([''])
+  const [topicClusters, setTopicClusters] = useState<string[]>([''])
+  const [sections, setSections] = useState<Section[]>([{ id: 'section-1', title: '', content: '' }])
+  const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }])
+
+  // Auto-generate slug from title
   useEffect(() => {
-    const fetchCapabilities = async () => {
-      try {
-        const data = await getAICapabilities()
-        setCapabilities(data.map((c: any) => ({ id: c.id, name: c.name })))
-      } catch (err) {
-        console.error('Failed to load capabilities:', err)
-      }
+    if (!slug || slug === title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, -1)) {
+      setSlug(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''))
     }
-    fetchCapabilities()
-  }, [])
-
-  const handleChange = (field: keyof NewInsightFormData, value: string | null) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+  }, [title])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setSuccess(null)
-    setLoading(true)
-
+    setLoading(true); setError(null); setSuccess(null)
     try {
-      // Generate slug from title if not provided
-      const slug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-
-      // Prepare data for insertion
-      const insightData = {
-        title: formData.title,
-        slug: slug,
-        author: formData.author,
-        excerpt: formData.excerpt,
-        rich_text: JSON.parse(formData.rich_text),
-        topic_clusters: JSON.parse(formData.topic_clusters),
-        faq_items: JSON.parse(formData.faq_items),
-        citations: JSON.parse(formData.citations),
-        related_capability_ids: JSON.parse(formData.related_capability_ids),
-        published_at: formData.published_at,
-        seo: JSON.parse(formData.seo),
-        geo_signals: JSON.parse(formData.geo_signals)
-      }
-
-      // Create the insight
-      await createInsight(insightData)
-      setSuccess('Insight created successfully!')
-
-      // Redirect to insights list after a short delay
-      setTimeout(() => {
-        router.push('/admin/insights')
-      }, 1500)
+      await createInsight({
+        slug,
+        title,
+        author,
+        excerpt,
+        published_at: publishDate ? new Date(publishDate).toISOString() : null,
+        rich_text: {
+          category,
+          authorRole,
+          authorBio,
+          readTime,
+          featured,
+          image,
+          keyClaims: keyClaims.filter(Boolean),
+          sections: sections.filter(s => s.title || s.content),
+        },
+        topic_clusters: topicClusters.filter(Boolean),
+        faq_items: faqs.filter(f => f.question || f.answer),
+        citations: [],
+        related_capability_ids: [],
+      })
+      setSuccess('Insight created! Redirecting...')
+      setTimeout(() => router.push('/admin/insights'), 1500)
     } catch (err: any) {
-      setError('Failed to create insight')
-      console.error(err)
+      setError(err.message || 'Failed to create insight.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          New Insight
-        </h1>
-        <a href="/admin/insights" className="text-sm text-brand-cyan-600 hover:text-brand-cyan-700">
-          ← Back to Insights
-        </a>
+    <div className="max-w-4xl mx-auto p-6 pb-20">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Insight Article</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill in all fields — every section reflects in the live article page.</p>
+        </div>
+        <a href="/admin/insights" className="text-sm text-violet-600 hover:underline">← Back to Insights</a>
       </div>
 
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-      {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/40 border border-red-400 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>}
+      {success && <div className="bg-green-50 dark:bg-green-900/40 border border-green-400 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg mb-6 text-sm">{success}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <SimpleInput
-          label="Insight Title *"
-          value={formData.title}
-          onChange={(e) => handleChange('title', e.target.value)}
-        />
-        <SimpleInput
-          label="Slug (auto-generated from title if empty)"
-          value={formData.slug}
-          onChange={(e) => handleChange('slug', e.target.value)}
-        />
-        <SimpleInput
-          label="Author"
-          value={formData.author}
-          onChange={(e) => handleChange('author', e.target.value)}
-        />
-        <SimpleTextarea
-          label="Excerpt"
-          value={formData.excerpt}
-          onChange={(e) => handleChange('excerpt', e.target.value)}
-          rows={3}
-        />
-        <SimpleTextarea
-          label="Rich Text (Portable Text JSON)"
-          value={formData.rich_text}
-          onChange={(e) => handleChange('rich_text', e.target.value)}
-          rows={6}
-        />
-        <SimpleTextarea
-          label="Topic Clusters (JSON Array of strings)"
-          value={formData.topic_clusters}
-          onChange={(e) => handleChange('topic_clusters', e.target.value)}
-        />
-        <SimpleTextarea
-          label="FAQ Items (JSON Array of objects)"
-          value={formData.faq_items}
-          onChange={(e) => handleChange('faq_items', e.target.value)}
-        />
-        <SimpleTextarea
-          label="Citations (JSON Array of objects)"
-          value={formData.citations}
-          onChange={(e) => handleChange('citations', e.target.value)}
-        />
-        {/* For related capabilities, we are using a text area for UUID arrays. */}
-        <SimpleTextarea
-          label="Related Capability IDs (JSON Array of UUIDs)"
-          value={formData.related_capability_ids}
-          onChange={(e) => handleChange('related_capability_ids', e.target.value)}
-        />
-        <SimpleInput
-          label="Published At (ISO date string, leave blank for now)"
-          value={formData.published_at || ''}
-          onChange={(e) => handleChange('published_at', e.target.value)}
-        />
-        <SimpleTextarea
-          label="SEO (JSON Object)"
-          value={formData.seo}
-          onChange={(e) => handleChange('seo', e.target.value)}
-        />
-        <SimpleTextarea
-          label="GEO Signals (JSON Object)"
-          value={formData.geo_signals}
-          onChange={(e) => handleChange('geo_signals', e.target.value)}
-        />
-        <div className="flex justify-end">
-          <SimpleButton type="submit" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Insight'}
-          </SimpleButton>
+      <form onSubmit={handleSubmit} className="space-y-8">
+
+        {/* ── SECTION: CORE IDENTITY ── */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 mb-5">📋 Core Identity</h2>
+
+          <Field label="Article Title *" hint="Appears as the large H1 heading on the article page and as the browser tab title.">
+            <input value={title} onChange={e => setTitle(e.target.value)} required className={inputCls} placeholder="e.g. State of AI Automation in Enterprise Finance 2025" />
+          </Field>
+
+          <Field label="URL Slug *" hint="The last part of the URL: flowtaris.ai/insights/[slug]. Auto-generated from title. Use lowercase letters and hyphens only.">
+            <input value={slug} onChange={e => setSlug(e.target.value)} required className={inputCls} placeholder="e.g. state-of-ai-automation-2025" />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Category" hint="Appears as the purple tag on the article card and used to group articles in the scrollable sidebar menu.">
+              <select value={category} onChange={e => setCategory(e.target.value)} className={inputCls}>
+                {['Research', 'Benchmarks', 'Analysis', 'Guides', 'Compliance', 'Technology', 'Case Studies'].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Read Time" hint="Shown on the article card next to the clock icon (e.g. '15 min').">
+              <input value={readTime} onChange={e => setReadTime(e.target.value)} className={inputCls} placeholder="15 min" />
+            </Field>
+          </div>
+
+          <Field label="Publish Date" hint="Sets the publication date shown below the author name on the article.">
+            <input type="date" value={publishDate} onChange={e => setPublishDate(e.target.value)} className={inputCls} />
+          </Field>
+
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+            <input type="checkbox" id="featured" checked={featured} onChange={e => setFeatured(e.target.checked)} className="w-4 h-4 rounded accent-violet-600" />
+            <div>
+              <label htmlFor="featured" className="text-sm font-semibold text-gray-800 dark:text-gray-200 cursor-pointer">Featured Article</label>
+              <p className="text-xs text-gray-400 dark:text-gray-500 italic">Featured articles may be highlighted at the top of the insights page.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── SECTION: VISUALS ── */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400 mb-5">🖼️ Hero Image</h2>
+
+          <Field label="Image URL" hint="The article card image AND the article hero banner image. Must start with /insights/ (e.g. /insights/my-image.png). Upload your image to the public/insights/ folder first, then paste its path here.">
+            <input value={image} onChange={e => setImage(e.target.value)} className={inputCls} placeholder="/insights/my-article-image.png" />
+          </Field>
+
+          {image && (
+            <div className="mt-3 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 max-h-48">
+              <img src={image} alt="Preview" className="w-full h-48 object-cover" onError={e => (e.currentTarget.style.display = 'none')} />
+            </div>
+          )}
+        </div>
+
+        {/* ── SECTION: AUTHOR ── */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-5">👤 Author Details</h2>
+
+          <Field label="Author Name" hint="Shown below the article title and on the article card (e.g. 'Dr. Sarah Chen').">
+            <input value={author} onChange={e => setAuthor(e.target.value)} className={inputCls} placeholder="e.g. Dr. Sarah Chen" />
+          </Field>
+
+          <Field label="Author Role / Title" hint="Shown in small text under the author name in the article sidebar (e.g. 'Head of Automation Strategy').">
+            <input value={authorRole} onChange={e => setAuthorRole(e.target.value)} className={inputCls} placeholder="e.g. Head of Automation Strategy" />
+          </Field>
+
+          <Field label="Author Bio" hint="A 1-2 sentence biography shown in the author box at the bottom of the article.">
+            <textarea value={authorBio} onChange={e => setAuthorBio(e.target.value)} rows={2} className={textareaCls} placeholder="Former AP Director turned automation architect. Has overseen 50+ enterprise AP transformations." />
+          </Field>
+        </div>
+
+        {/* ── SECTION: CONTENT ── */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-5">📝 Article Content</h2>
+
+          <Field label="Excerpt / Summary *" hint="The preview text shown on the article card on the main Insights page. Keep it to 2-3 compelling sentences (max 300 chars).">
+            <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} required rows={3} className={textareaCls} placeholder="A compelling 2-3 sentence summary that appears on the insight card..." />
+          </Field>
+
+          <StringListEditor
+            label="Key Claims / Data Points"
+            hint="The numbered bullets shown in the 'Key Takeaways' box at the top of the article. Each should be a striking stat or bold claim."
+            value={keyClaims}
+            onChange={setKeyClaims}
+          />
+
+          <SectionsEditor value={sections} onChange={setSections} />
+        </div>
+
+        {/* ── SECTION: SEO & AEO ── */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400 mb-5">🔍 SEO & Answer Engine Optimization (AEO)</h2>
+
+          <FaqEditor value={faqs} onChange={setFaqs} />
+
+          <StringListEditor
+            label="Topic Clusters / Tags"
+            hint="Keywords used to group this article by topic. Also used in the sidebar filter. Examples: 'AI Automation', 'AP Benchmarks', 'EU AI Act'."
+            value={topicClusters}
+            onChange={setTopicClusters}
+          />
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4">
+          <a href="/admin/insights" className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            Cancel
+          </a>
+          <button type="submit" disabled={loading} className="px-8 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold disabled:opacity-60 transition shadow-md">
+            {loading ? 'Creating...' : 'Create Insight Article'}
+          </button>
         </div>
       </form>
     </div>
