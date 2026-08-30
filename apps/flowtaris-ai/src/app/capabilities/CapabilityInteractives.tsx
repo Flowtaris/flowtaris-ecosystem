@@ -32,7 +32,7 @@ function CapabilityCard({ cap, idx }: { cap: Capability; idx: number }) {
   return (
     <Link
       href={`/capabilities/${cap.slug}`}
-      className="group block rounded-3xl border p-8 md:p-12 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden"
+      className="group block rounded-3xl border p-8 md:p-12 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden hover:!border-[var(--accent-border)] hover:!bg-[var(--accent-muted)]"
       style={
         {
           borderColor: 'rgba(255,255,255,0.06)',
@@ -42,16 +42,6 @@ function CapabilityCard({ cap, idx }: { cap: Capability; idx: number }) {
           '--accent-border': cap.accentBorder,
         } as React.CSSProperties
       }
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = cap.accentBorder
-        el.style.backgroundColor = cap.accentMuted
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'rgba(255,255,255,0.06)'
-        el.style.backgroundColor = 'rgba(10,10,10,0.8)'
-      }}
     >
       {/* Background number */}
       <div className="absolute top-10 right-10 text-[100px] font-bold leading-none opacity-[0.04] text-white select-none pointer-events-none">
@@ -127,18 +117,13 @@ export function IntegrationChips({ integrations, accent, accentBorder }: { integ
 function IntegrationChip({ label, accent, accentBorder }: { label: string; accent: string; accentBorder: string }) {
   return (
     <span
-      className="px-6 py-3 rounded-full text-sm font-medium text-gray-300 border transition-all duration-300 hover:text-white cursor-default"
-      style={{ backgroundColor: 'rgba(10,10,10,0.8)', borderColor: 'rgba(255,255,255,0.08)' }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = accentBorder
-        el.style.color = accent
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'rgba(255,255,255,0.08)'
-        el.style.color = 'rgb(209,213,219)'
-      }}
+      className="px-6 py-3 rounded-full text-sm font-medium text-gray-300 border transition-all duration-300 hover:!text-[var(--accent)] hover:!border-[var(--accent-border)] cursor-default"
+      style={{ 
+        backgroundColor: 'rgba(10,10,10,0.8)', 
+        borderColor: 'rgba(255,255,255,0.08)',
+        '--accent': accent,
+        '--accent-border': accentBorder
+      } as React.CSSProperties}
     >
       {label}
     </span>
@@ -161,10 +146,14 @@ function RelatedCard({ cap }: { cap: { slug: string; title: string; category: st
   return (
     <Link
       href={`/capabilities/${cap.slug}`}
-      className="group rounded-2xl p-8 border transition-all duration-300 hover:-translate-y-1"
-      style={{ borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(10,10,10,0.8)' }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = cap.accentBorder }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)' }}
+      className="group rounded-2xl p-8 border transition-all duration-300 hover:-translate-y-1 hover:!border-[var(--accent-border)]"
+      style={{ 
+        borderColor: 'rgba(255,255,255,0.06)', 
+        backgroundColor: 'rgba(10,10,10,0.8)',
+        '--accent': cap.accent,
+        '--accent-border': cap.accentBorder,
+        '--accent-muted': cap.accentMuted,
+      } as React.CSSProperties}
     >
       <div className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: cap.accent }}>{cap.category}</div>
       <div className="text-white font-semibold text-lg mb-4 leading-snug">{cap.title}</div>
