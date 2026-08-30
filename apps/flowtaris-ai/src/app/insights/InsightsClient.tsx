@@ -11,7 +11,7 @@ export default function InsightsClient({ insights, categories }: { insights: any
     ? insights 
     : insights.filter(i => i.category === activeCategory)
 
-  const scrollToResearch = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const scrollToResearch = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     const elem = document.getElementById('research')
     if (elem) {
