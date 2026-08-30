@@ -486,309 +486,146 @@ export default async function InsightDetailPage({ params }: Props) {
   })
 
   return (
-    <div className="flex flex-col flex-1 w-full">
-      <HeroPattern
-        headline={{
-          text: data.title,
-          split: ['words', 'lines'],
-          className: 'text-display-xl text-gradient-brand text-balance',
-        }}
-        subheadline={{
-          text: data.excerpt,
-          shape: 'wave',
-          className: 'text-headline-lg text-neutral-300 dark:text-neutral-400 text-balance max-w-3xl',
-        }}
-        stats={{
-          items: [
-            { label: data.readTime, value: 'Read Time' },
-            { label: data.category, value: 'Category' },
-            { label: data.sections.length, value: 'Sections' },
-            { label: data.citations.length, value: 'Citations' },
-          ],
-        }}
-        scrollIndicator={true}
-        vignette={true}
-        noise={true}
-      />
-
-      <main className="flex-1 w-full">
-        {/* Article Header */}
-        <section className="py-12 px-6" aria-labelledby="article-header">
-          <Container size="xl">
-            <Stack gap={8} className="w-full max-w-4xl mx-auto">
-              <div className="flex flex-wrap items-center gap-4">
-                <Badge variant="outline" className="text-body-sm">{data.category}</Badge>
-                {data.featured && <Badge variant="info" className="text-body-sm">Featured</Badge>}
-                <span className="flex items-center gap-1 text-body-sm text-neutral-400">
-                  <Calendar className="h-4 w-4" />
-                  {formattedDate}
-                </span>
-                <span className="flex items-center gap-1 text-body-sm text-neutral-400">
-                  <Clock className="h-4 w-4" />
-                  {data.readTime}
-                </span>
+    <div className="flex flex-col flex-1 w-full bg-[#f6f4ff] text-black">
+      {/* Hero Section */}
+      <section className="pt-32 pb-16 px-6 border-b-4 border-black bg-white" aria-labelledby="article-header">
+        <Container size="xl">
+          <div className="max-w-4xl mx-auto flex flex-col gap-8">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="inline-flex items-center rounded-full border-2 border-black bg-[#f3e8ff] px-3 py-1 text-sm font-bold text-black uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                {data.category}
               </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-brand-cyan-500/20 flex items-center justify-center">
-                  <Brain className="h-6 w-6 text-brand-cyan-400" />
+              {data.featured && (
+                <div className="inline-flex items-center rounded-full border-2 border-black bg-[#c084fc] px-3 py-1 text-sm font-bold text-white uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                  Featured
                 </div>
-                <div>
-                  <p className="font-medium text-white">{data.author}</p>
-                  <p className="text-body-sm text-neutral-400">{data.authorRole}</p>
-                </div>
-              </div>
+              )}
+              <span className="flex items-center gap-2 text-sm font-bold text-black">
+                <Calendar className="h-5 w-5" />
+                {formattedDate}
+              </span>
+              <span className="flex items-center gap-2 text-sm font-bold text-black">
+                <Clock className="h-5 w-5" />
+                {data.readTime}
+              </span>
+            </div>
 
-              <div className="pt-6 border-t border-white/10">
-                <p className="text-headline-md text-neutral-300 leading-relaxed">{data.excerpt}</p>
-              </div>
+            <h1 id="article-header" className="text-5xl md:text-6xl lg:text-7xl font-black text-black leading-tight tracking-tight">
+              {data.title}
+            </h1>
 
-              {/* Share / Download */}
-              <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-white/10">
-                <span className="text-body-sm text-neutral-500">Share:</span>
-                <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-brand-cyan-400" asChild>
-                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(data.title)}&url=${encodeURIComponent(`https://flowtaris.ai/insights/${slug}`)}`} target="_blank" rel="noopener noreferrer">
-                    <Twitter className="h-5 w-5" />
-                    <span className="sr-only">Share on Twitter</span>
-                  </a>
-                </Button>
-                <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-brand-cyan-400" asChild>
-                  <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(`https://flowtaris.ai/insights/${slug}`)}&title=${encodeURIComponent(data.title)}`} target="_blank" rel="noopener noreferrer">
-                    <Linkedin className="h-5 w-5" />
-                    <span className="sr-only">Share on LinkedIn</span>
-                  </a>
-                </Button>
-                <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-brand-cyan-400 ml-auto" asChild>
-                  <a href="#download-pdf">
-                    <FileText className="h-5 w-5 mr-2" />
-                    Download PDF
-                  </a>
-                </Button>
+            <div className="flex items-center gap-4 bg-[#f3e8ff] border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_rgba(0,0,0,1)] max-w-2xl">
+              <div className="w-16 h-16 rounded-full border-2 border-black bg-white flex items-center justify-center shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                <Brain className="h-8 w-8 text-[#7e22ce]" />
               </div>
-            </Stack>
-          </Container>
-        </section>
+              <div>
+                <p className="font-black text-xl text-black">{data.author}</p>
+                <p className="text-lg font-bold text-black/70">{data.authorRole}</p>
+              </div>
+            </div>
 
-        {/* Table of Contents */}
-        <section className="px-6 pb-12" aria-labelledby="toc-heading">
-          <Container size="xl">
-            <Card className="glass-card max-w-4xl mx-auto">
-              <CardContent className="p-6">
-                <h3 id="toc-heading" className="text-headline-sm text-white mb-4 flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-brand-cyan-400" />
+            <p className="text-2xl font-bold text-black leading-relaxed border-l-8 border-[#7e22ce] pl-6 mt-4">
+              {data.excerpt}
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      <main className="flex-1 w-full py-16 px-6">
+        <Container size="xl">
+          <div className="grid lg:grid-cols-12 gap-16 items-start">
+            
+            {/* Sidebar (TOC & Share) */}
+            <aside className="lg:col-span-4 lg:sticky top-32 space-y-8">
+              <div className="bg-white border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)]">
+                <h3 className="text-2xl font-black text-black mb-6 flex items-center gap-3 border-b-4 border-black pb-4">
+                  <BookOpen className="h-6 w-6 text-[#7e22ce]" />
                   Table of Contents
                 </h3>
                 <nav>
-                  <ul className="space-y-2">
+                  <ul className="space-y-4 font-bold">
                     {data.sections.map((section: any) => (
                       <li key={section.id}>
-                        <a href={`#${section.id}`} className="text-body-md text-neutral-300 hover:text-brand-cyan-400 transition-colors flex items-center gap-2">
-                          <span className="text-body-xs text-neutral-500">→</span>
+                        <a href={`#${section.id}`} className="text-black hover:text-[#7e22ce] transition-colors flex items-center gap-3">
+                          <span className="text-[#c084fc] text-xl">→</span>
                           {section.title}
                         </a>
                       </li>
                     ))}
-                    <li>
-                      <a href="#key-claims" className="text-body-md text-neutral-300 hover:text-brand-cyan-400 transition-colors flex items-center gap-2">
-                        <span className="text-body-xs text-neutral-500">→</span>
-                        Key Claims
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#citations" className="text-body-md text-neutral-300 hover:text-brand-cyan-400 transition-colors flex items-center gap-2">
-                        <span className="text-body-xs text-neutral-500">→</span>
-                        Citations & Sources
-                      </a>
-                    </li>
                   </ul>
                 </nav>
-              </CardContent>
-            </Card>
-          </Container>
-        </section>
+              </div>
 
-        {/* Article Content */}
-        <section className="px-6 pb-24" aria-labelledby="content-heading">
-          <Container size="xl">
-            <div className="max-w-4xl mx-auto">
+              <div className="bg-[#f3e8ff] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)]">
+                <h3 className="text-2xl font-black text-black mb-6">Share Report</h3>
+                <div className="flex gap-4">
+                  <a href="#" className="flex items-center justify-center w-14 h-14 bg-white border-4 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#7e22ce] hover:text-white transition-colors">
+                    <Twitter className="h-6 w-6" />
+                  </a>
+                  <a href="#" className="flex items-center justify-center w-14 h-14 bg-white border-4 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#7e22ce] hover:text-white transition-colors">
+                    <Linkedin className="h-6 w-6" />
+                  </a>
+                  <a href="#download-pdf" className="flex items-center justify-center px-6 h-14 bg-white border-4 border-black rounded-full shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#7e22ce] hover:text-white transition-colors font-bold text-lg gap-2">
+                    <FileText className="h-6 w-6" /> PDF
+                  </a>
+                </div>
+              </div>
+            </aside>
+
+            {/* Article Content */}
+            <div className="lg:col-span-8">
               {data.sections.map((section: any) => (
                 <article key={section.id} id={section.id} className="mb-16">
-                  <header className="mb-8 pb-4 border-b border-white/10">
-                    <h2 className="text-display-sm text-gradient-brand text-balance">{section.title}</h2>
-                  </header>
-                  <div className="prose prose-invert prose-brand max-w-none">
-                    {section.content.split('\n\n').map((paragraph: string, i: number) => (
-                      <p key={i} className="text-body-lg text-neutral-300 leading-relaxed mb-6">
-                        {paragraph}
-                      </p>
-                    ))}
+                  <h2 className="text-4xl md:text-5xl font-black text-black mb-8 pb-4 border-b-8 border-[#7e22ce] inline-block">
+                    {section.title}
+                  </h2>
+                  <div className="prose prose-lg prose-black max-w-none prose-headings:font-black prose-p:font-medium prose-p:text-xl prose-p:leading-relaxed prose-strong:font-black prose-strong:text-[#7e22ce] prose-ul:font-medium prose-ul:text-xl">
+                    {section.content.split('\n\n').map((paragraph: string, i: number) => {
+                      if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
+                        return (
+                          <ul key={i} className="list-disc pl-6 mb-8 space-y-3">
+                            {paragraph.split('\n').map((item, j) => (
+                              <li key={j} dangerouslySetInnerHTML={{ __html: item.replace(/^[-*]\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                            ))}
+                          </ul>
+                        )
+                      }
+                      if (paragraph.startsWith('1. ')) {
+                        return (
+                          <ol key={i} className="list-decimal pl-6 mb-8 space-y-3 font-medium text-xl">
+                            {paragraph.split('\n').map((item, j) => (
+                              <li key={j} dangerouslySetInnerHTML={{ __html: item.replace(/^\d+\.\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                            ))}
+                          </ol>
+                        )
+                      }
+                      return (
+                        <p key={i} className="mb-8" dangerouslySetInnerHTML={{ __html: paragraph.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                      )
+                    })}
                   </div>
                 </article>
               ))}
 
-              {/* Key Claims */}
-              <article id="key-claims" className="mb-16">
-                <header className="mb-8 pb-4 border-b border-white/10">
-                  <h2 className="text-display-sm text-gradient-brand text-balance flex items-center gap-3">
-                    <Lightbulb className="h-7 w-7 text-brand-amber-400" />
-                    Key Claims (GEO/AEO Signals)
-                  </h2>
-                </header>
-                <div className="glass-strong rounded-2xl p-6 space-y-4">
-                  {data.keyClaims.map((claim: string, i: number) => (
-                    <div key={i} className="flex items-start gap-4 p-4 glass rounded-xl group interactive">
-                      <span className="flex-shrink-0 text-number-lg font-display text-brand-amber-400 tabular-nums">{i + 1}</span>
-                      <p className="text-body-lg text-neutral-200 flex-1">{claim}</p>
-                      <Badge variant="ghost" className="text-body-xs px-2 py-1 flex-shrink-0">Claim</Badge>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              {/* Citations */}
-              <article id="citations" className="mb-16">
-                <header className="mb-8 pb-4 border-b border-white/10">
-                  <h2 className="text-display-sm text-gradient-brand text-balance flex items-center gap-3">
-                    <Search className="h-7 w-7 text-brand-cyan-400" />
-                    Citations & Sources
-                  </h2>
-                </header>
-                <div className="space-y-4">
-                  {data.citations.map((citation: any, i: number) => (
-                    <div key={i} className="glass-card p-6">
-                      <div className="flex items-start gap-4">
-                        <span className="flex-shrink-0 text-number-lg font-display text-brand-cyan-400 tabular-nums">{i + 1}</span>
-                        <div className="flex-1">
-                          <p className="font-medium text-white">{citation.title}</p>
-                          <p className="text-body-sm text-neutral-400 mt-1">{citation.source} • {new Date(citation.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                          <a href={citation.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-body-sm text-brand-cyan-400 hover:text-brand-cyan-300 mt-2 transition-colors">
-                            View Source
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              {/* Entity Associations & Topic Clusters */}
-              <div className="grid gap-8 md:grid-cols-2 mb-16">
-                <div className="glass-strong rounded-2xl p-6">
-                  <h3 className="text-headline-sm text-white mb-4 flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-brand-purple-400" />
-                    Entity Associations
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {data.entityAssociations.map((entity: string) => (
-                      <Badge key={entity} variant="outline" className="text-body-sm">{entity}</Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="glass-strong rounded-2xl p-6">
-                  <h3 className="text-headline-sm text-white mb-4 flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5 text-brand-amber-400" />
-                    Topic Clusters
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {data.topicClusters.map((cluster: string) => (
-                      <Badge key={cluster} variant="ghost" className="text-body-sm px-3 py-1">{cluster}</Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Answer Targets */}
-              <div className="glass-strong rounded-2xl p-6 border border-brand-cyan-500/20 bg-gradient-to-r from-brand-cyan-500/5 to-transparent mb-16">
-                <h3 className="text-headline-sm text-white mb-4 flex items-center gap-2">
-                  <Search className="h-5 w-5 text-brand-cyan-400" />
-                  Answer Targets (AEO)
-                </h3>
-                <p className="text-body-sm text-neutral-400 mb-4">Questions this content directly answers for AI search engines:</p>
-                <ul className="space-y-2">
-                  {data.answerTargets.map((target: string, i: number) => (
-                    <li key={i} className="flex items-start gap-3 text-body-md text-neutral-300">
-                      <span className="flex-shrink-0 h-2 w-2 rounded-full bg-brand-cyan-400 mt-2" />
-                      <span>{target}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </Container>
-        </section>
-
-        {/* Author Bio */}
-        <section className="px-6 pb-24" aria-labelledby="author-heading">
-          <Container size="xl">
-            <Card className="glass-card max-w-4xl mx-auto">
-              <CardContent className="p-8">
-                <div className="flex items-start gap-6">
-                  <div className="w-20 h-20 rounded-full bg-brand-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                    <Brain className="h-10 w-10 text-brand-cyan-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="text-headline-sm text-white">{data.author}</h3>
-                      <Badge variant="outline" className="text-body-xs">{data.authorRole}</Badge>
-                    </div>
-                    <p className="text-body-md text-neutral-300">{data.authorBio}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Container>
-        </section>
-
-        {/* Related Insights / CTA */}
-        <section className="py-12 px-6 bg-gradient-to-b from-brand-navy-900/50 to-transparent">
-          <Container size="lg">
-            <div className="glass-strong rounded-3xl p-8 md:p-12 text-center">
-              <h2 className="text-display-lg text-gradient-brand mb-6 text-balance">
-                Ready to Apply These Insights?
-              </h2>
-              <p className="text-headline-md text-neutral-300 mb-10 max-w-2xl mx-auto text-balance">
-                Take our 3-minute diagnostic to get a personalized AI automation roadmap based on the latest research and benchmarks.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" className="glass-strong px-10 py-4" asChild>
-                  <a href="/assessment">
+              {/* Related CTA */}
+              <div className="mt-24 bg-[#7e22ce] border-4 border-black rounded-[40px] p-12 shadow-[16px_16px_0px_rgba(0,0,0,1)] text-center">
+                <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+                  Ready to Apply These Insights?
+                </h2>
+                <p className="text-2xl font-bold text-white/90 mb-10 max-w-2xl mx-auto">
+                  Take our 3-minute diagnostic to get a personalized AI automation roadmap.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-6">
+                  <a href="/assessment" className="inline-flex items-center justify-center px-10 h-16 bg-white border-4 border-black rounded-full font-black text-xl text-black shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
                     Start Free Assessment
-                    <ArrowRight className="ml-2 h-5 w-5" />
                   </a>
-                </Button>
-                <Button variant="outline" size="lg" className="glass px-10 py-4" asChild>
-                  <a href="/roi-calculator">
-                    Calculate Your ROI
-                    <BarChart3 className="ml-2 h-5 w-5" />
-                  </a>
-                </Button>
+                </div>
               </div>
             </div>
-          </Container>
-        </section>
 
-        {/* Back to Insights */}
-        <section className="py-12 px-6">
-          <Container size="xl">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
-                <a href="/insights">
-                  <ChevronRight className="mr-2 h-4 w-4 rotate-180" />
-                  All Insights
-                </a>
-              </Button>
-              <span className="text-body-sm text-neutral-500">← Back to insights</span>
-            </div>
-          </Container>
-        </section>
+          </div>
+        </Container>
       </main>
-
-
     </div>
   )
-}
-
-// Import BarChart3 for CTA
-import { BarChart3 } from 'lucide-react'
+}
