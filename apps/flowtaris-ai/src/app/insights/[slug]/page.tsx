@@ -53,6 +53,7 @@ export default async function InsightPage({ params }: Props) {
     readTime: dbData.rich_text?.readTime || '10 min',
     excerpt: dbData.excerpt || '',
     image: dbData.rich_text?.image || null,
+    featured: dbData.rich_text?.featured || false,
     keyClaims: dbData.rich_text?.keyClaims || [],
     faqs: dbData.faq_items || [],
     citations: dbData.citations || [],

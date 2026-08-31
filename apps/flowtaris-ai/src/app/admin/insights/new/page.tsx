@@ -160,6 +160,8 @@ export default function NewInsightPage() {
         faq_items: faqs.filter(f => f.question || f.answer),
         citations: [],
         related_capability_ids: [],
+        seo: {},
+        geo_signals: {},
       })
       setSuccess('Insight created! Redirecting...')
       setTimeout(() => router.push('/admin/insights'), 1500)
