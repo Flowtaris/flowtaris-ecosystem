@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/case-studies`, lastModified: new Date(), changeFrequency: 'weekly' as ChangeFreq, priority: 0.8 },
     { url: `${BASE_URL}/insights`, lastModified: new Date(), changeFrequency: 'weekly' as ChangeFreq, priority: 0.8 },
     { url: `${BASE_URL}/platforms`, lastModified: new Date(), changeFrequency: 'monthly' as ChangeFreq, priority: 0.7 },
-    { url: `${BASE_URL}/about`, lastModified: new Date(), changeFrequency: 'monthly' as ChangeFreq, priority: 0.7 },
+    { url: `${BASE_URL}/about-flowtaris-ai`, lastModified: new Date(), changeFrequency: 'monthly' as ChangeFreq, priority: 0.7 },
     { url: `${BASE_URL}/contact`, lastModified: new Date(), changeFrequency: 'monthly' as ChangeFreq, priority: 0.7 },
     { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: 'yearly' as ChangeFreq, priority: 0.3 },
     { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: 'yearly' as ChangeFreq, priority: 0.3 },

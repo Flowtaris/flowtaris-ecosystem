@@ -231,7 +231,7 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
                 { href: '/platforms', label: 'Platforms' },
                 { href: '/case-studies', label: 'Case Studies' },
                 { href: '/insights', label: 'Insights' },
-                { href: '/about', label: 'About' },
+                { href: '/about-flowtaris-ai', label: 'About' },
                 { href: '/contact', label: 'Contact' },
               ].map(({ href, label }) => (
                 <Link

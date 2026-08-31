@@ -32,7 +32,7 @@ export default function SiteFooter() {
     {
       title: 'Company',
       links: [
-        { label: 'About', href: '/about' },
+        { label: 'About', href: '/about-flowtaris-ai' },
         { label: 'Contact', href: '/contact' },
         { label: 'Flowtaris.com', href: 'https://flowtaris.com', external: true },
       ],
