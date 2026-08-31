@@ -8,12 +8,19 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 // Mock client for build time when env vars are not available
 function createMockClient(): SupabaseClient {
   return {
-    from: () => ({
-      insert: () => ({ select: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
-      select: () => ({ eq: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
-      update: () => ({ eq: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
-      delete: () => ({ eq: () => ({ single: async () => ({ data: null, error: { message: 'Mock client - no Supabase config' } }) }) }),
-    }),
+    from: () => {
+      const chain: any = {
+        select: () => chain,
+        insert: () => chain,
+        update: () => chain,
+        delete: () => chain,
+        eq: () => chain,
+        order: () => chain,
+        single: async () => ({ data: null, error: null }),
+        then: (resolve: any) => resolve({ data: [], error: null })
+      }
+      return chain
+    },
   } as unknown as SupabaseClient
 }
 
