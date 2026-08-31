@@ -89,7 +89,7 @@ export default function AboutClient() {
                 <span className="text-sm text-neutral-400 font-bold uppercase tracking-wider">Hours Saved Annually</span>
               </div>
               <div className="flex flex-col gap-2">
-                <span className="text-4xl font-black text-[#38bdf8]"><90 Days</span>
+                <span className="text-4xl font-black text-[#38bdf8]">{'<90 Days'}</span>
                 <span className="text-sm text-neutral-400 font-bold uppercase tracking-wider">Average Time-to-Value</span>
               </div>
               <div className="flex flex-col gap-2">
@@ -280,7 +280,7 @@ export default function AboutClient() {
                   <tr className="hover:bg-white/5">
                     <td className="px-6 py-4 text-left text-white/90 font-medium">Implementation</td>
                     <td className="px-6 py-4 text-left text-white/60">12–18 months</td>
-                    <td className="px-6 py-4 text-left text-green-400 font-medium"><90 days to first value</td>
+                    <td className="px-6 py-4 text-left text-green-400 font-medium">{'<90 days to first value'}</td>
                   </tr>
                   <tr className="hover:bg-white/5">
                     <td className="px-6 py-4 text-left text-white/90 font-medium">Integration Depth</td>
@@ -365,7 +365,8 @@ export default function AboutClient() {
               { icon: Brain, title: "Explainability Mandatory", desc: "Every extraction, classification, and prediction comes with a confidence score and reasoning chain.", color: "#c084fc" },
               { icon: Clock, title: "Value in 90 Days", desc: "If you can't measure ROI in a quarter, we've failed. Quick Wins methodology built into every deployment.", color: "#fbbf24" },
               { icon: Activity, title: "Platform Native", desc: "One control plane. Not surface-level connectors, but native depth across NetSuite, Coupa, SAP, Workday.", color: "#4f46e5" },
-            ].map((p, i) => (
+            ]
+            .map((p, i) => (
               <FadeInUp key={i} delay={`${i * 100}ms`}>
                 <div className="relative p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
                   <div className="flex items-start">
@@ -378,6 +379,7 @@ export default function AboutClient() {
                     </div>
                   </div>
                 </div>
+                </FadeInUp>
               ))}
           </div>
         </Container>
@@ -472,7 +474,7 @@ export default function AboutClient() {
                   <tr className="hover:bg-white/5">
                     <td className="px-4 py-3 text-left text-white/90 font-medium">Implementation Timeline</td>
                     <td className="px-4 py-3 text-left text-white/60">14 months</td>
-                    <td className="px-4 py-3 text-left text-green-400 font-medium"><90 days</td>
+                    <td className="px-4 py-3 text-left text-green-400 font-medium">{'<90 days'}</td>
                     <td className="px-4 py-3 text-left text-white/90">5x faster</td>
                   </tr>
                   <tr className="hover:bg-white/5">
@@ -662,7 +664,7 @@ export default function AboutClient() {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-white">The Platform Engineer</h3>
-                    <p className="mt-2 text-white/90>
+                    <p className="mt-2 text-white/90">
                       "Built integrations processing $2B+ in annual transaction volume. Now designing the connective tissue between AI models and ERP systems."
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">

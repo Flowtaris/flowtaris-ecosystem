@@ -1,6 +1,5 @@
-import Metadata from '@/components/metadata'
 import AboutClient from './AboutClient'
-import { Image } from 'next/image'
+import Image from 'next/image'
 
 export const metadata = {
   title: 'About Flowtaris AI — The Intelligence Engine Behind Enterprise Finance Automation',
@@ -31,7 +30,6 @@ export const metadata = {
 export default function AboutFlowtarisAIPage() {
   return (
     <div>
-      <Metadata />
       <main className="min-h-[calc(100vh-4rem)] bg-[#0B0F19] text-white">
         <AboutClient />
       </main>
