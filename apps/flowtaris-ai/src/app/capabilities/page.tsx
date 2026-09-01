@@ -1,7 +1,5 @@
 import { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowRight, BarChart3 } from 'lucide-react'
-import { CapabilityCardList } from './CapabilityInteractives'
+import { CapabilityCardList, CtaButtonGroup } from './CapabilityInteractives'
 
 // ─── CAPABILITY REGISTRY ─────────────────────────────────────────────────────
 const CAPABILITIES = [
@@ -137,14 +135,12 @@ export default function CapabilitiesPage() {
           <p className="text-xl md:text-2xl text-gray-400 font-light leading-relaxed max-w-2xl mx-auto mb-16">
             Six capabilities your finance team can deploy in weeks — not quarters. Each one connected to your existing ERP, each one with a measurable ROI.
           </p>
-          <div className="flex flex-col sm:flex-row gap-5 justify-center">
-            <Link href="/assessment" className="inline-flex items-center justify-center gap-2 bg-white text-black font-semibold text-lg px-10 py-5 rounded-2xl hover:bg-gray-100 hover:scale-[1.02] transition-all duration-300">
-              Find Your Starting Point <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link href="/roi-calculator" className="inline-flex items-center justify-center gap-2 bg-white/5 text-white font-semibold text-lg px-10 py-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all duration-300">
-              <BarChart3 className="w-5 h-5" /> Calculate ROI First
-            </Link>
-          </div>
+          <CtaButtonGroup 
+            primaryText="Find Your Starting Point"
+            primaryHref="/assessment"
+            secondaryText="Calculate ROI First"
+            secondaryHref="/roi-calculator"
+          />
         </div>
       </section>
 
@@ -217,14 +213,12 @@ export default function CapabilitiesPage() {
           <p className="text-gray-400 text-xl font-light leading-relaxed mb-14 max-w-2xl mx-auto">
             Take our 3-minute AI Readiness Assessment and get a personalized recommendation of which capability will deliver the fastest ROI for your ERP environment and team size.
           </p>
-          <div className="flex flex-col sm:flex-row gap-5 justify-center">
-            <Link href="/assessment" className="inline-flex items-center justify-center gap-2 bg-white text-black font-semibold text-lg px-12 py-5 rounded-2xl hover:bg-gray-100 hover:scale-[1.02] transition-all duration-300">
-              Start Free Assessment <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link href="/roi-calculator" className="inline-flex items-center justify-center gap-2 bg-white/5 text-white font-semibold text-lg px-12 py-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all duration-300">
-              <BarChart3 className="w-5 h-5" /> Calculate ROI First
-            </Link>
-          </div>
+          <CtaButtonGroup 
+            primaryText="Start Free Assessment"
+            primaryHref="/assessment"
+            secondaryText="Calculate ROI First"
+            secondaryHref="/roi-calculator"
+          />
         </div>
       </section>
     </div>
