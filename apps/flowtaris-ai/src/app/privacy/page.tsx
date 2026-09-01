@@ -18,15 +18,12 @@ export default function PrivacyPage() {
           </div>
           <h1 className="text-display-lg text-white mb-6">Privacy Policy</h1>
           <p className="text-headline-sm text-neutral-400">
-            Effective Date: Pending Legal Approval
+            Effective Date: September 1, 2026
           </p>
         </div>
 
         <Card className="glass-card">
-          <CardContent className="p-8 md:p-12 prose prose-invert max-w-none prose-p:text-neutral-300 prose-headings:text-white prose-a:text-brand-cyan-400">
-            <div className="bg-brand-amber-500/10 border border-brand-amber-500/20 rounded-xl p-6 mb-8 text-brand-amber-300">
-              <strong>Note:</strong> This Privacy Policy is currently a placeholder pending final review by Flowtaris legal counsel.
-            </div>
+          <CardContent className="p-8 md:p-12 prose prose-invert max-w-none prose-p:text-neutral-300 prose-headings:text-white prose-a:text-[#E8A020]">
 
             <h2>1. Introduction</h2>
             <p>
