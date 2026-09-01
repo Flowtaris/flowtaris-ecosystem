@@ -812,14 +812,14 @@ export default function AssessmentWizardClient({ initialConfig }: { initialConfi
   const [dir, setDir] = useState<'f' | 'b'>('f')
   const [showTour, setShowTour] = useState(false)
 
-  // Restore saved state
+  // Restore saved answers only — always start from step 0 (intro)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const p = JSON.parse(saved)
+        // Restore answers only, never restore step — user always starts from intro
         if (p.answers) setAnswers(p.answers)
-        if (p.step !== undefined && p.step <= 6) setStep(p.step)
       }
     } catch {}
     analytics.assessment.start({ source: 'direct' })

@@ -53,6 +53,7 @@ export default function SiteFooter() {
                 { label: 'Case Studies', href: '/case-studies' },
                 { label: 'ROI Calculator', href: '/roi-calculator' },
                 { label: 'Assessment', href: '/assessment' },
+                { label: 'Cost of Inaction', href: '/cost-of-inaction' },
               ].map((link, i) => (
                 <li key={i}>
                   <Link href={link.href} className="text-neutral-400 hover:text-white text-sm transition-colors flex items-center gap-2 group">
