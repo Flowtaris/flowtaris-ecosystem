@@ -27,10 +27,10 @@ const INVOICE_VOLUMES = [
   'Not Sure',
 ]
 
-const OFFICES = [
-  { city: 'Palo Alto', country: 'USA', timezone: 'PT', email: 'hello@flowtaris.ai', hours: '9am – 6pm Mon–Fri', dot: [37, 27] },
-  { city: 'London', country: 'UK', timezone: 'GMT', email: 'emea@flowtaris.ai', hours: '9am – 6pm Mon–Fri', dot: [48, 24] },
-  { city: 'Singapore', country: 'SG', timezone: 'SGT', email: 'apac@flowtaris.ai', hours: '9am – 6pm Mon–Fri', dot: [76, 57] },
+const REGIONS = [
+  { region: 'North America', scope: 'HQ & AMER Operations', timezone: 'PT / ET', email: 'amer@flowtaris.com', hours: 'Follow-the-sun Support' },
+  { region: 'Europe & UK', scope: 'EMEA Operations', timezone: 'GMT / CET', email: 'emea@flowtaris.com', hours: 'Follow-the-sun Support' },
+  { region: 'Asia Pacific', scope: 'APAC Operations', timezone: 'SGT / AEST', email: 'apac@flowtaris.com', hours: 'Follow-the-sun Support' },
 ]
 
 const FAQS = [
@@ -156,6 +156,7 @@ export default function ContactForm() {
   const [erp, setErp] = useState('')
   const [volume, setVolume] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [submissionPhase, setSubmissionPhase] = useState<'idle' | 'sending' | 'on-the-way' | 'received'>('idle')
   const [fields, setFields] = useState({ firstName: '', lastName: '', email: '', company: '', message: '' })
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -170,8 +171,14 @@ export default function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1800))
+    setSubmissionPhase('sending')
+    await new Promise(r => setTimeout(r, 600))
+    setSubmissionPhase('on-the-way')
+    await new Promise(r => setTimeout(r, 800))
+    setSubmissionPhase('received')
+    await new Promise(r => setTimeout(r, 400))
     setSubmitting(false)
+    setSubmissionPhase('idle')
     setStep('success')
   }
 
@@ -376,8 +383,8 @@ export default function ContactForm() {
                 {/* Name row */}
                 <div className="grid md:grid-cols-2 gap-5">
                   {[
-                    { id: 'firstName', label: 'First Name', placeholder: 'John', key: 'firstName' as const },
-                    { id: 'lastName', label: 'Last Name', placeholder: 'Doe', key: 'lastName' as const },
+                    { id: 'firstName', label: 'First Name', placeholder: 'Alex', key: 'firstName' as const },
+                    { id: 'lastName', label: 'Last Name', placeholder: 'Smith', key: 'lastName' as const },
                   ].map(({ id, label, placeholder, key }) => (
                     <div key={id}>
                       <label htmlFor={id} className="block text-xs font-bold uppercase tracking-widest mb-2.5"
@@ -413,8 +420,8 @@ export default function ContactForm() {
                 {/* Email + Company */}
                 <div className="grid md:grid-cols-2 gap-5">
                   {[
-                    { id: 'email', label: 'Work Email', placeholder: 'john@company.com', type: 'email', key: 'email' as const },
-                    { id: 'company', label: 'Company', placeholder: 'Acme Corp', type: 'text', key: 'company' as const },
+                    { id: 'email', label: 'Work Email', placeholder: 'alex@flowtaris.com', type: 'email', key: 'email' as const },
+                    { id: 'company', label: 'Company', placeholder: 'Flowtaris', type: 'text', key: 'company' as const },
                   ].map(({ id, label, placeholder, type, key }) => (
                     <div key={id}>
                       <label htmlFor={id} className="block text-xs font-bold uppercase tracking-widest mb-2.5"
@@ -519,7 +526,11 @@ export default function ContactForm() {
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     {submitting ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Sending…</>
+                      <>
+                        {submissionPhase !== 'received' ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                        {submissionPhase === 'sending' ? 'Sending...' :
+                         submissionPhase === 'on-the-way' ? 'On the way...' : 'Received!'}
+                      </>
                     ) : (
                       <><Send className="w-5 h-5" /> Send Message</>
                     )}
@@ -578,20 +589,20 @@ export default function ContactForm() {
         </div>
       </section>
 
-      {/* ── GLOBAL OFFICES ───────────────────────────────────────────────────── */}
+      {/* ── GLOBAL PRESENCE ─────────────────────────────────────────────────── */}
       <section className="py-28 px-6 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         <div className="max-w-5xl mx-auto">
           <div className="mb-4 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: '#E8A020' }}>
             Global Presence
           </div>
           <h2 className="text-4xl md:text-5xl font-semibold text-white mb-16 leading-tight" style={{ fontFamily: 'Sora, sans-serif' }}>
-            Three continents.<br />One standard of service.
+            We work all over the world.<br />One standard of service.
           </h2>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {OFFICES.map(office => (
+            {REGIONS.map(office => (
               <div
-                key={office.city}
+                key={office.region}
                 className="group p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
                 style={{
                   backgroundColor: 'rgba(13,31,56,0.4)',
@@ -609,9 +620,9 @@ export default function ContactForm() {
                   </span>
                 </div>
                 <div className="text-2xl font-semibold text-white mb-1" style={{ fontFamily: 'Sora, sans-serif' }}>
-                  {office.city}
+                  {office.region}
                 </div>
-                <div className="text-sm text-gray-500 mb-6">{office.country}</div>
+                <div className="text-sm text-gray-500 mb-6">{office.scope}</div>
                 <div className="space-y-2 text-sm">
                   <a
                     href={`mailto:${office.email}`}
