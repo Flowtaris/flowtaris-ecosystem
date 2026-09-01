@@ -22,6 +22,7 @@ export async function GET() {
       showLogo:   (data as any)?.header_show_logo   !== false,
       siteName:   data?.site_name   ?? 'Flowtaris AI',
       tagline:    data?.tagline     ?? 'Enterprise AI Automation for Finance',
+      navigation: data?.navigation  ?? {},
       trustSignals: (data as any)?.trust_signals ?? [
         { id: '1', label: 'Certified', value: 'SOC 2' },
         { id: '2', label: 'Compliant', value: 'GDPR' },
@@ -51,6 +52,7 @@ export async function GET() {
         showLogo:  true,
         siteName:  'Flowtaris AI',
         tagline:   'Enterprise AI Automation for Finance',
+        navigation: {},
         trustSignals: [],
       },
       {

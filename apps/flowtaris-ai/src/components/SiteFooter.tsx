@@ -5,7 +5,23 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowUpRight, Github, Linkedin, Twitter, ArrowRight } from 'lucide-react'
 
-export default function SiteFooter() {
+export default function SiteFooter({ config }: { config?: any } = {}) {
+  const logoUrl = config?.logoUrl || "/images/logo.png"
+  const tagline = config?.tagline || "The intelligence layer enterprise finance was missing. Built by the best, deployed in weeks."
+  
+  // Use navigation json if provided, otherwise fallback to defaults
+  const resources = config?.navigation?.footer?.resources || [
+    { label: 'Insights', href: '/insights' },
+    { label: 'Case Studies', href: '/case-studies' },
+    { label: 'ROI Calculator', href: '/roi-calculator' },
+    { label: 'Assessment', href: '/assessment' },
+    { label: 'Cost of Inaction', href: '/cost-of-inaction' },
+  ]
+  const company = config?.navigation?.footer?.company || [
+    { label: 'About Us', href: '/about-flowtaris-ai' },
+    { label: 'Contact', href: '/contact' },
+  ]
+
   return (
     <footer className="relative bg-[#050B14] overflow-hidden pt-32 border-t border-white/[0.05]">
       {/* Background Glows */}
@@ -18,11 +34,11 @@ export default function SiteFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-12 gap-12 lg:gap-8 mb-20">
           <div className="col-span-2 md:col-span-4 lg:col-span-5 flex flex-col justify-between">
             <div>
-              <Link href="/" className="inline-block mb-6 relative w-48 h-12">
-                <Image src="/images/logo.png" alt="Flowtaris AI" fill className="object-contain object-left" />
+              <Link href="/" className="inline-block mb-6 relative w-72 h-16">
+                <Image src={logoUrl} alt="Flowtaris AI" fill className="object-contain object-left" />
               </Link>
               <p className="text-neutral-500 font-light text-sm max-w-xs leading-relaxed mb-8">
-                The intelligence layer enterprise finance was missing. Built by the best, deployed in weeks.
+                {tagline}
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -48,13 +64,7 @@ export default function SiteFooter() {
           <div className="col-span-1 md:col-span-2 lg:col-span-2">
             <h4 className="text-white font-semibold mb-6 text-sm">Resources</h4>
             <ul className="space-y-4">
-              {[
-                { label: 'Insights', href: '/insights' },
-                { label: 'Case Studies', href: '/case-studies' },
-                { label: 'ROI Calculator', href: '/roi-calculator' },
-                { label: 'Assessment', href: '/assessment' },
-                { label: 'Cost of Inaction', href: '/cost-of-inaction' },
-              ].map((link, i) => (
+              {resources.map((link: any, i: number) => (
                 <li key={i}>
                   <Link href={link.href} className="text-neutral-400 hover:text-white text-sm transition-colors flex items-center gap-2 group">
                     <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-300 ease-out">
@@ -70,10 +80,7 @@ export default function SiteFooter() {
           <div className="col-span-1 md:col-span-2 lg:col-span-3">
             <h4 className="text-white font-semibold mb-6 text-sm">Company</h4>
             <ul className="space-y-4 mb-8">
-              {[
-                { label: 'About Us', href: '/about-flowtaris-ai' },
-                { label: 'Contact', href: '/contact' },
-              ].map((link, i) => (
+              {company.map((link: any, i: number) => (
                 <li key={i}>
                   <Link href={link.href} className="text-neutral-400 hover:text-white text-sm transition-colors flex items-center gap-2 group">
                     <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-300 ease-out">

@@ -102,6 +102,8 @@ type SiteConfigFormData = {
   header_badge_text: string
   header_show_logo: boolean
   navigation: string
+  footer_resources: string
+  footer_company: string
   social_links: string
   contact_email: string
   support_email: string
@@ -124,6 +126,8 @@ const DEFAULTS: SiteConfigFormData = {
   header_badge_text: '.ai',
   header_show_logo: true,
   navigation: '[]',
+  footer_resources: '[\n  { "label": "Insights", "href": "/insights" },\n  { "label": "Case Studies", "href": "/case-studies" },\n  { "label": "ROI Calculator", "href": "/roi-calculator" },\n  { "label": "Assessment", "href": "/assessment" },\n  { "label": "Cost of Inaction", "href": "/cost-of-inaction" }\n]',
+  footer_company: '[\n  { "label": "About Us", "href": "/about-flowtaris-ai" },\n  { "label": "Contact", "href": "/contact" }\n]',
   social_links: '{}',
   contact_email: '',
   support_email: '',
@@ -623,7 +627,18 @@ export default function SiteConfigPage() {
             header_show_logo: (data as any).header_show_logo !== undefined
               ? (data as any).header_show_logo
               : DEFAULTS.header_show_logo,
-            navigation: JSON.stringify(data.navigation ?? [], null, 2),
+            navigation: JSON.stringify(data.navigation?.header ?? data.navigation ?? [], null, 2),
+            footer_resources: JSON.stringify(data.navigation?.footer?.resources ?? [
+              { label: 'Insights', href: '/insights' },
+              { label: 'Case Studies', href: '/case-studies' },
+              { label: 'ROI Calculator', href: '/roi-calculator' },
+              { label: 'Assessment', href: '/assessment' },
+              { label: 'Cost of Inaction', href: '/cost-of-inaction' },
+            ], null, 2),
+            footer_company: JSON.stringify(data.navigation?.footer?.company ?? [
+              { label: 'About Us', href: '/about-flowtaris-ai' },
+              { label: 'Contact', href: '/contact' },
+            ], null, 2),
             social_links: JSON.stringify(data.social_links ?? {}, null, 2),
             contact_email: data.contact_email || '',
             support_email: data.support_email || '',
@@ -661,11 +676,18 @@ export default function SiteConfigPage() {
     setSuccess(null)
 
     try {
-      let nav = [], social = {}, analytics = {}, seo = {}
-      try { nav = JSON.parse(config.navigation) } catch { throw new Error('Navigation JSON is invalid') }
+      let nav = [], f_res = [], f_comp = [], social = {}, analytics = {}, seo = {}
+      try { nav = JSON.parse(config.navigation) } catch { throw new Error('Header Navigation JSON is invalid') }
+      try { f_res = JSON.parse(config.footer_resources) } catch { throw new Error('Footer Resources JSON is invalid') }
+      try { f_comp = JSON.parse(config.footer_company) } catch { throw new Error('Footer Company JSON is invalid') }
       try { social = JSON.parse(config.social_links) } catch { throw new Error('Social Links JSON is invalid') }
       try { analytics = JSON.parse(config.analytics) } catch { throw new Error('Analytics JSON is invalid') }
       try { seo = JSON.parse(config.seo) } catch { throw new Error('SEO JSON is invalid') }
+
+      const fullNavigation = {
+        header: nav,
+        footer: { resources: f_res, company: f_comp }
+      }
 
       const res = await fetch('/api/site-config', {
         method: 'POST',
@@ -679,7 +701,7 @@ export default function SiteConfigPage() {
           header_brand_name: config.header_brand_name,
           header_badge_text: config.header_badge_text,
           header_show_logo: config.header_show_logo,
-          navigation: nav,
+          navigation: fullNavigation,
           social_links: social,
           contact_email: config.contact_email,
           support_email: config.support_email,
@@ -842,11 +864,23 @@ export default function SiteConfigPage() {
         </Section>
 
         {/* ── SECTION 4: JSON CONFIGS ── */}
-        <Section title="Advanced Configuration (JSON)" icon={Tag} accent="blue">
-          <Textarea id="navigation" label="Navigation (JSON)" value={config.navigation}
-            onChange={v => update('navigation', v)} rows={5}
-            hint="Array of nav link objects — updates the site navigation structure"
+        <Section title="Navigation & Footer Config" icon={Tag} accent="purple">
+          <Textarea id="navigation" label="Header Navigation (JSON)" value={config.navigation}
+            onChange={v => update('navigation', v)} rows={4}
+            hint="Array of nav link objects for the top header"
             placeholder='[{"label":"Capabilities","href":"/capabilities"}]' />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <Textarea id="footer_resources" label="Footer: Resources Links (JSON)" value={config.footer_resources}
+              onChange={v => update('footer_resources', v)} rows={8}
+              hint="Links under the Resources column in the footer" />
+            <Textarea id="footer_company" label="Footer: Company Links (JSON)" value={config.footer_company}
+              onChange={v => update('footer_company', v)} rows={8}
+              hint="Links under the Company column in the footer" />
+          </div>
+        </Section>
+
+        <Section title="Advanced Configuration (JSON)" icon={Tag} accent="blue">
           <Textarea id="social_links" label="Social links (JSON)" value={config.social_links}
             onChange={v => update('social_links', v)} rows={5}
             hint='Object with social media URLs: {"linkedin":"https://...","twitter":"https://..."}'

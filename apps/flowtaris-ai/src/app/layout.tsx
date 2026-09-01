@@ -180,7 +180,7 @@ export default async function RootLayout({
         {/* Header receives server-fetched config — admin changes propagate within 60s */}
         <SiteHeader config={headerConfig} />
         {children}
-        <SiteFooter />
+        <SiteFooter config={headerConfig} />
       </body>
     </html>
   );
