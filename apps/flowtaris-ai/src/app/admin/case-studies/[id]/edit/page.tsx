@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getCaseStudyById, updateCaseStudy } from '@/lib/supabase'
 
+import { 
+  StringListEditor, ResultsEditor, SeoEditor, GeoEditor, ImageUploader 
+} from '../../components/AdminEditors'
+
 // Simple UI components for admin panel (using Tailwind directly)
 const SimpleButton = ({ children, type = 'submit', disabled = false, className = '' }: { children: React.ReactNode; type?: 'button' | 'submit' | 'reset'; disabled?: boolean; className?: string }) => (
   <button type={type} disabled={disabled} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
@@ -71,16 +75,16 @@ type CaseStudyFormData = {
   slug: string
   client: string
   industry: string
-  platforms: string // JSON string
+  platforms: string[]
   challenge: string
   solution: string
-  results: string // JSON string
+  results: Array<{ metric: string; label: string }>
   timeline: string
   testimonial: string
   hero_image_url: string
-  seo: string // JSON string
-  geo_signals: string // JSON string
-  related_capability_ids: string // JSON string (array of UUIDs)
+  seo: any
+  geo_signals: any
+  related_capability_ids: string[]
 }
 
 export default function EditCaseStudyPage() {
@@ -106,16 +110,16 @@ export default function EditCaseStudyPage() {
             slug: data.slug || '',
             client: data.client || '',
             industry: data.industry || 'Financial Services',
-            platforms: JSON.stringify(data.platforms || [], null, 2),
+            platforms: data.platforms || [],
             challenge: data.challenge || '',
             solution: data.solution || '',
-            results: JSON.stringify(data.results || [], null, 2),
+            results: data.results || [],
             timeline: data.timeline || '',
             testimonial: data.testimonial || '',
             hero_image_url: data.hero_image_url || '',
-            seo: JSON.stringify(data.seo || {}, null, 2),
-            geo_signals: JSON.stringify(data.geo_signals || {}, null, 2),
-            related_capability_ids: JSON.stringify(data.related_capability_ids || [])
+            seo: data.seo || {},
+            geo_signals: data.geo_signals || {},
+            related_capability_ids: data.related_capability_ids || []
           }
           setFormData(formData)
         } else {
@@ -132,7 +136,7 @@ export default function EditCaseStudyPage() {
     fetchCaseStudy()
   }, [id])
 
-  const handleChange = (field: keyof CaseStudyFormData, value: string) => {
+  const handleChange = (field: keyof CaseStudyFormData, value: any) => {
     if (formData) {
       setFormData(prev => prev ? ({ ...prev, [field]: value }) : null)
     }
@@ -153,16 +157,16 @@ export default function EditCaseStudyPage() {
         slug: formData.slug,
         client: formData.client,
         industry: formData.industry,
-        platforms: JSON.parse(formData.platforms),
+        platforms: formData.platforms,
         challenge: formData.challenge,
         solution: formData.solution,
-        results: JSON.parse(formData.results),
+        results: formData.results,
         timeline: formData.timeline,
         testimonial: formData.testimonial,
         hero_image_url: formData.hero_image_url,
-        seo: JSON.parse(formData.seo),
-        geo_signals: JSON.parse(formData.geo_signals),
-        related_capability_ids: JSON.parse(formData.related_capability_ids)
+        seo: formData.seo,
+        geo_signals: formData.geo_signals,
+        related_capability_ids: formData.related_capability_ids
       }
 
       // Update the case study
@@ -221,11 +225,14 @@ export default function EditCaseStudyPage() {
           onChange={(e) => handleChange('industry', e.target.value)}
           options={INDUSTRY_OPTIONS}
         />
-        <SimpleTextarea
-          label="Platforms (JSON Array of strings)"
+        
+        <StringListEditor
+          label="Platforms"
+          hint="e.g. NetSuite, Coupa, Salesforce"
           value={formData.platforms}
-          onChange={(e) => handleChange('platforms', e.target.value)}
+          onChange={(v) => handleChange('platforms', v)}
         />
+        
         <SimpleTextarea
           label="Challenge *"
           value={formData.challenge}
@@ -238,11 +245,12 @@ export default function EditCaseStudyPage() {
           onChange={(e) => handleChange('solution', e.target.value)}
           rows={4}
         />
-        <SimpleTextarea
-          label="Results (JSON Array of objects)"
+        
+        <ResultsEditor
           value={formData.results}
-          onChange={(e) => handleChange('results', e.target.value)}
+          onChange={(v) => handleChange('results', v)}
         />
+        
         <SimpleInput
           label="Timeline (e.g., 'Q1 2024')"
           value={formData.timeline}
@@ -254,28 +262,31 @@ export default function EditCaseStudyPage() {
           onChange={(e) => handleChange('testimonial', e.target.value)}
           rows={3}
         />
-        <SimpleInput
-          label="Hero Image URL"
+        
+        <ImageUploader
+          label="Hero Image"
           value={formData.hero_image_url}
-          onChange={(e) => handleChange('hero_image_url', e.target.value)}
+          onChange={(v) => handleChange('hero_image_url', v)}
         />
-        <SimpleTextarea
-          label="SEO (JSON Object)"
+        
+        <SeoEditor
           value={formData.seo}
-          onChange={(e) => handleChange('seo', e.target.value)}
+          onChange={(v) => handleChange('seo', v)}
         />
-        <SimpleTextarea
-          label="GEO Signals (JSON Object)"
+        
+        <GeoEditor
           value={formData.geo_signals}
-          onChange={(e) => handleChange('geo_signals', e.target.value)}
+          onChange={(v) => handleChange('geo_signals', v)}
         />
-        {/* For related capabilities, we are using a text area for UUID arrays. */}
-        <SimpleTextarea
-          label="Related Capability IDs (JSON Array of UUIDs)"
+        
+        <StringListEditor
+          label="Related Capability IDs (UUIDs)"
+          hint="Find UUIDs from the capabilities list"
           value={formData.related_capability_ids}
-          onChange={(e) => handleChange('related_capability_ids', e.target.value)}
+          onChange={(v) => handleChange('related_capability_ids', v)}
         />
-        <div className="flex justify-end">
+
+        <div className="flex justify-end pt-6">
           <SimpleButton type="submit" disabled={loading}>
             {loading ? 'Updating...' : 'Update Case Study'}
           </SimpleButton>

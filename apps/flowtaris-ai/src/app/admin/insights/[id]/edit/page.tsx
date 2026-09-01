@@ -3,100 +3,13 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getInsightById, updateInsight, deleteInsight } from '@/lib/supabase'
 
-// ─── Shared Components ────────────────────────────────────────────────────────
-
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-5">
-      <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">{label}</label>
-      {hint && <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 italic">{hint}</p>}
-      {children}
-    </div>
-  )
-}
-
-const inputCls = 'w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition'
-const textareaCls = inputCls + ' resize-y'
+import { 
+  Field, inputCls, textareaCls, StringListEditor, FaqEditor, SectionsEditor, ImageUploader 
+} from '../../components/AdminEditors'
 
 type FAQ = { question: string; answer: string }
 type Section = { id: string; title: string; content: string }
 
-function StringListEditor({ label, hint, value, onChange }: { label: string; hint?: string; value: string[]; onChange: (v: string[]) => void }) {
-  const add = () => onChange([...value, ''])
-  const update = (i: number, v: string) => { const n = [...value]; n[i] = v; onChange(n) }
-  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
-  return (
-    <Field label={label} hint={hint}>
-      <div className="space-y-2">
-        {value.map((item, i) => (
-          <div key={i} className="flex gap-2">
-            <input value={item} onChange={e => update(i, e.target.value)} className={inputCls + ' flex-1'} placeholder={`Item ${i + 1}`} />
-            <button type="button" onClick={() => remove(i)} className="px-3 py-2 rounded-lg bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-200 transition">✕</button>
-          </div>
-        ))}
-        <button type="button" onClick={add} className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-800 font-semibold transition">
-          <span className="text-lg leading-none">+</span> Add item
-        </button>
-      </div>
-    </Field>
-  )
-}
-
-function FaqEditor({ value, onChange }: { value: FAQ[]; onChange: (v: FAQ[]) => void }) {
-  const add = () => onChange([...value, { question: '', answer: '' }])
-  const update = (i: number, field: keyof FAQ, v: string) => {
-    const n = [...value]; n[i] = { ...n[i], [field]: v }; onChange(n)
-  }
-  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
-  return (
-    <Field label="FAQs" hint="Populates the FAQ accordion at the bottom of the article AND injects FAQPage JSON-LD schema in the <head> for Google Featured Snippets & AI Overviews.">
-      <div className="space-y-4">
-        {value.map((faq, i) => (
-          <div key={i} className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 bg-gray-50 dark:bg-gray-800/60 space-y-3">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">FAQ #{i + 1}</span>
-              <button type="button" onClick={() => remove(i)} className="text-red-500 text-xs hover:text-red-700 font-bold">Remove</button>
-            </div>
-            <input value={faq.question} onChange={e => update(i, 'question', e.target.value)} placeholder="Question" className={inputCls} />
-            <textarea value={faq.answer} onChange={e => update(i, 'answer', e.target.value)} placeholder="Answer (2-4 direct sentences)" rows={3} className={textareaCls} />
-          </div>
-        ))}
-        <button type="button" onClick={add} className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-800 font-semibold transition">
-          <span className="text-lg leading-none">+</span> Add FAQ
-        </button>
-      </div>
-    </Field>
-  )
-}
-
-function SectionsEditor({ value, onChange }: { value: Section[]; onChange: (v: Section[]) => void }) {
-  const add = () => onChange([...value, { id: `section-${value.length + 1}`, title: '', content: '' }])
-  const update = (i: number, field: keyof Section, v: string) => {
-    const n = [...value]; n[i] = { ...n[i], [field]: v }; onChange(n)
-  }
-  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i))
-  return (
-    <Field label="Article Sections" hint="Each section becomes a heading + content block in the article. Use **bold**, *italic* and - bullet points in content.">
-      <div className="space-y-4">
-        {value.map((section, i) => (
-          <div key={i} className="border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl p-5 space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">Section #{i + 1}</span>
-              <button type="button" onClick={() => remove(i)} className="text-red-500 text-xs hover:text-red-700 font-bold">Remove</button>
-            </div>
-            <input value={section.title} onChange={e => update(i, 'title', e.target.value)} placeholder="Section Heading" className={inputCls} />
-            <textarea value={section.content} onChange={e => update(i, 'content', e.target.value)} placeholder="Section content..." rows={6} className={textareaCls} />
-          </div>
-        ))}
-        <button type="button" onClick={add} className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-800 font-semibold transition">
-          <span className="text-lg leading-none">+</span> Add Section
-        </button>
-      </div>
-    </Field>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EditInsightPage() {
   const { id } = useParams<{ id: string }>()
@@ -274,15 +187,13 @@ export default function EditInsightPage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
           <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400 mb-5">🖼️ Hero Image</h2>
 
-          <Field label="Image Path" hint="Used as both the article card thumbnail AND the hero banner at the top of the article. Path must start with /insights/ (e.g. /insights/my-image.png). Upload your image file to public/insights/ first.">
-            <input value={image} onChange={e => setImage(e.target.value)} className={inputCls} placeholder="/insights/my-article-image.png" />
-          </Field>
+          <ImageUploader 
+            label="Image Path" 
+            hint="Used as both the article card thumbnail AND the hero banner at the top of the article. Can be an absolute URL or a path like /insights/my-article-image.png." 
+            value={image} 
+            onChange={setImage} 
+          />
 
-          {image && (
-            <div className="mt-3 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 max-h-52">
-              <img src={image} alt="Preview" className="w-full h-52 object-cover" onError={e => (e.currentTarget.style.display = 'none')} />
-            </div>
-          )}
 
           {image && (
             <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-gray-500 dark:text-gray-400">

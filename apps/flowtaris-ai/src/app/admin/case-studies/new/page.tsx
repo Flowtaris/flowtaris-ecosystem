@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCaseStudies, getAICapabilities, createCaseStudy } from '@/lib/supabase'
 
+import { 
+  StringListEditor, ResultsEditor, SeoEditor, GeoEditor, ImageUploader 
+} from '../components/AdminEditors'
+
 // Simple UI components for admin panel (using Tailwind directly)
 const SimpleButton = ({ children, type = 'submit', disabled = false, className = '' }: { children: React.ReactNode; type?: 'button' | 'submit' | 'reset'; disabled?: boolean; className?: string }) => (
   <button type={type} disabled={disabled} className={`bg-brand-cyan-600 hover:bg-brand-cyan-700 text-white font-bold py-2 px-4 rounded ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
@@ -70,16 +74,16 @@ type NewCaseStudyFormData = {
   slug: string
   client: string
   industry: string
-  platforms: string // JSON string
+  platforms: string[]
   challenge: string
   solution: string
-  results: string // JSON string
+  results: Array<{ metric: string; label: string }>
   timeline: string
   testimonial: string
   hero_image_url: string
-  seo: string // JSON string
-  geo_signals: string // JSON string
-  related_capability_ids: string // JSON string (array of UUIDs)
+  seo: any
+  geo_signals: any
+  related_capability_ids: string[]
 }
 
 export default function NewCaseStudyPage() {
@@ -88,16 +92,16 @@ export default function NewCaseStudyPage() {
     slug: '',
     client: '',
     industry: 'Financial Services',
-    platforms: '[\n  "NetSuite",\n  "Salesforce"\n]',
+    platforms: [],
     challenge: '',
     solution: '',
-    results: '[\n  {\n    "label": "Time Saved",\n    "value": "40hrs/week"\n  }\n]',
+    results: [],
     timeline: '',
     testimonial: '',
     hero_image_url: '',
-    seo: '{\n  "title": "Case Study | Flowtaris",\n  "description": "Read our latest case study."\n}',
-    geo_signals: '{\n  "region": "North America"\n}',
-    related_capability_ids: '[]'
+    seo: {},
+    geo_signals: {},
+    related_capability_ids: []
   })
   const [capabilities, setCapabilities] = useState<Array<{id: string; name: string}>>([])
   const [loading, setLoading] = useState(false)
@@ -118,7 +122,7 @@ export default function NewCaseStudyPage() {
     fetchCapabilities()
   }, [])
 
-  const handleChange = (field: keyof NewCaseStudyFormData, value: string) => {
+  const handleChange = (field: keyof NewCaseStudyFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -134,20 +138,8 @@ export default function NewCaseStudyPage() {
 
       // Prepare data for insertion
       const caseStudyData = {
-        title: formData.title,
-        slug: slug,
-        client: formData.client,
-        industry: formData.industry,
-        platforms: JSON.parse(formData.platforms),
-        challenge: formData.challenge,
-        solution: formData.solution,
-        results: JSON.parse(formData.results),
-        timeline: formData.timeline,
-        testimonial: formData.testimonial,
-        hero_image_url: formData.hero_image_url,
-        seo: JSON.parse(formData.seo),
-        geo_signals: JSON.parse(formData.geo_signals),
-        related_capability_ids: JSON.parse(formData.related_capability_ids)
+        ...formData,
+        slug
       }
 
       // Create the case study
@@ -202,10 +194,11 @@ export default function NewCaseStudyPage() {
           onChange={(e) => handleChange('industry', e.target.value)}
           options={INDUSTRY_OPTIONS}
         />
-        <SimpleTextarea
-          label="Platforms (JSON Array of strings)"
+        <StringListEditor
+          label="Platforms"
+          hint="e.g. NetSuite, Coupa, Salesforce"
           value={formData.platforms}
-          onChange={(e) => handleChange('platforms', e.target.value)}
+          onChange={(v) => handleChange('platforms', v)}
         />
         <SimpleTextarea
           label="Challenge *"
@@ -219,10 +212,9 @@ export default function NewCaseStudyPage() {
           onChange={(e) => handleChange('solution', e.target.value)}
           rows={4}
         />
-        <SimpleTextarea
-          label="Results (JSON Array of objects)"
+        <ResultsEditor
           value={formData.results}
-          onChange={(e) => handleChange('results', e.target.value)}
+          onChange={(v) => handleChange('results', v)}
         />
         <SimpleInput
           label="Timeline (e.g., 'Q1 2024')"
@@ -235,28 +227,26 @@ export default function NewCaseStudyPage() {
           onChange={(e) => handleChange('testimonial', e.target.value)}
           rows={3}
         />
-        <SimpleInput
-          label="Hero Image URL"
+        <ImageUploader
+          label="Hero Image"
           value={formData.hero_image_url}
-          onChange={(e) => handleChange('hero_image_url', e.target.value)}
+          onChange={(v) => handleChange('hero_image_url', v)}
         />
-        <SimpleTextarea
-          label="SEO (JSON Object)"
+        <SeoEditor
           value={formData.seo}
-          onChange={(e) => handleChange('seo', e.target.value)}
+          onChange={(v) => handleChange('seo', v)}
         />
-        <SimpleTextarea
-          label="GEO Signals (JSON Object)"
+        <GeoEditor
           value={formData.geo_signals}
-          onChange={(e) => handleChange('geo_signals', e.target.value)}
+          onChange={(v) => handleChange('geo_signals', v)}
         />
-        {/* For related capabilities, we are using a text area for UUID arrays. */}
-        <SimpleTextarea
-          label="Related Capability IDs (JSON Array of UUIDs)"
+        <StringListEditor
+          label="Related Capability IDs (UUIDs)"
+          hint="Find UUIDs from the capabilities list"
           value={formData.related_capability_ids}
-          onChange={(e) => handleChange('related_capability_ids', e.target.value)}
+          onChange={(v) => handleChange('related_capability_ids', v)}
         />
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-6">
           <SimpleButton type="submit" disabled={loading}>
             {loading ? 'Creating...' : 'Create Case Study'}
           </SimpleButton>
