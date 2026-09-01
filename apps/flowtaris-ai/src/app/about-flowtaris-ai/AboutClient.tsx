@@ -121,23 +121,8 @@ export default function AboutClient() {
       <section className="py-24 md:py-32 px-6 lg:px-12 bg-white text-[#0A1628]">
         <Container size="xl" className="max-w-[1400px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24 items-center">
-            <div className="order-2 md:order-1 relative h-[400px] md:h-[600px] w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-100 bg-[#f8f9fa] flex items-center justify-center p-8">
-              {/* Minimalist abstract representation instead of generic AI image */}
-              <div className="w-full h-full relative border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden flex flex-col">
-                <div className="h-10 bg-slate-50 border-b border-slate-100 flex items-center px-4 gap-2">
-                  <div className="w-3 h-3 rounded-full bg-slate-300" />
-                  <div className="w-3 h-3 rounded-full bg-slate-300" />
-                  <div className="w-3 h-3 rounded-full bg-slate-300" />
-                </div>
-                <div className="flex-1 p-8 flex flex-col gap-6">
-                  <div className="w-1/3 h-4 bg-slate-100 rounded" />
-                  <div className="w-full h-32 bg-slate-50 rounded-lg border border-slate-100 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#E8A020]" />
-                  </div>
-                  <div className="w-2/3 h-4 bg-slate-100 rounded" />
-                  <div className="w-1/2 h-4 bg-slate-100 rounded" />
-                </div>
-              </div>
+            <div className="order-2 md:order-1 relative h-[400px] md:h-[600px] w-full rounded-2xl overflow-hidden shadow-2xl border border-[#0A1628]/10 flex items-center justify-center">
+              <Image src="/images/about_manifesto.png" alt="Flowtaris Manifesto Platform" fill className="object-cover" />
             </div>
 
             <div className="order-1 md:order-2 flex flex-col gap-12">
@@ -270,7 +255,12 @@ export default function AboutClient() {
                   <span>{row.generic}</span>
                 </div>
                 <div className="text-white font-medium flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#E8A020] shrink-0" /> 
+                  <div className="relative w-5 h-5 shrink-0 flex items-center justify-center">
+                    <svg className="w-full h-full animate-[pulse_2s_ease-in-out_infinite]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" stroke="#E8A020" strokeWidth="2" strokeDasharray="60" strokeDashoffset="0" className="animate-[spin_4s_linear_infinite]" />
+                      <path d="M8 12L11 15L16 9" stroke="#E8A020" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
                   {row.ours}
                 </div>
               </div>
@@ -359,8 +349,11 @@ export default function AboutClient() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             <FadeInUp delay="0ms">
-              <div className="p-10 rounded-2xl bg-[#050B14] border border-white/5 h-full hover:-translate-y-2 transition-transform duration-300">
-                <Shield className="w-10 h-10 text-[#E8A020] mb-8" />
+              <div className="p-10 rounded-2xl bg-[#050B14] border border-white/5 h-full hover:-translate-y-2 transition-transform duration-300 group">
+                <div className="w-14 h-14 rounded-xl mb-8 flex items-center justify-center relative overflow-hidden transition-transform duration-500 shadow-[0_0_20px_rgba(232,160,32,0.15)]" style={{ background: 'linear-gradient(135deg, rgba(232,160,32,0.2) 0%, rgba(232,160,32,0.05) 100%)', border: '1px solid rgba(232,160,32,0.3)' }}>
+                  <div className="absolute inset-0 bg-[#E8A020]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <span className="text-xl font-bold text-[#E8A020] relative z-10" style={{ fontFamily: 'var(--font-sora)' }}>FA</span>
+                </div>
                 <h3 className="text-2xl font-bold text-white mb-4">The Finance Architect</h3>
                 <p className="text-neutral-400 font-light leading-relaxed mb-8">
                   12 years in Big 4. Led 30+ NetSuite transformations. Now building the AI that automates what they used to do manually.
@@ -373,8 +366,11 @@ export default function AboutClient() {
             </FadeInUp>
             
             <FadeInUp delay="100ms">
-              <div className="p-10 rounded-2xl bg-[#050B14] border border-white/5 h-full hover:-translate-y-2 transition-transform duration-300">
-                <Brain className="w-10 h-10 text-[#E8A020] mb-8" />
+              <div className="p-10 rounded-2xl bg-[#050B14] border border-white/5 h-full hover:-translate-y-2 transition-transform duration-300 group">
+                <div className="w-14 h-14 rounded-xl mb-8 flex items-center justify-center relative overflow-hidden transition-transform duration-500 shadow-[0_0_20px_rgba(232,160,32,0.15)]" style={{ background: 'linear-gradient(135deg, rgba(232,160,32,0.2) 0%, rgba(232,160,32,0.05) 100%)', border: '1px solid rgba(232,160,32,0.3)' }}>
+                  <div className="absolute inset-0 bg-[#E8A020]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <span className="text-xl font-bold text-[#E8A020] relative z-10" style={{ fontFamily: 'var(--font-sora)' }}>ML</span>
+                </div>
                 <h3 className="text-2xl font-bold text-white mb-4">The ML Engineer</h3>
                 <p className="text-neutral-400 font-light leading-relaxed mb-8">
                   Former FAANG researcher. Published in NeurIPS. Now applying transformer architectures directly to enterprise document understanding.
@@ -387,8 +383,11 @@ export default function AboutClient() {
             </FadeInUp>
 
             <FadeInUp delay="200ms">
-              <div className="p-10 rounded-2xl bg-[#050B14] border border-white/5 h-full hover:-translate-y-2 transition-transform duration-300">
-                <Globe className="w-10 h-10 text-[#E8A020] mb-8" />
+              <div className="p-10 rounded-2xl bg-[#050B14] border border-white/5 h-full hover:-translate-y-2 transition-transform duration-300 group">
+                <div className="w-14 h-14 rounded-xl mb-8 flex items-center justify-center relative overflow-hidden transition-transform duration-500 shadow-[0_0_20px_rgba(232,160,32,0.15)]" style={{ background: 'linear-gradient(135deg, rgba(232,160,32,0.2) 0%, rgba(232,160,32,0.05) 100%)', border: '1px solid rgba(232,160,32,0.3)' }}>
+                  <div className="absolute inset-0 bg-[#E8A020]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <span className="text-xl font-bold text-[#E8A020] relative z-10" style={{ fontFamily: 'var(--font-sora)' }}>PE</span>
+                </div>
                 <h3 className="text-2xl font-bold text-white mb-4">The Platform Engineer</h3>
                 <p className="text-neutral-400 font-light leading-relaxed mb-8">
                   Built integrations processing $2B+ in annual transaction volume. Now designing the connective tissue between our AI models and ERP systems.
