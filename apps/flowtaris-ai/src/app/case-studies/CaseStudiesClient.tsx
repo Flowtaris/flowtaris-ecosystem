@@ -64,9 +64,49 @@ const CASE_STUDIES = [
     ],
     tags: ['NetSuite', 'SAP', 'Manufacturing', 'Compliance'],
   },
+  {
+    slug: 'global-retail-erp-transformation',
+    client: 'Global Retail & E-Commerce Group',
+    sector: 'Retail / E-Commerce',
+    label: 'CONFIDENTIAL — ANONYMIZED',
+    headline: '84% faster month-end close. $3.2M in recaptured vendor rebates. 8 weeks.',
+    subheadline: 'A 450-outlet global retailer compressed its 14-day close cycle to under 3 days and unlocked $3.2M in previously missed vendor rebates using real-time GenAI finance automation.',
+    heroImage: '/case-studies/cs_saas_decacorn.png',
+    platforms: ['NetSuite', 'Workday'],
+    capabilityTags: ['GenAI Document Intelligence', 'Predictive Analytics', 'Conversational ERP Interface'],
+    timeline: '8 weeks',
+    teamSize: 9,
+    keyNumbers: [
+      { metric: '$3.2M', label: 'Rebates Recaptured', color: '#c084fc' },
+      { metric: '84%', label: 'Faster Close', color: '#38bdf8' },
+      { metric: '99%', label: 'Rebate Capture Rate', color: '#34d399' },
+      { metric: '28', label: 'Entities Consolidated', color: '#fb923c' },
+    ],
+    tags: ['NetSuite', 'Workday', 'Retail', 'Month-End Close', 'Vendor Rebates'],
+  },
+  {
+    slug: 'professional-services-erp-ai',
+    client: 'Global Management Consulting Firm',
+    sector: 'Professional Services / Consulting',
+    label: 'CONFIDENTIAL — ANONYMIZED',
+    headline: '$1.8M recovered in unbilled time. 97% T&E compliance. 60 days.',
+    subheadline: 'A top-20 consulting firm used AI time intelligence and T&E compliance automation to recover $1.8M in unbilled revenue and achieve 97% expense policy compliance across 820 consultants in 14 countries.',
+    heroImage: '/case-studies/cs_fintech_forecast.png',
+    platforms: ['SAP', 'Workday'],
+    capabilityTags: ['Autonomous Workflow Engine', 'Conversational ERP Interface', 'AI Governance & Compliance'],
+    timeline: '60 days',
+    teamSize: 7,
+    keyNumbers: [
+      { metric: '$1.8M', label: 'Revenue Recovered', color: '#c084fc' },
+      { metric: '97%', label: 'T&E Compliance', color: '#38bdf8' },
+      { metric: '92%', label: 'Faster Invoicing', color: '#34d399' },
+      { metric: '820', label: 'Consultants Impacted', color: '#fb923c' },
+    ],
+    tags: ['SAP', 'Workday', 'Professional Services', 'T&E', 'Revenue Recovery'],
+  },
 ]
 
-const ALL_TAGS = ['All', 'NetSuite', 'Coupa', 'SAP', 'Workday', 'SaaS', 'FinTech', 'Manufacturing', 'AP Automation', 'Cash Forecasting', 'Compliance']
+const ALL_TAGS = ['All', 'NetSuite', 'Coupa', 'SAP', 'Workday', 'SaaS', 'FinTech', 'Manufacturing', 'Retail', 'Professional Services', 'AP Automation', 'Cash Forecasting', 'Compliance', 'T&E', 'Month-End Close']
 
 export default function CaseStudiesClient() {
   const [activeTag, setActiveTag] = useState('All')
@@ -111,11 +151,11 @@ export default function CaseStudiesClient() {
           {/* Aggregate numbers */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-14">
             {[
-              { number: '$21M+', label: 'Combined Savings & Risk Reduction', accent: '#c084fc' },
-              { number: '3', label: 'Enterprise Deployments', accent: '#38bdf8' },
-              { number: '<4 mo', label: 'Average Time to Value', accent: '#34d399' },
-              { number: '99%', label: 'Average Automation Rate Achieved', accent: '#fb923c' },
-            ].map(stat => (
+            { number: '$27M+', label: 'Combined Value Delivered', accent: '#c084fc' },
+            { number: '5', label: 'Enterprise Deployments', accent: '#38bdf8' },
+            { number: '<8 wks', label: 'Average Time to Value', accent: '#34d399' },
+            { number: '99%', label: 'Avg Automation Rate Achieved', accent: '#fb923c' },
+          ].map(stat => (
               <div key={stat.label} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5 backdrop-blur-sm">
                 <div className="text-3xl font-black mb-1" style={{ color: stat.accent }}>{stat.number}</div>
                 <div className="text-xs text-gray-500 font-medium leading-snug">{stat.label}</div>

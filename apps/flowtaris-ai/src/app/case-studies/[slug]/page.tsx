@@ -332,6 +332,217 @@ Most significantly, the company achieved its SOC2 Type II certification — a pr
 
     relatedSlugs: ['global-saas-decacorn', 'fintech-unicorn'],
   },
+
+  'global-retail-erp-transformation': {
+    client: 'Global Retail & E-Commerce Group',
+    confidential: true,
+    sector: 'Retail / E-Commerce',
+    platforms: ['NetSuite', 'Workday'],
+    capabilityTags: ['GenAI Document Intelligence', 'Predictive Analytics', 'Conversational ERP Interface'],
+    headline: '84% faster month-end close. $3.2M in recaptured vendor rebates. 8 weeks.',
+    subheadline: 'A 450-outlet global retailer with $2.4B in annual revenue compressed its 14-day close cycle to under 3 days and unlocked $3.2M in previously missed vendor rebates using GenAI-powered finance automation.',
+    heroImage: '/case-studies/cs_saas_decacorn.png',
+    timeline: '8 weeks',
+    teamSize: 9,
+    deploymentDate: 'Q4 2024',
+
+    keyMetrics: [
+      { label: 'Month-End Close Duration', before: '14 days', after: '2.2 days', improvement: 84, direction: 'down', unit: 'reduction', color: '#c084fc' },
+      { label: 'Manual Reconciliation Time', before: '320 hrs/mo', after: '28 hrs/mo', improvement: 91, direction: 'down', unit: 'reduction', color: '#38bdf8' },
+      { label: 'Vendor Rebate Capture Rate', before: '61%', after: '99%', improvement: 62, direction: 'up', unit: 'improvement', color: '#34d399' },
+      { label: 'Recaptured Annual Revenue', value: '$3.2M', direction: 'value', color: '#c084fc' },
+      { label: 'Subsidiaries Consolidated', value: '28 Entities', direction: 'value', color: '#fb923c' },
+      { label: 'Forecast Accuracy', value: '94%', direction: 'value', color: '#38bdf8' },
+    ],
+
+    challenge: {
+      title: 'The Problem: A 14-Day Close and $3.2M Left on the Table Every Year',
+      body: `This 450-outlet retailer had scaled rapidly through acquisition, leaving it with 28 legal entities spread across NetSuite (North America and APAC) and Workday (EMEA). The month-end close was a 14-day ordeal that consumed the entire finance team every month.
+
+The intercompany elimination process alone took 6 days — spreadsheets were emailed between subsidiaries, reconciliation discrepancies were resolved via phone calls, and the consolidated P&L required 3-4 rounds of correction before the CFO would sign off. The accounting team described it as "controlled chaos every month."
+
+But the silent cost was even larger: the company had negotiated volume-based vendor rebates with its top 200 suppliers — agreements worth a combined $5.2M annually at the contracted thresholds. Because rebate qualification calculations were manual and based on monthly-lagged data, the finance team was systematically failing to qualify for 39% of these rebates. $3.2M was being left on the table every year simply because the data wasn't fast enough.`,
+      painPoints: [
+        '14-day month-end close consuming entire finance team every month',
+        '6-day intercompany elimination process across 28 entities on two ERP systems',
+        '$3.2M in vendor rebates missed annually due to slow data and manual calculations',
+        '320 person-hours/month spent on manual reconciliation across NetSuite and Workday',
+        'CFO operating on 2-week-old data for every strategic decision',
+        'No real-time sales velocity data for inventory and procurement decisions',
+        'FP&A team unable to produce scenario models without clean close data',
+        '12 FTE finance staff in close-crunch mode for half of every working month',
+      ],
+    },
+
+    images: [
+      { src: '/case-studies/cs_ap_dashboard.png', alt: 'Retail finance consolidation dashboard showing 28-entity intercompany elimination', caption: 'Real-time consolidation dashboard showing intercompany elimination status across all 28 entities. What previously took 6 days now completes in 4 hours.' },
+      { src: '/case-studies/cs_erp_conversational.png', alt: 'Conversational finance interface for retail buyer rebate tracking', caption: 'Retail buyers querying rebate attainment status in real time — enabling procurement decisions optimized for rebate qualification rather than missed by it.' },
+    ],
+
+    approach: {
+      title: 'The Solution: Real-Time Intercompany Bridge + Rebate Intelligence Engine',
+      phases: [
+        {
+          phase: 'Week 1–2 — ERP Integration Layer',
+          description: 'Flowtaris AI deployed real-time integration connectors for both NetSuite (via SuiteQL REST API) and Workday (via Prism Analytics API). A unified financial data model was constructed — every transaction from all 28 entities flowing into a central intelligence layer with currency normalization and entity-level tagging.',
+          outcomes: ['All 28 entities streaming real-time transaction data within 10 days', 'Automated currency conversion with configurable exchange rate rules', 'Unified chart of accounts mapping across NetSuite and Workday variance eliminated'],
+        },
+        {
+          phase: 'Week 3–5 — Automated Intercompany Elimination',
+          description: 'The 6-day intercompany elimination process was rebuilt as an automated real-time workflow. The AI layer continuously matched intercompany transactions across entities, flagging mismatches in real time rather than at month-end. Elimination journals were auto-generated and posted to the consolidation layer, requiring only a final human sign-off on residual exceptions.',
+          outcomes: ['Intercompany elimination time reduced from 6 days to under 4 hours', 'Residual exception rate at launch: 1.2% of intercompany volume (vs 8% manually)', 'CFO received first same-day consolidated P&L view in company history'],
+        },
+        {
+          phase: 'Week 6–8 — Rebate Intelligence Engine',
+          description: 'The rebate capture failure was addressed with a dedicated AI module. The Rebate Intelligence Engine ingested all 200 vendor rebate contracts, extracted qualification thresholds and measurement periods, and connected them to real-time purchase volume data. When a subsidiary was within 5% of a rebate threshold, an automated alert was sent to the responsible buyer with a recommendation on how to qualify.',
+          outcomes: ['$3.2M in rebate qualification gaps identified and systematically recaptured', 'Rebate capture rate improved from 61% to 99% in first full quarter', 'Procurement team now optimizes purchase timing around rebate qualification windows'],
+        },
+      ],
+    },
+
+    technicalSpecs: {
+      title: 'Technical Architecture',
+      points: [
+        { icon: Layers, title: 'Real-Time Dual-ERP Consolidation', desc: 'Live data streaming from NetSuite and Workday into a unified financial model. Currency normalization, chart of accounts mapping, and entity-level tagging applied automatically. Intercompany matching runs continuously — not just at month-end.' },
+        { icon: BarChart2, title: 'Rebate Intelligence Engine', desc: 'Natural language processing extracts rebate thresholds, qualification periods, and payment terms from vendor contract PDFs. Real-time purchase volume tracking against thresholds with proactive alerts when qualification windows are closing.' },
+        { icon: Zap, title: 'Automated Intercompany Journals', desc: 'Matched intercompany transactions auto-generate elimination journal entries in the consolidation layer. Exceptions routed to the responsible entity controller with pre-populated resolution recommendations.' },
+        { icon: ShieldCheck, title: 'Close Management Dashboard', desc: 'Real-time close progress tracking for all 28 entities. CFO sees a single view of which entities are reconciled, which have outstanding items, and projected close completion time — updated every 15 minutes throughout the close.' },
+      ],
+    },
+
+    results: {
+      title: 'Verified Results — First Full Quarter Post-Deployment',
+      body: `The first full quarter post-deployment delivered results that exceeded all projected targets. The month-end close compression from 14 days to 2.2 days was the headline outcome — but the $3.2M in recaptured vendor rebates represented an unplanned upside that went directly to gross margin improvement.
+
+The CFO noted in the quarterly review that the quality of financial data had fundamentally changed: "For the first time, I'm making pricing and inventory decisions based on data that's hours old, not weeks old. That's a competitive advantage that doesn't show up in a simple ROI calculation."`,
+      bullets: [
+        '84% reduction in month-end close duration — from 14 days to 2.2 days',
+        '91% reduction in manual reconciliation effort — 320 hours to 28 hours per month',
+        '$3.2M in vendor rebates recaptured in first full quarter of deployment',
+        'Vendor rebate capture rate improved from 61% to 99%',
+        'CFO receives real-time consolidated P&L updated every 15 minutes',
+        'All 28 entities consolidated in under 4 hours vs. 6 days previously',
+        'FP&A scenario modeling cycle reduced from 2 weeks to 2 days',
+        '94% cash flow forecast accuracy achieved in first quarter',
+      ],
+    },
+
+    testimonial: {
+      quote: 'We were leaving $3.2M on the table every year and didn\'t even know it. The rebate intelligence was the surprise — we expected the close compression. What we didn\'t expect was that real-time data would unlock a completely different way to manage procurement. We now optimize purchase timing around rebate qualification windows. That\'s a capability we simply didn\'t have before.',
+      author: 'CFO',
+      company: 'Global Retail & E-Commerce Group',
+    },
+
+    relatedSlugs: ['global-saas-decacorn', 'healthcare-manufacturing'],
+  },
+
+  'professional-services-erp-ai': {
+    client: 'Global Management Consulting Firm',
+    confidential: true,
+    sector: 'Professional Services / Consulting',
+    platforms: ['SAP', 'Workday'],
+    capabilityTags: ['Autonomous Workflow Engine', 'Conversational ERP Interface', 'AI Governance & Compliance'],
+    headline: '$1.8M recovered in unbilled time. 97% T&E compliance. 60 days.',
+    subheadline: 'A top-20 management consulting firm used AI-driven time capture and T&E compliance to recover $1.8M in previously unbilled client hours and drive 97% expense policy compliance — in just 60 days.',
+    heroImage: '/case-studies/cs_fintech_forecast.png',
+    timeline: '60 days',
+    teamSize: 7,
+    deploymentDate: 'Q1 2025',
+
+    keyMetrics: [
+      { label: 'Unbilled Hours Recovered', before: '$0', after: '$1.8M', improvement: 100, direction: 'up', unit: 'improvement', color: '#c084fc' },
+      { label: 'T&E Policy Compliance', before: '71%', after: '97%', improvement: 37, direction: 'up', unit: 'improvement', color: '#38bdf8' },
+      { label: 'Invoice Processing Time', before: '9 days', after: '18 hrs', improvement: 92, direction: 'down', unit: 'reduction', color: '#34d399' },
+      { label: 'Revenue Leakage Stopped', value: '$1.8M/yr', direction: 'value', color: '#c084fc' },
+      { label: 'Consultants Impacted', value: '820 FTE', direction: 'value', color: '#fb923c' },
+      { label: 'Countries Covered', value: '14 Countries', direction: 'value', color: '#38bdf8' },
+    ],
+
+    challenge: {
+      title: 'The Problem: Invisible Revenue Leakage at Scale',
+      body: `This top-20 management consulting firm employs 820 client-facing consultants across 14 countries. Every hour they work is billable — or should be. The reality was different.
+
+Timesheets were submitted weekly by consultants via Workday, but manual review of time coding accuracy was sporadic. Analysis revealed that 6-8% of billable time was being coded to incorrect projects — sometimes to non-billable internal codes, sometimes to closed engagements, sometimes to the wrong client matter number. In an 820-person firm billing at an average of $350/hour, a 6% coding error rate translates to approximately $1.8M in annual revenue leakage.
+
+The T&E situation was equally problematic. With 71% policy compliance, 29% of expense claims were being submitted with policy violations — missing receipts, out-of-policy hotels, meals exceeding per diem limits. Each violation required manual review, vendor follow-up, and sometimes employee confrontation. Finance was spending 3 days per week purely on T&E exception management.`,
+      painPoints: [
+        '6-8% of billable time coded incorrectly — $1.8M in annual revenue leakage',
+        '71% T&E policy compliance — 29% of expenses submitted with violations',
+        '3 days per week of Finance team time spent on T&E exception management',
+        '9-day average from project completion to client invoice generation',
+        'No automated detection of unbillable time coded to billable projects',
+        '14 countries, 12 currencies — manual consolidation error-prone',
+        'SAP (project accounting) and Workday (HR/time) with no automated bridge',
+        'Client invoicing delays causing cash collection cycle of 45+ days',
+      ],
+    },
+
+    images: [
+      { src: '/case-studies/cs_erp_conversational.png', alt: 'Conversational ERP interface for consultant timesheet query', caption: 'Consultants querying their own time coding accuracy in real time via Slack — reducing end-of-month timesheet scrambles.' },
+      { src: '/case-studies/cs_ap_dashboard.png', alt: 'T&E compliance monitoring dashboard showing real-time policy adherence', caption: 'T&E compliance dashboard showing real-time policy adherence by team and region. Violations flagged for manager review within minutes of submission.' },
+    ],
+
+    approach: {
+      title: 'The Solution: AI Time Intelligence + Real-Time T&E Compliance Engine',
+      phases: [
+        {
+          phase: 'Week 1–2 — SAP-Workday Integration',
+          description: 'The foundation was a real-time integration layer between SAP (project accounting, client matters, billing) and Workday (time capture, HR, expense management). Every active project in SAP was mirrored into a structured knowledge base that the AI time intelligence engine could query in real time when evaluating timesheet entries.',
+          outcomes: ['Real-time SAP project database accessible to AI time engine', '820 consultant profiles mapped to their active project portfolios', 'Historical 18 months of timesheet data ingested for pattern analysis'],
+        },
+        {
+          phase: 'Week 3–4 — AI Time Intelligence Deployment',
+          description: 'The AI time intelligence engine was deployed to monitor timesheet submissions in real time. Using a combination of project history, consultant role, and engagement phase analysis, the system flagged potentially miscoded time entries before they were approved. Consultants received a Slack notification: "We noticed you coded 4 hours to [Matter X] — based on your active engagements, did you mean [Matter Y]?"',
+          outcomes: ['First week: 127 potential miscoded entries identified and corrected by consultants', 'Average correction response time: 8 minutes via Slack', 'Approval manager workload reduced by 70% through pre-validation'],
+        },
+        {
+          phase: 'Week 5–7 — T&E Compliance Engine',
+          description: 'The T&E compliance engine was deployed to validate expense submissions in real time against the firm\'s global policy matrix — different per diem limits by city, hotel cap by market, meal policies by client type. Violations were flagged immediately with a plain-language explanation and a suggested correction, reducing the approval-rejection cycle from 9 days to hours.',
+          outcomes: ['Policy compliance rate improved from 71% to 94% within 3 weeks of launch', 'Average time from expense submission to approval: 18 hours (vs 9 days)', 'Finance team T&E exception workload reduced by 85%'],
+        },
+        {
+          phase: 'Week 8 — Automated Client Invoicing',
+          description: 'With clean time and expense data, automated client invoice generation was activated. The system pulls billable time and approved expenses from the validation layer, applies client-specific billing rules from the SAP matter database, and generates draft invoices in the firm\'s standard format for partner review. Partners review and approve via mobile — invoice is dispatched the same day.',
+          outcomes: ['Client invoice cycle compressed from 9 days to 18 hours', 'Cash collection cycle reduced from 45 days to 31 days', 'First month of automated invoicing: zero disputed invoices due to time coding accuracy'],
+        },
+      ],
+    },
+
+    technicalSpecs: {
+      title: 'Technical Architecture',
+      points: [
+        { icon: Layers, title: 'Real-Time Time Intelligence Engine', desc: 'Continuous monitoring of Workday timesheet submissions against SAP project database. ML classification model trained on 18 months of historical time coding to identify anomalous coding patterns. Proactive Slack alerts for consultants before approval workflow.' },
+        { icon: Zap, title: 'Global T&E Policy Matrix', desc: 'Structured policy database covering 14 countries, 220+ cities with per diem tables, hotel caps, and meal limits. Automated policy validation on expense submission with plain-language violation explanations and suggested corrections.' },
+        { icon: BarChart2, title: 'Automated Invoice Generation', desc: 'Pull-through invoicing from validated time and expense data. Client billing rules from SAP applied automatically. Partner mobile approval workflow. Same-day invoice dispatch upon partner sign-off.' },
+        { icon: ShieldCheck, title: 'Revenue Leakage Monitoring', desc: 'Real-time tracking of unbilled time at risk — consultants approaching deadline with incorrectly coded time highlighted for manager intervention. Monthly revenue leakage report with matter-level attribution.' },
+      ],
+    },
+
+    results: {
+      title: 'Verified Results — 90 Days Post-Deployment',
+      body: `Ninety days post-deployment, the Finance Operations Director commissioned a revenue leakage analysis. The results confirmed what the real-time data had indicated throughout the quarter: the combination of AI time intelligence and T&E compliance had stopped $1.8M in annual revenue leakage in its tracks.
+
+The speed improvement was equally significant. Partners reported that the mobile invoice approval workflow — which previously required logging into SAP — had been adopted by 100% of the partnership within 2 weeks of launch. The phrase "check the Flowtaris dashboard" had become a standard part of end-of-week project review meetings.`,
+      bullets: [
+        '$1.8M in previously uncaptured billable revenue recovered annually',
+        '97% T&E policy compliance achieved — up from 71% baseline',
+        '92% reduction in invoice processing time — from 9 days to 18 hours',
+        'Cash collection cycle reduced from 45 days to 31 days (30% improvement)',
+        'Finance team T&E exception workload reduced by 85%',
+        'Partner invoice approval adopted by 100% of partnership within 2 weeks',
+        'Zero disputed client invoices in first 90 days due to time coding accuracy',
+        '14 countries and 12 currencies consolidated in a single compliance framework',
+      ],
+    },
+
+    testimonial: {
+      quote: 'We had been leaking $1.8M a year in billable time and genuinely didn\'t know it. The AI time intelligence caught miscoded entries before they became write-offs. But the bigger cultural shift was that consultants now take responsibility for time coding accuracy in real time — not at month-end. That behavioral change alone is worth more than the technology.',
+      author: 'Finance Operations Director',
+      company: 'Global Management Consulting Firm',
+    },
+
+    relatedSlugs: ['fintech-unicorn', 'healthcare-manufacturing'],
+  },
 }
 
 export async function generateStaticParams() {
@@ -659,7 +870,7 @@ export default async function CaseStudyPage({ params }: Props) {
               <div className="rounded-2xl border border-[#c084fc]/30 bg-gradient-to-br from-[#c084fc]/10 to-transparent p-6">
                 <h3 className="text-base font-black text-white mb-2">Get a Similar Result</h3>
                 <p className="text-xs text-gray-400 font-light leading-relaxed mb-4">
-                  See which Flowtaris AI capability matches your ERP environment and delivers the fastest ROI for your specific situation.
+                  See which Flowtaris AI capability matches your ERP environment and delivers the fastest ROI.
                 </p>
                 <Link href="/assessment" className="flex items-center justify-center gap-2 bg-[#c084fc] hover:bg-[#a855f7] text-white font-bold text-sm px-5 py-3 rounded-xl transition-all duration-300 w-full">
                   Start Assessment <ArrowRight className="w-4 h-4" />
@@ -667,6 +878,9 @@ export default async function CaseStudyPage({ params }: Props) {
                 <Link href="/roi-calculator" className="flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/10 text-white font-semibold text-sm px-5 py-3 rounded-xl border border-white/10 transition-all duration-300 w-full mt-2">
                   <BarChart2 className="w-4 h-4 text-[#38bdf8]" /> Calculate My ROI
                 </Link>
+                <a href="https://calendly.com/flowtaris-info" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#E8A020]/10 hover:bg-[#E8A020]/20 text-[#E8A020] font-bold text-sm px-5 py-3 rounded-xl border border-[#E8A020]/30 transition-all duration-300 w-full mt-2">
+                  <Calendar className="w-4 h-4" /> Book a Strategy Call
+                </a>
               </div>
             </div>
           </aside>
