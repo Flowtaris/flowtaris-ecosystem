@@ -14,10 +14,6 @@ export default function SiteFooter() {
       title: 'Platform',
       links: [
         { label: 'Capabilities', href: '/capabilities' },
-        { label: 'NetSuite', href: '/platforms/netsuite' },
-        { label: 'Coupa', href: '/platforms/coupa' },
-        { label: 'SAP', href: '/platforms/sap' },
-        { label: 'Workday', href: '/platforms/workday' },
       ],
     },
     {

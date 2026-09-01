@@ -228,7 +228,6 @@ export default function SiteHeader({ config }: SiteHeaderProps = {}) {
                 { href: '/roi-calculator', label: 'ROI Calculator' },
                 { href: '/cost-of-inaction', label: 'Cost of Inaction' },
                 { href: '/capabilities', label: 'Capabilities' },
-                { href: '/platforms', label: 'Platforms' },
                 { href: '/case-studies', label: 'Case Studies' },
                 { href: '/insights', label: 'Insights' },
                 { href: '/about-flowtaris-ai', label: 'About' },
