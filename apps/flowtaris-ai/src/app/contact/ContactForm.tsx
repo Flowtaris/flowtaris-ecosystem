@@ -8,12 +8,8 @@ import { ArrowRight, CheckCircle2, ChevronDown, Send, Loader2, Globe, MessageSqu
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 
 const INTENT_OPTIONS = [
-  { value: 'demo', label: 'Request a Live Demo', sub: 'Watch GenAI in action on your ERP', icon: '▶' },
-  { value: 'assessment', label: 'AI Readiness Assessment', sub: '3-min diagnostic → custom roadmap', icon: '◈' },
-  { value: 'pricing', label: 'Pricing & Licensing', sub: 'Custom quote for your volume & stack', icon: '◆' },
-  { value: 'partnership', label: 'Partnership Inquiry', sub: 'SI, iPaaS, or technology alliance', icon: '⬡' },
-  { value: 'support', label: 'Technical Support', sub: 'Existing customer request', icon: '◎' },
-  { value: 'other', label: 'General Inquiry', sub: 'Something else entirely', icon: '◯' },
+  { value: 'calendly', label: 'Auto-Schedule a Meeting', sub: 'Instantly book a time with our enterprise architects via Calendly.', icon: '▶' },
+  { value: 'message', label: 'Send a Message', sub: 'Fill out our secure inquiry form and our team will get back to you within 4 hours.', icon: '◈' }
 ]
 
 const ERP_PLATFORMS = ['NetSuite', 'Coupa', 'SAP S/4HANA', 'Workday', 'Oracle Fusion', 'Microsoft Dynamics', 'Multi-Platform', 'Not Sure']
@@ -162,10 +158,14 @@ export default function ContactForm() {
 
   const handleIntentSelect = (value: string) => {
     setSelectedIntent(value)
-    setTimeout(() => {
-      setStep('details')
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 300)
+    if (value === 'calendly') {
+      window.open('https://calendly.com/flowtaris-info', '_blank')
+    } else {
+      setTimeout(() => {
+        setStep('details')
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 300)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -324,7 +324,7 @@ export default function ContactForm() {
                 Choose the closest match and we&apos;ll route you to the right team immediately.
               </p>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 gap-8">
                 {INTENT_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
